@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prowlarr
+  namespace: jellyfin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prowlarr
+  template:
+    metadata:
+      labels:
+        app: prowlarr
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: homelab
+      containers:
+        - name: prowlarr
+          image: lscr.io/linuxserver/prowlarr:latest
+          ports:
+            - containerPort: 9696
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Europe/Rome"
+          resources:
+            requests:
+              cpu: 50m 
+              memory: 256Mi 
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /media
+      volumes:
+        - name: config
+          hostPath:
+            path: /var/lib/prowlarr
+            type: DirectoryOrCreate
+        - name: media
+          hostPath:
+            path: /media/gabro/Volume
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prowlarr
+  namespace: jellyfin
+spec:
+  selector:
+    app: prowlarr
+  ports:
+    - port: 9696
+      targetPort: 9696

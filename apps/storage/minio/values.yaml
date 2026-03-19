@@ -1,0 +1,40 @@
+mode: standalone
+replicas: 1
+
+existingSecret: minio-root-credentials
+
+persistence:
+  enabled: true
+  size: 500Gi
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 1
+    memory: 1Gi
+
+service:
+  type: ClusterIP
+  ports:
+    api: 9000
+    console: 9001
+
+consoleService:
+  type: ClusterIP
+
+buckets:
+  - name: nextcloud
+    policy: none
+    purge: false
+    versioning: true
+
+users:
+  - accessKey: nextcloud
+    existingSecret: minio-nextcloud-user
+    existingSecretKey: secretKey
+    policy: readwrite
+
+ingress:
+  enabled: false

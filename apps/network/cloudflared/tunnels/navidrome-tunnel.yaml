@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared-navidrome
+  namespace: cloudflared
+spec:
+  selector:
+    matchLabels:
+      app: cloudflared
+  template:
+    metadata:
+      labels:
+        app: cloudflared
+    spec:
+      containers:
+        - name: cloudflared
+          image: cloudflare/cloudflared:latest
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+          resources:
+            requests:
+              cpu: 200m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          env:
+            - name: TUNNEL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: navidrome-tunnel-token
+                  key: token
+          command:
+            - cloudflared
+            - tunnel
+            - --no-autoupdate
+            - run

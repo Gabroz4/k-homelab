@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minio-console
+  namespace: minio
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: minio.homelab.arpa
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: minio-console
+                port:
+                  number: 9001

@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud-appapi-dsp
+  namespace: nextcloud
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nextcloud-appapi-dsp
+  template:
+    metadata:
+      labels:
+        app: nextcloud-appapi-dsp
+    spec:
+      containers:
+      - name: dsp
+        image: ghcr.io/nextcloud/nextcloud-appapi-dsp:release
+        ports:
+        - containerPort: 2375
+        env:
+        - name: NC_HAPROXY_PASSWORD
+          value: "ShlfjF9JDsRFql"
+        volumeMounts:
+        - name: docker-socket
+          mountPath: /var/run/docker.sock
+        securityContext:
+          privileged: true
+      volumes:
+      - name: docker-socket
+        hostPath:
+          path: /var/run/docker.sock
+          type: Socket
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nextcloud-appapi-dsp
+  namespace: nextcloud
+spec:
+  selector:
+    app: nextcloud-appapi-dsp
+  ports:
+  - port: 2375
+    targetPort: 2375
+    protocol: TCP

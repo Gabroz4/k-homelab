@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: authentik
+  namespace: authentik
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    ingress.kubernetes.io/protocol: http
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: authentik.gabro.ovh
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: authentik-server
+                port:
+                  number: 80

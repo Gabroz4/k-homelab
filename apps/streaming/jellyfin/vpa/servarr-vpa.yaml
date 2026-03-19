@@ -1,0 +1,79 @@
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: radarr-vpa
+  namespace: jellyfin
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: radarr
+  updatePolicy:
+    updateMode: "Off"
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: sonarr-vpa
+  namespace: jellyfin
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sonarr
+  updatePolicy:
+    updateMode: "Off"
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: lidarr-vpa
+  namespace: music
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: lidarr
+  updatePolicy:
+    updateMode: "Off"
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: qbittorrent-vpa
+  namespace: jellyfin
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: qbittorrent
+  updatePolicy:
+    updateMode: "Off"
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: prowlarr-vpa
+  namespace: jellyfin
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: prowlarr
+  updatePolicy:
+    updateMode: "Off"
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: jellyseerr-vpa
+  namespace: jellyfin
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: jellyseerr
+  updatePolicy:
+    updateMode: "Off"
+
+

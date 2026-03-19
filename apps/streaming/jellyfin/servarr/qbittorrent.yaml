@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrent
+  namespace: jellyfin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qbittorrent
+  template:
+    metadata:
+      labels:
+        app: qbittorrent
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: homelab
+      containers:
+        - name: qbittorrent
+          image: lscr.io/linuxserver/qbittorrent:latest
+          ports:
+            - containerPort: 8080
+            - containerPort: 6881
+              protocol: TCP
+            - containerPort: 6881
+              protocol: UDP
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Europe/Rome"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /media
+      volumes:
+        - name: config
+          hostPath:
+            path: /var/lib/qbittorrent
+            type: DirectoryOrCreate
+        - name: media
+          hostPath:
+            path: /media/gabro/Volume
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qbittorrent
+  namespace: jellyfin
+spec:
+  selector:
+    app: qbittorrent
+  ports:
+    - name: web
+      port: 8080
+      targetPort: 8080
+

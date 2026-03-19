@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lidarr
+  namespace: music
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lidarr
+  template:
+    metadata:
+      labels:
+        app: lidarr
+    spec:
+      containers:
+      - name: lidarr
+        image: lscr.io/linuxserver/lidarr:latest
+        ports:
+        - containerPort: 8686
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "Europe/Rome"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+
+        - name: music
+          mountPath: /music
+
+        - name: media
+          mountPath: /media
+
+      volumes:
+      - name: config
+        hostPath:
+          path: /opt/lidarr
+          type: DirectoryOrCreate
+
+      - name: music
+        hostPath:
+          path: /home/gabro/Music/
+          type: Directory
+
+      - name: media
+        hostPath:
+          path: /media/gabro/Volume
+          type: Directory
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lidarr
+  namespace: music
+spec:
+  selector:
+    app: lidarr
+  ports:
+  - port: 8686
+    targetPort: 8686
+  type: LoadBalancer

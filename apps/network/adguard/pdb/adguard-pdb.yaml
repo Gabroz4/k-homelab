@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: adguard-pdb
+  namespace: adguard
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: adguardhome

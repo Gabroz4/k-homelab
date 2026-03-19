@@ -1,0 +1,72 @@
+grafana:
+  enabled: true
+  admin:
+    existingSecret: grafana-admin-credentials
+    userKey: adminUser
+    passwordKey: adminPassword
+  service:
+    type: ClusterIP
+  persistence:
+    enabled: true
+    size: 5Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+prometheus:
+  prometheusSpec:
+    retention: 10d
+    retentionSize: 15GB
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 2000m
+        memory: 2Gi
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 20Gi
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+kubeStateMetrics:
+  enabled: true
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+nodeExporter:
+  enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 32Mi
+    limits:
+      cpu: 200m
+      memory: 64Mi
+prometheusOperator:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi

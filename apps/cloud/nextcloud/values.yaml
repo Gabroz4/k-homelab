@@ -1,0 +1,101 @@
+nextcloud:
+  host: nextcloud.gabro.ovh
+  username: gabro
+  existingSecret:
+    enabled: true
+    secretName: nextcloud-secrets
+    usernameKey: NEXTCLOUD_ADMIN_USER
+    passwordKey: NEXTCLOUD_ADMIN_PASSWORD
+  trustedDomains:
+    - nextcloud.gabro.ovh
+    - localhost
+  extraEnv:
+    - name: OVERWRITEHOST
+      value: nextcloud.gabro.ovh
+    - name: OVERWRITEPROTOCOL
+      value: https
+    - name: TRUSTED_PROXIES
+      value: "10.42.0.0/16 10.43.0.0/16"
+    - name: APACHE_SERVER_NAME
+      value: nextcloud.gabro.ovh
+    - name: S3_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: nextcloud-s3
+          key: S3_ACCESS_KEY
+    - name: S3_SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: nextcloud-s3
+          key: S3_SECRET_KEY
+  defaultConfigs:
+    s3.config.php: false
+  configs:
+    objectstore.config.php: |-
+      <?php
+      $CONFIG = [
+        'objectstore' => [
+          'class' => '\\OC\\Files\\ObjectStore\\S3',
+          'arguments' => [
+            'bucket' => 'nextcloud',
+            'autocreate' => true,
+            'key' => getenv('S3_ACCESS_KEY'),
+            'secret' => getenv('S3_SECRET_KEY'),
+            'hostname' => 'minio.minio.svc.cluster.local',
+            'port' => 9000,
+            'use_ssl' => false,
+            'region' => 'us-east-1',
+            'use_path_style' => true,
+          ],
+        ],
+      ];
+  livenessProbe:
+    enabled: true
+    httpGet:
+      path: /status.php
+      httpHeaders:
+      - name: Host
+        value: "localhost"
+resources:
+  requests:
+    cpu: "250m"
+    memory: "2Gi"
+  limits:
+    cpu: "2"
+    memory: "4Gi"
+cronjob:
+  enabled: false
+persistence:
+  enabled: true
+  size: 50Gi
+  accessMode: ReadWriteOnce
+  storageClass: longhorn
+internalDatabase:
+  enabled: false
+postgresql:
+  enabled: true
+  auth:
+    username: nextcloud
+    database: nextcloud
+    existingSecret: nextcloud-secrets
+    secretKeys:
+      userPasswordKey: POSTGRES_PASSWORD
+      adminPasswordKey: POSTGRES_PASSWORD
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+      storageClass: longhorn
+  postgresqlExtendedConf:
+    shared_buffers: "256MB"
+    effective_cache_size: "1GB"
+    work_mem: "8MB"
+redis:
+  enabled: true
+ingress:
+  enabled: true
+  className: traefik
+  hosts:
+    - host: nextcloud.gabro.ovh
+      paths:
+        - /

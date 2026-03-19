@@ -1,0 +1,46 @@
+image:
+  repository: jellyfin/jellyfin
+  tag: latest
+  pullPolicy: IfNotPresent
+
+env:
+  TZ: Europe/Rome
+
+service:
+  main:
+    type: ClusterIP
+    ports:
+      http:
+        port: 8096
+
+ingress:
+  main:
+    enabled: false
+
+persistence:
+  config:
+    enabled: true
+    type: pvc
+    storageClass: "local-path"
+    accessMode: ReadWriteOnce
+    size: 10Gi
+  
+  media:
+    enabled: true
+    type: hostPath
+    hostPath: /media/gabro/Volume
+    mountPath: /media 
+  
+  cache:
+    enabled: true
+    type: emptyDir
+    medium: Memory
+    sizeLimit: 2Gi
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "6"
+    memory: "2Gi"

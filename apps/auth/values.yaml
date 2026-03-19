@@ -1,0 +1,35 @@
+authentik:
+  secret_key: ""
+  postgresql:
+    password: ""
+
+global:
+  env:
+    - name: AUTHENTIK_SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: authentik-credentials
+          key: secret-key
+    - name: AUTHENTIK_POSTGRESQL__PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: authentik-credentials
+          key: postgresql-password
+
+postgresql:
+  enabled: true
+  auth:
+    existingSecret: authentik-credentials
+    secretKeys:
+      adminPasswordKey: postgresql-password
+      userPasswordKey: postgresql-password
+
+redis:
+  enabled: true
+  master:
+    persistence:
+      size: 1Gi
+
+server:
+  ingress:
+    enabled: false

@@ -1,0 +1,45 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cloudflared-nextcloud-pdb
+  namespace: cloudflared
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: cloudflared
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cloudflared-nextcloud-pdb
+  namespace: cloudflared
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: cloudflared-jellyfin
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cloudflared-navidrome-pdb
+  namespace: cloudflared
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: cloudflared-navidrome
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cloudflared-monitoring-pdb
+  namespace: cloudflared
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: cloudflared-monitoring
+
+

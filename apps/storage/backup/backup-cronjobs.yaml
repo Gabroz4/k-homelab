@@ -1,0 +1,223 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: immich-files-backup
+  namespace: immich
+spec:
+  schedule: "0 3 */3 * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 14400  # kill after 4h
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: backup
+            image: restic/restic
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              restic -r /backup/immich-files snapshots 2>/dev/null || restic -r /backup/immich-files init
+              restic -r /backup/immich-files backup /data
+              restic -r /backup/immich-files forget --keep-daily 7 --keep-weekly 4 --prune
+            env:
+            - name: RESTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backup-secrets
+                  key: restic-password
+            volumeMounts:
+            - name: data
+              mountPath: /data
+              readOnly: true
+            - name: backup
+              mountPath: /backup
+          volumes:
+          - name: data
+            persistentVolumeClaim:
+              claimName: immich-library
+          - name: backup
+            hostPath:
+              path: /mnt/backups
+              type: Directory
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: immich-db-backup
+  namespace: immich
+spec:
+  schedule: "20 3 */3 * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 3600  # kill after 1h
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: backup
+            image: postgres:16
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 200m
+                memory: 256Mi
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              OUTFILE="/backup/immich-db-$(date +%F).sql.gz"
+              pg_dump -U immich -h immich-postgresql immich | gzip > "$OUTFILE"
+              echo "Dump written to $OUTFILE"
+              find /backup -name "immich-db-*.sql.gz" -mtime +7 -delete
+            env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backup-secrets
+                  key: immich-db-password
+            volumeMounts:
+            - name: backup
+              mountPath: /backup
+          volumes:
+          - name: backup
+            hostPath:
+              path: /mnt/backups
+              type: Directory
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nextcloud-db-backup
+  namespace: nextcloud
+spec:
+  schedule: "40 3 */3 * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 3600
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: backup
+            image: postgres:15
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 200m
+                memory: 256Mi
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              OUTFILE="/backup/nextcloud-db-$(date +%F).sql.gz"
+              pg_dump -U nextcloud -h nextcloud-postgresql nextcloud | gzip > "$OUTFILE"
+              echo "Dump written to $OUTFILE"
+              find /backup -name "nextcloud-db-*.sql.gz" -mtime +7 -delete
+            env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-secrets
+                  key: POSTGRES_PASSWORD
+            volumeMounts:
+            - name: backup
+              mountPath: /backup
+          volumes:
+          - name: backup
+            hostPath:
+              path: /mnt/backups
+              type: Directory
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nextcloud-minio-backup
+  namespace: nextcloud
+spec:
+  schedule: "0 4 */3 * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 7200  # kill after 2h
+      backoffLimit: 0              # no retries — mc mirror hanging was the whole problem
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: backup
+            image: minio/mc:RELEASE.2024-11-17T19-35-25Z  # pin this, update periodically
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 500m
+                memory: 1Gi
+            env:
+            - name: MINIO_ENDPOINT
+              value: "http://minio.minio.svc.cluster.local:9000"
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: accessKey
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: secretKey
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+
+              mc alias set minio "$MINIO_ENDPOINT" "$MINIO_ACCESS_KEY" "$MINIO_SECRET_KEY"
+
+              # Mirror to a single fixed directory — mc mirror is already incremental
+              # (only transfers new/changed files), so no need for date-stamped copies
+              TARGET="/backups/nextcloud/data"
+              mkdir -p "$TARGET"
+
+              echo "== Mirroring minio/nextcloud -> $TARGET =="
+              mc mirror --overwrite --remove minio/nextcloud "$TARGET"
+
+              echo "== Done =="
+            volumeMounts:
+            - name: backups
+              mountPath: /backups
+          volumes:
+          - name: backups
+            hostPath:
+              path: /mnt/backups
+              type: Directory

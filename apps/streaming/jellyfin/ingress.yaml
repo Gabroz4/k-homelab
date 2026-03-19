@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jellyfin
+  namespace: jellyfin
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: jellyfin.homelab.arpa
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jellyfin
+                port:
+                  number: 8096
+    - host: jellyfin.gabro.ovh
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jellyfin
+                port:
+                  number: 8096

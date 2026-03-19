@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonarr
+  namespace: jellyfin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sonarr
+  template:
+    metadata:
+      labels:
+        app: sonarr
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: homelab
+      containers:
+        - name: sonarr
+          image: lscr.io/linuxserver/sonarr:latest
+          ports:
+            - containerPort: 8989
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Europe/Rome"
+          resources:
+            requests:
+              cpu: 50m       
+              memory: 256Mi  
+            limits:
+              cpu: 500m      
+              memory: 512Mi  
+
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /media
+      volumes:
+        - name: config
+          hostPath:
+            path: /var/lib/sonarr
+            type: DirectoryOrCreate
+        - name: media
+          hostPath:
+            path: /media/gabro/Volume
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonarr
+  namespace: jellyfin
+spec:
+  selector:
+    app: sonarr
+  ports:
+    - port: 8989
+      targetPort: 8989

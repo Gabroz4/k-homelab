@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nextcloud-pdb
+  namespace: nextcloud
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: nextcloud
