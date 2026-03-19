@@ -49,6 +49,7 @@ Almost all hardware was recycled from previous upgrades, found laying around, or
 | Storage            | Longhorn           |
 
 All configuration is deployed with standard `kubectl` except Nextcloud which uses Helm. No patches are applied to maximize reproducibility — pods are configured as-is in the YAML files.
+Server is only accessed through vpn + ssh.
 
 ### How it works
 
