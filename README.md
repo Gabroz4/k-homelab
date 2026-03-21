@@ -19,7 +19,11 @@
 ![Immich](https://img.shields.io/badge/Immich-photo_backup-4250AF?style=flat-square)
 
 ---
+## Cluster schema
 
+![schema](schema/cluster-uml.png)
+
+---
 ## Hardware
 
 Almost all hardware was recycled from previous upgrades, found laying around, or gifted by friends. The only purchases were the micro-ATX parts (mobo, case, PSU — cheapest available, student budget).
