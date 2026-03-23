@@ -16,13 +16,13 @@ spec:
                 name: headlamp
                 port:
                   number: 80
-    - host: headlamp.gabro.ovh
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: headlamp
-                port:
-                  number: 80
+#    - host: headlamp.gabro.ovh
+#      http:
+#        paths:
+#          - path: /
+#            pathType: Prefix
+#            backend:
+#              service:
+#                name: headlamp
+#                port:
+#                  number: 80

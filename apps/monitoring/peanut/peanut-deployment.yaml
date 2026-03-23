@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: peanut
-  namespace: peanut
+  namespace: monitoring
 spec:
   replicas: 1
   selector:
@@ -13,13 +13,12 @@ spec:
       labels:
         app: peanut
     spec:
-      hostNetwork: true
       containers:
         - name: peanut
           image: brandawg93/peanut:latest
           env:
             - name: NUT_HOST
-              value: "127.0.0.1"
+              value: "192.168.1.50"
             - name: NUT_PORT
               value: "3493"
             - name: NUT_USER

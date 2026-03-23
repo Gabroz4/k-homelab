@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: peanut
+  namespace: monitoring
+spec:
+  selector:
+    app: peanut
+  ports:
+    - port: 9000
+      targetPort: 9000
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: peanut
+  namespace: monitoring
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`peanut.homelab.arpa`)
+      kind: Rule
+      services:
+        - name: peanut
+          port: 9000
