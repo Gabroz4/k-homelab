@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: peanut
+  namespace: peanut
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: peanut
+  template:
+    metadata:
+      labels:
+        app: peanut
+    spec:
+      hostNetwork: true
+      containers:
+        - name: peanut
+          image: brandawg93/peanut:latest
+          env:
+            - name: NUT_HOST
+              value: "127.0.0.1"
+            - name: NUT_PORT
+              value: "3493"
+            - name: NUT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: peanut-secrets
+                  key: NUT_USER
+            - name: NUT_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: peanut-secrets
+                  key: NUT_PASS
+            - name: WEB_PORT
+              value: "9000"
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          hostPath:
+            path: /home/gabro/server/apps/peanut/config
+            type: DirectoryOrCreate
