@@ -1,0 +1,95 @@
+@startuml cluster-schema-light
+skinparam backgroundColor #ffffff
+skinparam defaultFontColor #1e293b
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam roundCorner 10
+skinparam rectangle {
+  backgroundColor #f1f5f9
+  borderColor #94a3b8
+  fontColor #1e293b
+}
+skinparam database {
+  backgroundColor #f1f5f9
+  borderColor #94a3b8
+  fontColor #1e293b
+}
+skinparam cloud {
+  backgroundColor #dbeafe
+  borderColor #3b82f6
+  fontColor #1e293b
+}
+skinparam node {
+  backgroundColor #f8fafc
+  borderColor #cbd5e1
+  fontColor #1e293b
+}
+skinparam frame {
+  backgroundColor #f0f4f8
+  borderColor #cbd5e1
+  fontColor #64748b
+}
+skinparam arrow {
+  color #64748b
+  fontColor #475569
+  fontSize 11
+}
+cloud "  **Internet**  " as inet
+node "  **Homelab Node**  //AMD Ryzen 5 2600X · 16 GB DDR4//  " {
+  frame "Ingress" {
+    rectangle "**Cloudflare Tunnels**" as cf
+    rectangle "**MetalLB** \n**Traefik**\n**AdGuard**" as netstack
+  }
+  frame "Public   *.gabro.ovh" as pubframe {
+    rectangle "**Jellyfin**" as jf
+    rectangle "**Nextcloud**" as nc
+    rectangle "**Immich**" as im
+    rectangle "**Navidrome**" as nv
+    rectangle "**Authentik**" as auth
+    rectangle "**Grafana**" as graf
+  }
+  frame "Private   *.homelab.arpa" as privframe {
+    rectangle "**Servarr**" as sarr
+    rectangle "**Prometheus**" as prom
+    rectangle "**Headlamp**" as hl
+    rectangle "**Peanut**" as pnut
+  }
+  frame "Data" {
+    database "**PostgreSQL**" as pg
+    database "**Redis**" as rd
+    database "**MinIO**" as s3
+  }
+  frame "Storage   Longhorn" {
+    database "**1TB NVMe** OS" as d1
+    database "**500GB NVMe**" as d2
+    database "**4TB HDD** Media" as d3
+    database "**2TB HDD** Backups" as d4
+  }
+  rectangle "**Backups**" as bkp
+}
+rectangle "**UPS 600W**" as ups
+' ─── Ordering ───
+cf -[hidden]down-> jf
+nc -[hidden]down-> sarr
+sarr -[hidden]down-> pg
+pg -[hidden]down-> d1
+' ─── Connections ───
+inet -[#dc2626,bold]down-> cf : " HTTPS"
+cf -[#3b82f6]down-> pubframe
+netstack -[#0891b2]down-> pubframe
+netstack -[#0891b2]down-> privframe
+sarr .[#dc2626].> jf : " media"
+sarr .[#dc2626].> nv : " music"
+graf -[#ea580c]-> prom
+nc -[#3b82f6]down-> pg
+nc -[#3b82f6]down-> s3
+im -[#3b82f6]down-> pg
+auth -[#3b82f6]down-> pg
+jf -[#3b82f6]down-> d3
+sarr -[#3b82f6]down-> d3
+bkp -[#64748b]-> d4
+bkp .[#64748b].> pg : " dump"
+bkp .[#64748b].> s3 : " sync"
+ups -[#64748b]-> pnut : " NUT"
+@enduml

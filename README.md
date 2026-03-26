@@ -23,7 +23,11 @@
 
 ## Cluster schema
 
-![schema](schema/cluster-schema.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="schema/cluster-schema-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="schema/cluster-schema-light.png">
+  <img alt="Cluster Schema" src="schema/cluster-schema-dark.png">
+</picture>
 
 ---
 
