@@ -14,38 +14,58 @@ spec:
         app: navidrome
     spec:
       containers:
-      - name: navidrome
-        image: deluan/navidrome:latest
-        ports:
-        - containerPort: 4533
-        env:
-        - name: ND_SCANSCHEDULE
-          value: "1h"
-        - name: ND_LOGLEVEL
-          value: "info"
-        - name: ND_SESSIONTIMEOUT
-          value: "24h"
-        - name: ND_BASEURL
-          value: ""
-        resources:
-          requests:
-            cpu: 50m
-            memory: 64Mi
-          limits:
-            cpu: 500m
-            memory: 128Mi
-        volumeMounts:
-        - mountPath: /data
-          name: data
-        - mountPath: /music
-          name: music
-          readOnly: true
+        - name: navidrome
+          image: 'deluan/navidrome:latest'
+          ports:
+            - containerPort: 4533
+          env:
+            - name: ND_SCANSCHEDULE
+              value: 1h
+            - name: ND_LOGLEVEL
+              value: info
+            - name: ND_SESSIONTIMEOUT
+              value: 24h
+            - name: ND_BASEURL
+              value: ''
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: 4533
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: 4533
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /ping
+              port: 4533
+            failureThreshold: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 128Mi
+          volumeMounts:
+            - mountPath: /data
+              name: data
+            - mountPath: /music
+              name: music
+              readOnly: true
       volumes:
-      - name: data
-        hostPath:
-          path: /opt/navidrome
-          type: DirectoryOrCreate
-      - name: music
-        hostPath:
-          path: /home/gabro/Music
-          type: Directory
+        - name: data
+          hostPath:
+            path: /opt/navidrome
+            type: DirectoryOrCreate
+        - name: music
+          hostPath:
+            path: /home/gabro/Music
+            type: Directory
