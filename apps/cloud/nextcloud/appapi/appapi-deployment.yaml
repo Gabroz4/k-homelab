@@ -14,23 +14,26 @@ spec:
         app: nextcloud-appapi-dsp
     spec:
       containers:
-      - name: dsp
-        image: ghcr.io/nextcloud/nextcloud-appapi-dsp:release
-        ports:
-        - containerPort: 2375
-        env:
-        - name: NC_HAPROXY_PASSWORD
-          value: "ShlfjF9JDsRFql"
-        volumeMounts:
-        - name: docker-socket
-          mountPath: /var/run/docker.sock
-        securityContext:
-          privileged: true
+        - name: dsp
+          image: 'ghcr.io/nextcloud/nextcloud-appapi-dsp:release'
+          ports:
+            - containerPort: 2375
+          env:
+            - name: NC_HAPROXY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: appapi-secret
+                  key: haproxy-password
+          volumeMounts:
+            - name: docker-socket
+              mountPath: /var/run/docker.sock
+          securityContext:
+            privileged: true
       volumes:
-      - name: docker-socket
-        hostPath:
-          path: /var/run/docker.sock
-          type: Socket
+        - name: docker-socket
+          hostPath:
+            path: /var/run/docker.sock
+            type: Socket
 ---
 apiVersion: v1
 kind: Service
