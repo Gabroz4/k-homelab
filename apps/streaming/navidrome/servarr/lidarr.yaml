@@ -25,33 +25,46 @@ spec:
           value: "1000"
         - name: TZ
           value: "Europe/Rome"
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: 8686
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ping
+            port: 8686
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /ping
+            port: 8686
+          failureThreshold: 30
+          periodSeconds: 10
         volumeMounts:
         - name: config
           mountPath: /config
-
         - name: music
           mountPath: /music
-
         - name: media
           mountPath: /media
-
       volumes:
       - name: config
         hostPath:
           path: /opt/lidarr
           type: DirectoryOrCreate
-
       - name: music
         hostPath:
           path: /home/gabro/Music/
           type: Directory
-
       - name: media
         hostPath:
           path: /media/gabro/Volume
           type: Directory
-
-
 ---
 apiVersion: v1
 kind: Service
