@@ -37,3 +37,12 @@ spec:
             - tunnel
             - --no-autoupdate
             - run
+          livenessProbe:
+            exec:
+              command:
+                - cloudflared
+                - tunnel
+                - --version
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            failureThreshold: 3
