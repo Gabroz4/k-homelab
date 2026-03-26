@@ -66,7 +66,7 @@ spec:
   failedJobsHistoryLimit: 2
   jobTemplate:
     spec:
-      activeDeadlineSeconds: 3600  # kill after 1h
+      activeDeadlineSeconds: 3600
       backoffLimit: 1
       template:
         spec:
@@ -168,8 +168,8 @@ spec:
   failedJobsHistoryLimit: 2
   jobTemplate:
     spec:
-      activeDeadlineSeconds: 7200  # kill after 2h
-      backoffLimit: 0              # no retries — mc mirror hanging was the whole problem
+      activeDeadlineSeconds: 7200
+      backoffLimit: 0
       template:
         spec:
           restartPolicy: Never
@@ -204,8 +204,6 @@ spec:
 
               mc alias set minio "$MINIO_ENDPOINT" "$MINIO_ACCESS_KEY" "$MINIO_SECRET_KEY"
 
-              # Mirror to a single fixed directory — mc mirror is already incremental
-              # (only transfers new/changed files), so no need for date-stamped copies
               TARGET="/backups/nextcloud/data"
               mkdir -p "$TARGET"
 
