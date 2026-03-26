@@ -44,23 +44,19 @@ spec:
             - name: media
               mountPath: /media
           livenessProbe:
-            httpGet:
-              path: /
-              port: 8080
-            initialDelaySeconds: 60
+            exec:
+              command: ["sh", "-c", "curl -sf http://localhost:8080/ > /dev/null"]
             periodSeconds: 30
             failureThreshold: 3
           readinessProbe:
-            httpGet:
-              path: /
-              port: 8080
+            exec:
+              command: ["sh", "-c", "curl -sf http://localhost:8080/ > /dev/null"]
             initialDelaySeconds: 10
             periodSeconds: 10
             failureThreshold: 3
           startupProbe:
-            httpGet:
-              path: /
-              port: 8080
+            exec:
+              command: ["sh", "-c", "curl -sf http://localhost:8080/ > /dev/null"]
             failureThreshold: 120
             periodSeconds: 5
       volumes:
