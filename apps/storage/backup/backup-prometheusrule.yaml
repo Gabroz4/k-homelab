@@ -1,0 +1,54 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: backup-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: backup.rules
+      rules:
+        - alert: BackupJobFailed
+          expr: kube_job_failed{job="kube-state-metrics"} > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Backup job failed ({{ $labels.namespace }}/{{ $labels.job_name }})"
+            description: >
+              Job {{ $labels.namespace }}/{{ $labels.job_name }} has a failed
+              condition. Check `kubectl describe job -n {{ $labels.namespace }}
+              {{ $labels.job_name }}` and the pod logs for details.
+        - alert: BackupCronJobStale
+          expr: >
+            (
+              time() - kube_cronjob_status_last_successful_time{
+                job="kube-state-metrics"
+              }
+            ) > (4 * 86400)
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "No successful backup in >4 days ({{ $labels.namespace }}/{{ $labels.cronjob }})"
+            description: >
+              CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} last
+              succeeded {{ $value | humanizeDuration }} ago. Verify the schedule
+              is correct and check recent Job history with
+              `kubectl get jobs -n {{ $labels.namespace }}`.
+        - alert: BackupCronJobNeverSucceeded
+          expr: >
+            kube_cronjob_status_last_successful_time{
+              job="kube-state-metrics"
+            } == 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Backup CronJob has never succeeded ({{ $labels.namespace }}/{{ $labels.cronjob }})"
+            description: >
+              CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} has no
+              recorded successful completion. This may be a newly created job,
+              or it may have been failing silently since creation.
+

@@ -1,0 +1,97 @@
+# -----------------------------------------------------------------------------
+# Authentik forward-auth middleware for Traefik
+#
+# Prerequisites:
+#   1. An Authentik Proxy Provider configured for "Forward auth (single
+#      application)" or "Forward auth (domain level)" mode.
+#   2. An Authentik Outpost (embedded or standalone) deployed in-cluster.
+#
+# Replace the address below with your actual outpost service URL, e.g.:
+#   http://ak-outpost-<name>.<authentik-namespace>.svc.cluster.local:9000
+# -----------------------------------------------------------------------------
+apiVersion: traefik.io/v1alpha1  # use traefik.containo.us/v1alpha1 for Traefik v2
+kind: Middleware
+metadata:
+  name: authentik-forward-auth
+  namespace: traefik   # deploy once here; reference cross-namespace via <namespace>-<name>@kubernetescrd
+spec:
+  forwardAuth:
+    # The /outpost.goauthentik.io/auth/traefik path is Authentik's built-in
+    # Traefik auth endpoint — do not change the path, only the host/port.
+    address: "http://authentik.authentik.svc.cluster.local:9000/outpost.goauthentik.io/auth/traefik"
+    trustForwardHeader: true
+    authResponseHeaders:
+      - X-authentik-username
+      - X-authentik-groups
+      - X-authentik-email
+      - X-authentik-name
+      - X-authentik-uid
+      - X-authentik-jwt
+      - X-authentik-meta-jwks
+      - X-authentik-meta-outpost
+      - X-authentik-meta-provider
+      - X-authentik-meta-app
+      - X-authentik-meta-version
+
+---
+# -----------------------------------------------------------------------------
+# Example: how to reference the middleware on each ingress
+#
+# Add the annotation:
+#   traefik.ingress.kubernetes.io/router.middlewares: traefik-authentik-forward-auth@kubernetescrd
+#
+# The format is <middleware-namespace>-<middleware-name>@kubernetescrd
+# -----------------------------------------------------------------------------
+
+# --- Grafana ------------------------------------------------------------------
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: grafana
+#   namespace: monitoring
+#   annotations:
+#     traefik.ingress.kubernetes.io/router.middlewares: traefik-authentik-forward-auth@kubernetescrd
+# spec:
+#   ...  (rest of your existing Grafana ingress unchanged)
+
+# --- Headlamp ----------------------------------------------------------------
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: headlamp
+#   namespace: headlamp
+#   annotations:
+#     traefik.ingress.kubernetes.io/router.middlewares: traefik-authentik-forward-auth@kubernetescrd
+# spec:
+#   ...
+
+# --- Prometheus --------------------------------------------------------------
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: prometheus
+#   namespace: monitoring
+#   annotations:
+#     traefik.ingress.kubernetes.io/router.middlewares: traefik-authentik-forward-auth@kubernetescrd
+# spec:
+#   ...
+
+# --- MinIO console -----------------------------------------------------------
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: minio-console
+#   namespace: minio
+#   annotations:
+#     traefik.ingress.kubernetes.io/router.middlewares: traefik-authentik-forward-auth@kubernetescrd
+# spec:
+#   ...
+
+# -----------------------------------------------------------------------------
+# NOTE: Grafana has built-in support for Authentik as an OAuth2 provider,
+# which gives you a richer experience (group sync, role mapping) than
+# forward-auth alone. Consider using both:
+#   - forward-auth at the ingress level as a gate
+#   - OAuth2 login inside Grafana for proper user/role mapping
+# Docs: https://goauthentik.io/integrations/services/grafana/
+# -----------------------------------------------------------------------------
