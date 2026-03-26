@@ -23,7 +23,7 @@
 
 ## Cluster schema
 
-![schema](schema/cluster-uml.png)
+![schema](schema/cluster-schema.png)
 
 ---
 
