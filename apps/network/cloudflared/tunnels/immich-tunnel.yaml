@@ -6,11 +6,11 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: cloudflared
+      app: cloudflared-immich
   template:
     metadata:
       labels:
-        app: cloudflared
+        app: cloudflared-immich
     spec:
       containers:
         - name: cloudflared
