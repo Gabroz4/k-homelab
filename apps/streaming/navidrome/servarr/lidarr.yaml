@@ -77,4 +77,4 @@ spec:
   ports:
   - port: 8686
     targetPort: 8686
-  type: LoadBalancer
+  type: ClusterIP
