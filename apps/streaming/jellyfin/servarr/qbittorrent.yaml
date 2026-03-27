@@ -43,23 +43,6 @@ spec:
               mountPath: /config
             - name: media
               mountPath: /media
-          livenessProbe:
-            exec:
-              command: ["sh", "-c", "curl -sf http://localhost:8080/ > /dev/null"]
-            initialDelaySeconds: 60
-            periodSeconds: 30
-            failureThreshold: 3
-          readinessProbe:
-            exec:
-              command: ["sh", "-c", "curl -sf http://localhost:8080/ > /dev/null"]
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            failureThreshold: 3
-          startupProbe:
-            exec:
-              command: ["sh", "-c", "curl -sf http://localhost:8080/ > /dev/null"]
-            failureThreshold: 120
-            periodSeconds: 5
       volumes:
         - name: config
           hostPath:
