@@ -37,7 +37,7 @@ spec:
               memory: 512Mi
             limits:
               cpu: 1000m
-              memory: 1Gi
+              memory: 2Gi
           volumeMounts:
             - name: config
               mountPath: /config
@@ -46,12 +46,13 @@ spec:
           livenessProbe:
             exec:
               command: ["sh", "-c", "curl -sf http://localhost:8080/ > /dev/null"]
+            initialDelaySeconds: 60
             periodSeconds: 30
             failureThreshold: 3
           readinessProbe:
             exec:
               command: ["sh", "-c", "curl -sf http://localhost:8080/ > /dev/null"]
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 10
             failureThreshold: 3
           startupProbe:
