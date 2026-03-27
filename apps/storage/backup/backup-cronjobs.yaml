@@ -10,11 +10,19 @@ spec:
   failedJobsHistoryLimit: 2
   jobTemplate:
     spec:
-      activeDeadlineSeconds: 14400  # kill after 4h
+      ttlSecondsAfterFinished: 300
+      activeDeadlineSeconds: 14400
       backoffLimit: 1
       template:
         spec:
           restartPolicy: OnFailure
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchLabels:
+                    app: immich-server
+                topologyKey: kubernetes.io/hostname
           containers:
           - name: backup
             image: restic/restic
@@ -66,6 +74,7 @@ spec:
   failedJobsHistoryLimit: 2
   jobTemplate:
     spec:
+      ttlSecondsAfterFinished: 300
       activeDeadlineSeconds: 3600
       backoffLimit: 1
       template:
@@ -87,7 +96,7 @@ spec:
             - |
               set -e
               OUTFILE="/backup/immich-db-$(date +%F).sql.gz"
-              pg_dump -U immich -h immich-postgresql immich | gzip > "$OUTFILE"
+              pg_dump -U immich -h immich-postgresql immich | gzip > "$OUTFILE.tmp" && mv "$OUTFILE.tmp" "$OUTFILE"
               echo "Dump written to $OUTFILE"
               find /backup -name "immich-db-*.sql.gz" -mtime +7 -delete
             env:
@@ -117,6 +126,7 @@ spec:
   failedJobsHistoryLimit: 2
   jobTemplate:
     spec:
+      ttlSecondsAfterFinished: 300
       activeDeadlineSeconds: 3600
       backoffLimit: 1
       template:
@@ -138,7 +148,7 @@ spec:
             - |
               set -e
               OUTFILE="/backup/nextcloud-db-$(date +%F).sql.gz"
-              pg_dump -U nextcloud -h nextcloud-postgresql nextcloud | gzip > "$OUTFILE"
+              pg_dump -U nextcloud -h nextcloud-postgresql nextcloud | gzip > "$OUTFILE.tmp" && mv "$OUTFILE.tmp" "$OUTFILE"
               echo "Dump written to $OUTFILE"
               find /backup -name "nextcloud-db-*.sql.gz" -mtime +7 -delete
             env:
@@ -168,6 +178,7 @@ spec:
   failedJobsHistoryLimit: 2
   jobTemplate:
     spec:
+      ttlSecondsAfterFinished: 300
       activeDeadlineSeconds: 7200
       backoffLimit: 0
       template:
@@ -175,7 +186,7 @@ spec:
           restartPolicy: Never
           containers:
           - name: backup
-            image: minio/mc:RELEASE.2024-11-17T19-35-25Z  # pin this, update periodically
+            image: minio/mc:RELEASE.2024-11-17T19-35-25Z
             resources:
               requests:
                 cpu: 100m
@@ -208,7 +219,7 @@ spec:
               mkdir -p "$TARGET"
 
               echo "== Mirroring minio/nextcloud -> $TARGET =="
-              mc mirror --overwrite --remove minio/nextcloud "$TARGET"
+              mc mirror --overwrite minio/nextcloud "$TARGET"
 
               echo "== Done =="
             volumeMounts:
