@@ -1,0 +1,106 @@
+#helm install alloy grafana/alloy -n monitoring -f grafana-alloy-values.yaml
+
+controller:
+  type: daemonset
+
+alloy:
+  mounts:
+    varlog: true
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+  configMap:
+    content: |
+      loki.write "default" {
+        endpoint {
+          url = "http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push"
+        }
+      }
+
+      discovery.kubernetes "pods" {
+        role = "pod"
+        selectors {
+          role  = "pod"
+          field = "spec.nodeName=" + coalesce(sys.env("HOSTNAME"), constants.hostname)
+        }
+      }
+
+      discovery.relabel "pod_logs" {
+        targets = discovery.kubernetes.pods.targets
+
+        rule {
+          source_labels = ["__meta_kubernetes_namespace"]
+          action        = "replace"
+          target_label  = "namespace"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_pod_name"]
+          action        = "replace"
+          target_label  = "pod"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_pod_container_name"]
+          action        = "replace"
+          target_label  = "container"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_pod_label_app"]
+          action        = "replace"
+          target_label  = "app"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+          action        = "replace"
+          target_label  = "__path__"
+          separator     = "/"
+          replacement   = "/var/log/pods/*$1/*.log"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_pod_container_name"]
+          action        = "drop"
+          regex         = "POD"
+        }
+      }
+
+      loki.source.file "pod_logs" {
+        targets    = discovery.relabel.pod_logs.output
+        forward_to = [loki.process.pod_logs.receiver]
+      }
+
+      loki.process "pod_logs" {
+        stage.cri {}
+
+        stage.static_labels {
+          values = {
+            cluster = "homelab",
+          }
+        }
+
+        forward_to = [loki.write.default.receiver]
+      }
+
+      loki.source.kubernetes_events "events" {
+        log_format = "logfmt"
+        forward_to = [loki.process.events.receiver]
+      }
+
+      loki.process "events" {
+        stage.static_labels {
+          values = {
+            cluster = "homelab",
+            job     = "kubernetes-events",
+          }
+        }
+        forward_to = [loki.write.default.receiver]
+      }

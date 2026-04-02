@@ -1,7 +1,8 @@
+#helm upgrade monitoring prometheus-community/kube-prometheus-stack -n monitoring -f prometheus-values.yaml -f grafana-values.yaml
 prometheus:
   prometheusSpec:
-    retention: 10d
-    retentionSize: 15GB
+    retention: 14d
+    retentionSize: 18GB
     resources:
       requests:
         cpu: 500m
@@ -13,9 +14,16 @@ prometheus:
       volumeClaimTemplate:
         spec:
           accessModes: ["ReadWriteOnce"]
+          storageClassName: longhorn
           resources:
             requests:
-              storage: 20Gi
+              storage: 25Gi
+
+    additionalScrapeConfigs:
+      - job_name: "loki"
+        static_configs:
+          - targets: ["loki.monitoring.svc.cluster.local:3100"]
+
 alertmanager:
   enabled: true
   alertmanagerSpec:
@@ -26,6 +34,7 @@ alertmanager:
       limits:
         cpu: 200m
         memory: 128Mi
+
 kubeStateMetrics:
   enabled: true
   resources:
@@ -35,6 +44,7 @@ kubeStateMetrics:
     limits:
       cpu: 100m
       memory: 64Mi
+
 nodeExporter:
   enabled: true
   resources:
@@ -44,6 +54,7 @@ nodeExporter:
     limits:
       cpu: 200m
       memory: 64Mi
+
 prometheusOperator:
   resources:
     requests:

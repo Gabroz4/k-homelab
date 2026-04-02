@@ -1,0 +1,33 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: loki-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: loki.rules
+      rules:
+        - alert: LokiDown
+          expr: up{job="loki"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Loki is down"
+            description: >
+              Loki instance has been unreachable for 5 minutes.
+              Log collection is not working. Check the Loki pod status.
+
+        - alert: LokiNoNewLogs
+          expr: >
+            rate(loki_distributor_lines_received_total[15m]) == 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Loki is not receiving any logs"
+            description: >
+              No log lines have been received by Loki in 15 minutes.
+              Check that the Alloy DaemonSet is running and configured.

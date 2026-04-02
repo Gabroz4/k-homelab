@@ -1,3 +1,4 @@
+#helm upgrade monitoring prometheus-community/kube-prometheus-stack -n monitoring -f prometheus-values.yaml -f grafana-values.yaml
 grafana:
   enabled: true
   admin:
@@ -9,6 +10,7 @@ grafana:
   persistence:
     enabled: true
     size: 5Gi
+
   resources:
     requests:
       cpu: 100m
@@ -16,3 +18,42 @@ grafana:
     limits:
       cpu: 500m
       memory: 512Mi
+
+  plugins:
+    - grafana-lokiexplore-app
+    - grafana-k8s-app
+
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      uid: loki
+      url: http://loki.monitoring.svc.cluster.local:3100
+      access: proxy
+      isDefault: false
+      jsonData:
+        maxLines: 1000
+        derivedFields:
+          - datasourceUid: prometheus
+            matcherRegex: '"pod":"(.*?)"'
+            name: Pod
+            url: '/explore?left=["now-1h","now","Prometheus",{"expr":"up{pod=\"${__value.raw}\"}"}]'
+
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: custom
+          orgId: 1
+          folder: "Homelab"
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/custom
+
+  dashboardsConfigMaps:
+    custom: grafana-homelab-dashboards
+
+  grafana.ini:
+    feature_toggles:
+      enable: lokiExploreDataVisualization
