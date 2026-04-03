@@ -1,4 +1,3 @@
-#helm upgrade monitoring prometheus-community/kube-prometheus-stack -n monitoring -f prometheus-values.yaml -f grafana-values.yaml
 grafana:
   enabled: true
   admin:
@@ -11,6 +10,9 @@ grafana:
     enabled: true
     size: 5Gi
 
+  deploymentStrategy:
+    type: Recreate
+
   resources:
     requests:
       cpu: 100m
@@ -21,6 +23,10 @@ grafana:
 
   plugins:
     - grafana-lokiexplore-app
+    - grafana-k8s-app
+
+  envFromSecrets:
+    - name: grafana-authentik-oauth
 
   additionalDataSources:
     - name: Loki
@@ -31,28 +37,24 @@ grafana:
       isDefault: false
       jsonData:
         maxLines: 1000
-        derivedFields:
-          - datasourceUid: prometheus
-            matcherRegex: '"pod":"(.*?)"'
-            name: Pod
-            url: '/explore?left=["now-1h","now","Prometheus",{"expr":"up{pod=\"${__value.raw}\"}"}]'
-
-  dashboardProviders:
-    dashboardproviders.yaml:
-      apiVersion: 1
-      providers:
-        - name: custom
-          orgId: 1
-          folder: "Homelab"
-          type: file
-          disableDeletion: false
-          editable: true
-          options:
-            path: /var/lib/grafana/dashboards/custom
-
-  dashboardsConfigMaps:
-    custom: grafana-homelab-dashboards
 
   grafana.ini:
     feature_toggles:
       enable: lokiExploreDataVisualization
+    server:
+      root_url: https://grafana.gabro.ovh
+
+    auth:
+      signout_redirect_url: "https://authentik.gabro.ovh/application/o/grafana/end-session/"
+      oauth_auto_login: true
+
+    auth.generic_oauth:
+      enabled: true
+      name: Authentik
+      client_id: $__env{client-id}
+      client_secret: $__env{client-secret}
+      scopes: "openid email profile"
+      auth_url: "https://authentik.gabro.ovh/application/o/authorize/"
+      token_url: "https://authentik.gabro.ovh/application/o/token/"
+      api_url: "https://authentik.gabro.ovh/application/o/userinfo/"
+      role_attribute_path: "contains(groups[*], 'admin') && 'Admin' || 'Viewer'"
