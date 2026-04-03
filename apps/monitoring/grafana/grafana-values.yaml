@@ -21,7 +21,6 @@ grafana:
 
   plugins:
     - grafana-lokiexplore-app
-    - grafana-k8s-app
 
   additionalDataSources:
     - name: Loki

@@ -1,0 +1,6 @@
+15758 K8s cluster overview
+13639 Loki & Promtail logs
+17781 Loki Kubernetes logs
+16966 Container log search
+
+Una volta scaricati i 4 file JSON, allegali in questa chat e creo la ConfigMap grafana-homelab-dashboards pronta da applicare con kubectl apply.
