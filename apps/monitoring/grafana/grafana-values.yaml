@@ -10,9 +10,6 @@ grafana:
     enabled: true
     size: 5Gi
 
-  deploymentStrategy:
-    type: Recreate
-
   resources:
     requests:
       cpu: 100m
@@ -23,10 +20,16 @@ grafana:
 
   plugins:
     - grafana-lokiexplore-app
-    - grafana-k8s-app
 
-  envFromSecrets:
-    - name: grafana-authentik-oauth
+  envValueFrom:
+    GF_AUTH_GENERIC_OAUTH_CLIENT_ID:
+      secretKeyRef:
+        name: grafana-authentik-oauth
+        key: client-id
+    GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET:
+      secretKeyRef:
+        name: grafana-authentik-oauth
+        key: client-secret
 
   additionalDataSources:
     - name: Loki
@@ -43,18 +46,14 @@ grafana:
       enable: lokiExploreDataVisualization
     server:
       root_url: https://grafana.gabro.ovh
-
     auth:
       signout_redirect_url: "https://authentik.gabro.ovh/application/o/grafana/end-session/"
       oauth_auto_login: true
-
     auth.generic_oauth:
       enabled: true
       name: Authentik
-      client_id: $__env{client-id}
-      client_secret: $__env{client-secret}
       scopes: "openid email profile"
       auth_url: "https://authentik.gabro.ovh/application/o/authorize/"
-      token_url: "https://authentik.gabro.ovh/application/o/token/"
-      api_url: "https://authentik.gabro.ovh/application/o/userinfo/"
+      token_url: "http://authentik-server.authentik.svc.cluster.local/application/o/token/"
+      api_url: "http://authentik-server.authentik.svc.cluster.local/application/o/userinfo/"
       role_attribute_path: "contains(groups[*], 'admin') && 'Admin' || 'Viewer'"
