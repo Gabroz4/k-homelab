@@ -42,8 +42,11 @@ spec:
             matchLabels:
               kubernetes.io/metadata.name: cloudflared
         - namespaceSelector:
-              matchLabels:
-                kubernetes.io/metadata.name: monitoring
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: nextcloud
       ports:
         - port: 9000
           protocol: TCP
