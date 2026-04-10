@@ -1,3 +1,75 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: navidrome
+  namespace: music
+spec:
+  selector:
+    app: navidrome
+  ports:
+    - name: web
+      port: 4533
+      targetPort: 4533
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: navidrome-external
+  namespace: music
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: music-authentik-forward-auth@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: navidrome.gabro.ovh
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: navidrome
+                port:
+                  number: 4533
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: navidrome-api
+  namespace: music
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: navidrome.gabro.ovh
+      http:
+        paths:
+          - path: /rest
+            pathType: Prefix
+            backend:
+              service:
+                name: navidrome
+                port:
+                  number: 4533
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: navidrome-internal
+  namespace: music
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: navidrome.homelab.arpa
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: navidrome
+                port:
+                  number: 4533
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -8,13 +80,13 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-  - host: lidarr.homelab.arpa
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: lidarr
-            port:
-              number: 8686
+    - host: lidarr.homelab.arpa
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: lidarr
+                port:
+                  number: 8686
