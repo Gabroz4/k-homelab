@@ -230,3 +230,55 @@ spec:
             hostPath:
               path: /mnt/backups
               type: Directory
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: authentik-db-backup
+  namespace: authentik
+spec:
+  schedule: "0 5 */3 * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 300
+      activeDeadlineSeconds: 3600
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: backup
+            image: postgres:17
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 200m
+                memory: 256Mi
+            command:
+            - /bin/bash
+            - -c
+            - |
+              set -euo pipefail
+              OUTFILE="/backup/authentik-db-$(date +%F).sql.gz"
+              pg_dump -U authentik -h authentik-postgresql authentik | gzip > "$OUTFILE.tmp" && mv "$OUTFILE.tmp" "$OUTFILE"
+              echo "Dump written to $OUTFILE"
+              find /backup -name "authentik-db-*.sql.gz" -mtime +7 -delete
+            env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: authentik-credentials
+                  key: postgresql-password
+            volumeMounts:
+            - name: backup
+              mountPath: /backup
+          volumes:
+          - name: backup
+            hostPath:
+              path: /mnt/backups
+              type: Directory
