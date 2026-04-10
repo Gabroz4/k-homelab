@@ -37,7 +37,7 @@ spec:
             - /bin/sh
             - -c
             - |
-              set -e
+              set -euo pipefail
               restic -r /backup/immich-files snapshots 2>/dev/null || restic -r /backup/immich-files init
               restic -r /backup/immich-files backup /data
               restic -r /backup/immich-files forget --keep-daily 7 --keep-weekly 4 --prune
@@ -94,7 +94,7 @@ spec:
             - /bin/sh
             - -c
             - |
-              set -e
+              set -euo pipefail
               OUTFILE="/backup/immich-db-$(date +%F).sql.gz"
               pg_dump -U immich -h immich-postgresql immich | gzip > "$OUTFILE.tmp" && mv "$OUTFILE.tmp" "$OUTFILE"
               echo "Dump written to $OUTFILE"
@@ -103,8 +103,8 @@ spec:
             - name: PGPASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: backup-secrets
-                  key: immich-db-password
+                  name: immich-secrets
+                  key: POSTGRES_PASSWORD
             volumeMounts:
             - name: backup
               mountPath: /backup
@@ -134,7 +134,7 @@ spec:
           restartPolicy: OnFailure
           containers:
           - name: backup
-            image: postgres:15
+            image: postgres:17
             resources:
               requests:
                 cpu: 50m
@@ -146,7 +146,7 @@ spec:
             - /bin/sh
             - -c
             - |
-              set -e
+              set -euo pipefail
               OUTFILE="/backup/nextcloud-db-$(date +%F).sql.gz"
               pg_dump -U nextcloud -h nextcloud-postgresql nextcloud | gzip > "$OUTFILE.tmp" && mv "$OUTFILE.tmp" "$OUTFILE"
               echo "Dump written to $OUTFILE"
@@ -155,8 +155,8 @@ spec:
             - name: PGPASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: nextcloud-secrets
-                  key: POSTGRES_PASSWORD
+                  name: nextcloud-db
+                  key: db-password
             volumeMounts:
             - name: backup
               mountPath: /backup
@@ -211,16 +211,12 @@ spec:
             - /bin/sh
             - -c
             - |
-              set -e
-
+              set -euo pipefail
               mc alias set minio "$MINIO_ENDPOINT" "$MINIO_ACCESS_KEY" "$MINIO_SECRET_KEY"
-
               TARGET="/backups/nextcloud/data"
               mkdir -p "$TARGET"
-
               echo "== Mirroring minio/nextcloud -> $TARGET =="
               mc mirror --overwrite minio/nextcloud "$TARGET"
-
               echo "== Done =="
             volumeMounts:
             - name: backups
