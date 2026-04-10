@@ -92,6 +92,8 @@ postgresql:
     work_mem: "8MB"
 redis:
   enabled: true
+  replica:
+    replicaCount: 0
 ingress:
   enabled: true
   className: traefik
