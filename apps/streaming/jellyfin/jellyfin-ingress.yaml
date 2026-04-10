@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: jellyfin
+  name: jellyfin-internal
   namespace: jellyfin
 spec:
   ingressClassName: traefik
@@ -16,10 +16,61 @@ spec:
                 name: jellyfin
                 port:
                   number: 8096
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jellyfin-external
+  namespace: jellyfin
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: jellyfin-authentik-forward-auth@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
     - host: jellyfin.gabro.ovh
       http:
         paths:
           - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jellyfin
+                port:
+                  number: 8096
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jellyfin-api
+  namespace: jellyfin
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: jellyfin.gabro.ovh
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: jellyfin
+                port:
+                  number: 8096
+          - path: /socket
+            pathType: Prefix
+            backend:
+              service:
+                name: jellyfin
+                port:
+                  number: 8096
+          - path: /System/Info/Public
+            pathType: Prefix
+            backend:
+              service:
+                name: jellyfin
+                port:
+                  number: 8096
+          - path: /Users/AuthenticateByName
             pathType: Prefix
             backend:
               service:
