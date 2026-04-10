@@ -54,15 +54,15 @@ nextcloud:
     httpGet:
       path: /status.php
       httpHeaders:
-      - name: Host
-        value: "localhost"
+        - name: Host
+          value: "localhost"
 resources:
   requests:
     cpu: "250m"
-    memory: "2Gi"
+    memory: "512Mi"
   limits:
     cpu: "2"
-    memory: "4Gi"
+    memory: "1Gi"
 cronjob:
   enabled: false
 persistence:
@@ -99,3 +99,4 @@ ingress:
     - host: nextcloud.gabro.ovh
       paths:
         - /
+
