@@ -18,48 +18,47 @@ spec:
         fsGroup: 999
         runAsUser: 999
       containers:
-      - name: postgresql
-        image: tensorchord/cloudnative-pgvecto-rs:16.3-v0.2.1
-        env:
-        - name: POSTGRES_USER
-          value: immich
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: immich-secrets
-              key: POSTGRES_PASSWORD
-        - name: POSTGRES_DB
-          value: immich
-        - name: PGDATA
-          value: /var/lib/postgresql/data/pgdata
-        # ADD THIS: Configure PostgreSQL to preload the vectors extension
-        command: 
-          - "bash"
-          - "-c"
-          - |
-            echo "shared_preload_libraries = 'vectors.so'" >> /var/lib/postgresql/data/postgresql.conf || true
-            docker-entrypoint.sh postgres -c shared_preload_libraries=vectors.so
-        ports:
-        - containerPort: 5432
-        volumeMounts:
-        - name: data
-          mountPath: /var/lib/postgresql/data
+        - name: postgresql
+          image: tensorchord/cloudnative-pgvecto-rs:16.3-v0.2.1
+          env:
+            - name: POSTGRES_USER
+              value: immich
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: immich-secrets
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              value: immich
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          command:
+            - "bash"
+            - "-c"
+            - |
+              echo "shared_preload_libraries = 'vectors.so'" >> /var/lib/postgresql/data/postgresql.conf || true
+              docker-entrypoint.sh postgres -c shared_preload_libraries=vectors.so
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 2
+              memory: 512Mi
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: longhorn
         resources:
           requests:
-            cpu: 100m
-            memory: 512Mi
-          limits:
-            cpu: 2
-            memory: 2Gi
-  volumeClaimTemplates:
-  - metadata:
-      name: data
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      storageClassName: longhorn
-      resources:
-        requests:
-          storage: 10Gi
+            storage: 10Gi
 ---
 apiVersion: v1
 kind: Service
@@ -70,5 +69,5 @@ spec:
   selector:
     app: immich-postgresql
   ports:
-  - port: 5432
-    targetPort: 5432
+    - port: 5432
+      targetPort: 5432
