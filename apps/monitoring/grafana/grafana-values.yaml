@@ -9,7 +9,6 @@ grafana:
   persistence:
     enabled: true
     size: 5Gi
-
   resources:
     requests:
       cpu: 100m
@@ -17,10 +16,8 @@ grafana:
     limits:
       cpu: 500m
       memory: 512Mi
-
   plugins:
     - grafana-lokiexplore-app
-
   envValueFrom:
     GF_AUTH_GENERIC_OAUTH_CLIENT_ID:
       secretKeyRef:
@@ -30,7 +27,6 @@ grafana:
       secretKeyRef:
         name: grafana-authentik-oauth
         key: client-secret
-
   additionalDataSources:
     - name: Loki
       type: loki
@@ -40,7 +36,6 @@ grafana:
       isDefault: false
       jsonData:
         maxLines: 1000
-
   grafana.ini:
     feature_toggles:
       enable: lokiExploreDataVisualization
@@ -57,3 +52,71 @@ grafana:
       token_url: "http://authentik-server.authentik.svc.cluster.local/application/o/token/"
       api_url: "http://authentik-server.authentik.svc.cluster.local/application/o/userinfo/"
       role_attribute_path: "contains(groups[*], 'admin') && 'Admin' || 'Viewer'"
+
+  sidecar:
+    dashboards:
+      enabled: true
+      defaultFolderName: "General"
+      label: grafana_dashboard
+      labelValue: "1"
+      folderAnnotation: grafana_folder
+      searchNamespace: ALL
+      provider:
+        foldersFromFilesStructure: true
+
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: "kubernetes"
+          orgId: 1
+          folder: "Kubernetes"
+          type: file
+          disableDeletion: true
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/kubernetes
+        - name: "storage"
+          orgId: 1
+          folder: "Storage"
+          type: file
+          disableDeletion: true
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/storage
+
+  dashboards:
+    kubernetes:
+      k8s-views-global:
+        gnetId: 15757
+        revision: 43
+        datasource: Prometheus
+      k8s-views-namespaces:
+        gnetId: 15758
+        revision: 42
+        datasource: Prometheus
+      k8s-views-nodes:
+        gnetId: 15759
+        revision: 35
+        datasource: Prometheus
+      k8s-views-pods:
+        gnetId: 15760
+        revision: 38
+        datasource: Prometheus
+      k8s-system-coredns:
+        gnetId: 15762
+        revision: 22
+        datasource: Prometheus
+      k8s-system-api-server:
+        gnetId: 15761
+        revision: 22
+        datasource: Prometheus
+      node-exporter-full:
+        gnetId: 1860
+        revision: 37
+        datasource: Prometheus
+    storage:
+      longhorn:
+        gnetId: 16888
+        revision: 9
+        datasource: Prometheus
