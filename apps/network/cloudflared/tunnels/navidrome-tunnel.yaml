@@ -21,11 +21,11 @@ spec:
                 - NET_ADMIN
           resources:
             requests:
-              cpu: 200m
-              memory: 128Mi
+              cpu: 20m
+              memory: 32Mi
             limits:
               cpu: 500m
-              memory: 256Mi
+              memory: 64Mi
           env:
             - name: TUNNEL_TOKEN
               valueFrom:

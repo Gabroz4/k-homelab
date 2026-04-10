@@ -22,10 +22,10 @@ spec:
           resources:
             requests:
               cpu: 20m
-              memory: 64Mi
+              memory: 32Mi
             limits:
               cpu: 500m
-              memory: 256Mi
+              memory: 64Mi
           env:
             - name: TUNNEL_TOKEN
               valueFrom:
