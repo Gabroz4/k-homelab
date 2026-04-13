@@ -1,0 +1,25 @@
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: immich-server-vpa
+  namespace: immich
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: immich-server
+  updatePolicy:
+    updateMode: "Off"
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: immich-postgresql-vpa
+  namespace: immich
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: immich-postgresql
+  updatePolicy:
+    updateMode: "Off"

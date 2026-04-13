@@ -1,12 +1,12 @@
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
 metadata:
-  name: nextcloud-postgresql-vpa
-  namespace: nextcloud
+  name: navidrome-vpa
+  namespace: music
 spec:
   targetRef:
     apiVersion: apps/v1
-    kind: StatefulSet
-    name: nextcloud-postgresql
+    kind: Deployment
+    name: navidrome
   updatePolicy:
-    updateMode: "Off"
+    updateMode: "InPlaceOrRecreate"

@@ -9,7 +9,7 @@ spec:
     kind: Deployment
     name: radarr
   updatePolicy:
-    updateMode: "Off"
+    updateMode: "Auto"
 ---
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
@@ -22,7 +22,7 @@ spec:
     kind: Deployment
     name: sonarr
   updatePolicy:
-    updateMode: "Off"
+    updateMode: "Auto"
 ---
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
@@ -35,7 +35,7 @@ spec:
     kind: Deployment
     name: lidarr
   updatePolicy:
-    updateMode: "Off"
+    updateMode: "InPlaceOrRecreate"
 ---
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
@@ -48,7 +48,7 @@ spec:
     kind: Deployment
     name: qbittorrent
   updatePolicy:
-    updateMode: "Off"
+    updateMode: "InPlaceOrRecreate"
 ---
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
@@ -61,7 +61,7 @@ spec:
     kind: Deployment
     name: prowlarr
   updatePolicy:
-    updateMode: "Off"
+    updateMode: "InPlaceOrRecreate"
 ---
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
@@ -74,6 +74,17 @@ spec:
     kind: Deployment
     name: jellyseerr
   updatePolicy:
-    updateMode: "Off"
-
-
+    updateMode: "InPlaceOrRecreate"
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: jellyfin-vpa
+  namespace: jellyfin
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: jellyfin
+  updatePolicy:
+    updateMode: "InPlaceOrRecreate"
