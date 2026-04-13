@@ -1,0 +1,129 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cluster-cleanup
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-cleanup
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "delete"]
+  - apiGroups: ["apps"]
+    resources: ["replicasets"]
+    verbs: ["get", "list", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-cleanup
+subjects:
+  - kind: ServiceAccount
+    name: cluster-cleanup
+    namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: cluster-cleanup
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: k8s-resource-cleanup
+  namespace: kube-system
+spec:
+  schedule: "0 5 * * 0"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 300
+      activeDeadlineSeconds: 600
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: cluster-cleanup
+          containers:
+            - name: cleanup
+              image: bitnami/kubectl:latest
+              resources:
+                requests:
+                  cpu: 25m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -euo pipefail
+                  echo "=== Cleaning up completed pods ==="
+                  kubectl delete pods --field-selector=status.phase==Succeeded -A --ignore-not-found
+                  echo "=== Cleaning up failed pods ==="
+                  kubectl delete pods --field-selector=status.phase==Failed -A --ignore-not-found
+                  echo "=== Cleaning up orphaned replicasets ==="
+                  kubectl get rs -A -o json | \
+                    jq -r '.items[] | select(.spec.replicas==0 and .status.replicas==0) | "\(.metadata.namespace) \(.metadata.name)"' | \
+                    while read ns name; do
+                      echo "  Deleting rs/$name in $ns"
+                      kubectl delete rs "$name" -n "$ns" --ignore-not-found
+                    done
+                  echo "=== K8s cleanup done ==="
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: host-cleanup
+  namespace: kube-system
+spec:
+  schedule: "30 5 * * 0"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 300
+      activeDeadlineSeconds: 600
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: OnFailure
+          hostPID: true
+          containers:
+            - name: cleanup
+              image: alpine:3
+              resources:
+                requests:
+                  cpu: 25m
+                  memory: 32Mi
+                limits:
+                  cpu: 200m
+                  memory: 128Mi
+              securityContext:
+                privileged: true
+              command:
+                - nsenter
+                - -t
+                - "1"
+                - -m
+                - -u
+                - -i
+                - -n
+                - --
+                - /bin/sh
+                - -c
+                - |
+                  set -euo pipefail
+                  echo "=== Pruning unused container images ==="
+                  k3s crictl rmi --prune 2>&1 || true
+                  echo "=== Cleaning journal logs older than 7 days ==="
+                  journalctl --vacuum-time=7d 2>&1 || true
+                  echo "=== Cleaning apt cache ==="
+                  apt-get clean 2>/dev/null || true
+                  echo "=== Host cleanup done ==="

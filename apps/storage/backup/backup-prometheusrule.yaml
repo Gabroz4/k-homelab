@@ -24,7 +24,8 @@ spec:
           expr: >
             (
               time() - kube_cronjob_status_last_successful_time{
-                job="kube-state-metrics"
+                job="kube-state-metrics",
+                namespace!="kube-system"
               }
             ) > (4 * 86400)
           for: 10m
@@ -37,6 +38,23 @@ spec:
               succeeded {{ $value | humanizeDuration }} ago. Verify the schedule
               is correct and check recent Job history with
               `kubectl get jobs -n {{ $labels.namespace }}`.
+        - alert: CleanupCronJobStale
+          expr: >
+            (
+              time() - kube_cronjob_status_last_successful_time{
+                job="kube-state-metrics",
+                namespace="kube-system"
+              }
+            ) > (8 * 86400)
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "No successful cleanup in >8 days ({{ $labels.cronjob }})"
+            description: >
+              Weekly cleanup CronJob {{ $labels.namespace }}/{{ $labels.cronjob }}
+              last succeeded {{ $value | humanizeDuration }} ago. Check recent
+              Job history with `kubectl get jobs -n {{ $labels.namespace }}`.
         - alert: BackupCronJobNeverSucceeded
           expr: >
             kube_cronjob_status_last_successful_time{
@@ -51,4 +69,3 @@ spec:
               CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} has no
               recorded successful completion. This may be a newly created job,
               or it may have been failing silently since creation.
-
