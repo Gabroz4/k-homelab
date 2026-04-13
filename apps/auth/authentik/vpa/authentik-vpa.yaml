@@ -9,7 +9,7 @@ spec:
     kind: Deployment
     name: authentik-server
   updatePolicy:
-    updateMode: "Off"
+    updateMode: "InPlaceOrRecreate"
 ---
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
@@ -22,7 +22,7 @@ spec:
     kind: Deployment
     name: authentik-worker
   updatePolicy:
-    updateMode: "Off"
+    updateMode: "InPlaceOrRecreate"
 ---
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
@@ -35,4 +35,4 @@ spec:
     kind: StatefulSet
     name: authentik-postgresql
   updatePolicy:
-    updateMode: "Off"
+    updateMode: "InPlaceOrRecreate"
