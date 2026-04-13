@@ -241,3 +241,20 @@ spec:
           protocol: TCP
         - port: 465
           protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-apiserver
+  namespace: monitoring
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 10.43.0.1/32
+      ports:
+        - port: 443
+          protocol: TCP

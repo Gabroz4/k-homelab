@@ -27,15 +27,6 @@ grafana:
       secretKeyRef:
         name: grafana-authentik-oauth
         key: client-secret
-  additionalDataSources:
-    - name: Loki
-      type: loki
-      uid: loki
-      url: http://loki.monitoring.svc.cluster.local:3100
-      access: proxy
-      isDefault: false
-      jsonData:
-        maxLines: 1000
   grafana.ini:
     feature_toggles:
       enable: lokiExploreDataVisualization
@@ -54,15 +45,19 @@ grafana:
       role_attribute_path: "contains(groups[*], 'admin') && 'Admin' || 'Viewer'"
 
   sidecar:
+    datasources:
+      enabled: false
     dashboards:
-      enabled: true
-      defaultFolderName: "General"
-      label: grafana_dashboard
-      labelValue: "1"
-      folderAnnotation: grafana_folder
-      searchNamespace: ALL
-      provider:
-        foldersFromFilesStructure: true
+      enabled: false
+
+  extraVolumes:
+    - name: datasources-direct
+      configMap:
+        name: grafana-datasources
+  extraVolumeMounts:
+    - name: datasources-direct
+      mountPath: /etc/grafana/provisioning/datasources/datasource.yaml
+      subPath: datasource.yaml
 
   dashboardProviders:
     dashboardproviders.yaml:
@@ -84,6 +79,14 @@ grafana:
           editable: true
           options:
             path: /var/lib/grafana/dashboards/storage
+        - name: "logs"
+          orgId: 1
+          folder: "Logs"
+          type: file
+          disableDeletion: true
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/logs
 
   dashboards:
     kubernetes:
@@ -109,7 +112,7 @@ grafana:
         datasource: Prometheus
       k8s-system-api-server:
         gnetId: 15761
-        revision: 22
+        revision: 21
         datasource: Prometheus
       node-exporter-full:
         gnetId: 1860
@@ -120,3 +123,12 @@ grafana:
         gnetId: 16888
         revision: 9
         datasource: Prometheus
+    logs:
+      loki-kubernetes-logs:
+        gnetId: 17781
+        revision: 1
+        datasource: Loki
+      container-log-search:
+        gnetId: 16966
+        revision: 1
+        datasource: Loki
