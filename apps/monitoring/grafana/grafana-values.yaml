@@ -87,6 +87,14 @@ grafana:
           editable: true
           options:
             path: /var/lib/grafana/dashboards/logs
+        - name: "networking"
+          orgId: 1
+          folder: "Networking"
+          type: file
+          disableDeletion: true
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/networking
 
   dashboards:
     kubernetes:
@@ -132,3 +140,12 @@ grafana:
         gnetId: 16966
         revision: 1
         datasource: Loki
+      alloy-overview:
+        gnetId: 20033
+        revision: 3
+        datasource: Prometheus
+    networking:
+      traefik:
+        gnetId: 17346
+        revision: 9
+        datasource: Prometheus
