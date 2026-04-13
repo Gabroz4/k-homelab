@@ -8,6 +8,9 @@ recommender:
       memory: 128Mi
 
 updater:
+  extraArgs:
+    feature-gates: InPlaceOrRecreate=true
+    min-replicas: "1"
   resources:
     requests:
       cpu: 50m
@@ -17,6 +20,8 @@ updater:
       memory: 128Mi
 
 admissionController:
+  extraArgs:
+    feature-gates: InPlaceOrRecreate=true
   resources:
     requests:
       cpu: 50m

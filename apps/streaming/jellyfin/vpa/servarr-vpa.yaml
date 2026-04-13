@@ -9,7 +9,7 @@ spec:
     kind: Deployment
     name: radarr
   updatePolicy:
-    updateMode: "Auto"
+    updateMode: "InPlaceOrRecreate"
 ---
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
@@ -22,7 +22,7 @@ spec:
     kind: Deployment
     name: sonarr
   updatePolicy:
-    updateMode: "Auto"
+    updateMode: "InPlaceOrRecreate"
 ---
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
@@ -72,7 +72,7 @@ spec:
   targetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: jellyseerr
+    name: seerr
   updatePolicy:
     updateMode: "InPlaceOrRecreate"
 ---
