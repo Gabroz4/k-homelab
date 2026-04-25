@@ -109,7 +109,7 @@ spec:
     - from:
         - podSelector:
             matchLabels:
-              app: kube-prometheus-stack-prometheus
+              app.kubernetes.io/name: prometheus
       ports:
         - port: 3100
           protocol: TCP
