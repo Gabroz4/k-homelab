@@ -59,3 +59,14 @@ spec:
             name: qbittorrent
             port:
               number: 8080
+
+  - host: dispatcharr.homelab.arpa
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: dispatcharr
+            port:
+              number: 9191

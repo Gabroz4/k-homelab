@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dispatcharr
+  namespace: jellyfin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dispatcharr
+  template:
+    metadata:
+      labels:
+        app: dispatcharr
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: homelab
+      containers:
+        - name: dispatcharr
+          image: ghcr.io/dispatcharr/dispatcharr:latest
+          ports:
+            - containerPort: 9191
+          env:
+            - name: TZ
+              value: "Europe/Rome"
+            - name: DB_ENGINE
+              value: "sqlite"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: config
+              mountPath: /data
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 9191
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9191
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /
+              port: 9191
+            failureThreshold: 30
+            periodSeconds: 10
+      volumes:
+        - name: config
+          hostPath:
+            path: /var/lib/dispatcharr
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dispatcharr
+  namespace: jellyfin
+spec:
+  selector:
+    app: dispatcharr
+  ports:
+    - port: 9191
+      targetPort: 9191

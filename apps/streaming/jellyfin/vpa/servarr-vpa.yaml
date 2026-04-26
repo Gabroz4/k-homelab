@@ -79,6 +79,19 @@ spec:
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
 metadata:
+  name: dispatcharr-vpa
+  namespace: jellyfin
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: dispatcharr
+  updatePolicy:
+    updateMode: "InPlaceOrRecreate"
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
   name: jellyfin-vpa
   namespace: jellyfin
 spec:
