@@ -10,6 +10,7 @@
 ![Helm](https://img.shields.io/badge/Helm-package_manager-0F1689?style=flat-square&logo=helm&logoColor=white)
 ![Prometheus](https://img.shields.io/badge/Prometheus-monitoring-E6522C?style=flat-square&logo=prometheus&logoColor=white)
 ![Grafana](https://img.shields.io/badge/Grafana-dashboards-F46800?style=flat-square&logo=grafana&logoColor=white)
+![Loki](https://img.shields.io/badge/Loki-logs-F5A800?style=flat-square&logo=grafana&logoColor=white)
 ![MetalLB](https://img.shields.io/badge/MetalLB-load_balancer-4A90D9?style=flat-square)
 ![MinIO](https://img.shields.io/badge/MinIO-object_storage-C72E49?style=flat-square&logo=minio&logoColor=white)
 ![Authentik](https://img.shields.io/badge/Authentik-SSO-FD4B2D?style=flat-square)
@@ -51,29 +52,34 @@ Almost all hardware was recycled from previous upgrades, found laying around, or
 
 ## Software
 
-| Layer              | Tool               |
-| ------------------ | ------------------ |
-| Kubernetes distro  | k3s                |
-| Ingress controller | Traefik            |
-| Load balancer      | MetalLB            |
-| Remote access      | Cloudflare tunnels |
-| Storage engine     | Longhorn           |
-| Object storage     | MinIO              |
-| Autoscaling        | HPA + VPA          |
-| Monitoring         | Prometheus + Grafana |
+| Layer              | Tool                    |
+| ------------------ | ----------------------- |
+| Kubernetes distro  | k3s                     |
+| Ingress controller | Traefik                 |
+| Load balancer      | MetalLB                 |
+| Remote access      | Cloudflare tunnels      |
+| Storage engine     | Longhorn                |
+| Object storage     | MinIO                   |
+| SSO / auth         | Authentik (forward-auth)|
+| Network isolation  | Kubernetes NetworkPolicies |
+| Autoscaling        | HPA + VPA               |
+| Metrics            | Prometheus + Grafana    |
+| Logs               | Loki + Grafana Alloy    |
 
-Most configuration is deployed with standard `kubectl apply`. Helm is used for Nextcloud, Authentik, Jellyfin, MinIO, Prometheus/Grafana, and the VPA controller. No patches are applied to maximize reproducibility — pods are configured as-is in the YAML files.
+Most configuration is deployed with standard `kubectl apply`. Helm is used for Nextcloud, Authentik, Jellyfin, MinIO, Prometheus/Grafana, Loki, Alloy, and the VPA controller. No patches are applied to maximize reproducibility — pods are configured as-is in the YAML files.
 
-Server is only accessed through VPN + SSH.
+The server is only accessed through VPN + SSH.
 
 ### How it works
 
 1. **MetalLB** reserves an IP pool (`192.168.1.55–69`); Traefik is assigned a stable IP from it. AdGuard gets a dedicated LB IP (`192.168.1.60`).
 2. **AdGuardHome** is configured with DNS rewrites so browsers can reach local services by hostname (e.g. `*.homelab.arpa`) via Traefik.
 3. **Cloudflare tunnels** expose public services. Each service gets its own dedicated tunnel deployment, with tokens stored in Kubernetes secrets.
-4. An aggressive **HPA** is configured on the Cloudflare tunnel deployment (up to 10 replicas, 50% CPU target) since performance scales linearly with pod count.
+4. An aggressive **HPA** is configured on each Cloudflare tunnel deployment (up to 10 replicas, 50% CPU target) since performance scales linearly with pod count.
 5. **PodDisruptionBudgets** protect critical services (AdGuard, Nextcloud, Cloudflare tunnels) during voluntary disruptions.
-6. **VPAs** (in recommendation-only mode) are set up on the servarr stack and Nextcloud PostgreSQL for right-sizing guidance.
+6. **NetworkPolicies** enforce a default-deny posture across every namespace, with explicit ingress/egress allow rules per service.
+7. **Authentik** sits in front of selected services as a Traefik forward-auth middleware, providing SSO before requests even reach the app.
+8. **VPAs** (in recommendation-only mode) are set up on the servarr stack, monitoring components, Authentik, and Nextcloud PostgreSQL for right-sizing guidance.
 
 ---
 
@@ -82,17 +88,23 @@ Server is only accessed through VPN + SSH.
 ```
 .
 ├── apps/
-│   ├── auth/            # Authentik SSO
-│   ├── cloud/           # Nextcloud, Immich
-│   ├── monitoring/      # Prometheus, Grafana, Headlamp, Peanut
-│   ├── network/         # AdGuard, Cloudflare tunnels
-│   ├── storage/         # MinIO, backup CronJobs
-│   └── streaming/       # Jellyfin + servarr stack, Navidrome + Lidarr
+│   ├── auth/                    # Authentik SSO + forward-auth middleware
+│   ├── cloud/                   # Nextcloud, Immich
+│   ├── monitoring/              # Prometheus, Grafana, Loki, Alloy, Peanut, Traefik SM
+│   ├── network/                 # AdGuard, Cloudflare tunnels (one per public service)
+│   ├── storage/                 # MinIO, backup CronJobs, weekly cluster cleanup
+│   └── streaming/               # Jellyfin + servarr stack, Navidrome + Lidarr
 ├── infra/
-│   ├── metallb/         # IP pool configuration
-│   └── vpa/             # Vertical Pod Autoscaler values
+│   ├── metallb/                 # IP pool configuration
+│   ├── network-policies/        # Default-deny + per-namespace allow rules
+│   │   ├── ingress/
+│   │   └── egress/
+│   └── vpa/                     # Vertical Pod Autoscaler controller values
 └── schema/
-    └── cluster-uml.png  # Architecture diagram
+    ├── cluster-schema-dark.puml # PlantUML source
+    ├── cluster-schema-dark.png
+    ├── cluster-schema-light.puml
+    └── cluster-schema-light.png
 ```
 
 ---
@@ -105,8 +117,8 @@ Server is only accessed through VPN + SSH.
 | ----------------------------------- | ---------------------------------- |
 | [Nextcloud](https://nextcloud.com)  | General-purpose cloud storage      |
 | [Immich](https://immich.app)        | Personal Google Photos alternative |
-| [Jellyfin](https://jellyfin.org)    | Film & TV streaming                |
-| [Navidrome](https://navidrome.org)  | Music streaming                    |
+| [Jellyfin](https://jellyfin.org)    | Film & TV streaming (SSO-gated)    |
+| [Navidrome](https://navidrome.org)  | Music streaming (SSO-gated)        |
 | [Authentik](https://goauthentik.io) | Centralized SSO / auth provider    |
 | [Grafana](https://grafana.com)      | Monitoring & dashboards            |
 
@@ -143,6 +155,29 @@ Deployed in the `music` namespace.
 
 ---
 
+## Security
+
+### Network policies
+
+Every namespace runs with a **default-deny** posture for both ingress and egress. Explicit allow rules are then added per service in `infra/network-policies/`:
+
+- **Ingress** rules typically allow traffic only from `kube-system` (Traefik) and `monitoring` (Prometheus scrape).
+- **Egress** rules allow DNS to `kube-system`, in-cluster service discovery, and only the external endpoints each app actually needs (e.g. Cloudflare edge IPs for tunnels, package mirrors, indexer APIs, etc.).
+
+Namespaces covered: `adguard`, `authentik`, `cloudflared`, `immich`, `jellyfin`, `minio`, `monitoring`, `music`, `nextcloud`.
+
+### Authentik forward-auth (SSO)
+
+Authentik runs in its own namespace with an outpost reachable at `authentik-server.authentik.svc.cluster.local`. A Traefik `Middleware` of kind `forwardAuth` is defined in:
+
+- `authentik` namespace (the canonical one)
+- `jellyfin` namespace (protects Jellyfin)
+- `music` namespace (protects Navidrome)
+
+Public services that need SSO simply reference the namespace-local middleware in their `IngressRoute` annotations, so the auth check happens before requests hit the app.
+
+---
+
 ## Storage
 
 ### Longhorn
@@ -175,7 +210,44 @@ Deployed in the `music` namespace.
 
 ### Vertical Pod Autoscalers (VPA)
 
-VPAs are deployed in recommendation-only mode (`updateMode: "Off"`) for Radarr, Sonarr, Lidarr, qBittorrent, Prowlarr, Seerr, and Nextcloud PostgreSQL — providing right-sizing suggestions without automatic restarts.
+VPAs are deployed in recommendation-only mode (`updateMode: "Off"`) — they suggest right-sized requests/limits without restarting pods. Targets include:
+
+- Servarr stack (Radarr, Sonarr, Lidarr, qBittorrent, Prowlarr, Seerr)
+- Authentik server & worker
+- Nextcloud PostgreSQL
+- AdGuardHome
+- Immich
+- Navidrome
+- MinIO
+- Selected monitoring components
+
+---
+
+## Monitoring & Logging
+
+### Metrics
+
+Deployed via the `kube-prometheus-stack` Helm chart:
+
+- **Prometheus** with 10-day / 15 GB retention and 20 Gi persistent storage.
+- **Grafana** with persistent dashboards (5 Gi), admin credentials from secrets.
+- **Alertmanager**, **kube-state-metrics**, **node-exporter**, and the **Prometheus Operator** — all with resource requests/limits configured.
+- **Traefik ServiceMonitor** scrapes Traefik's `/metrics` endpoint on port 9100.
+- **Peanut** — a NUT (Network UPS Tools) web frontend connected to the UPS host.
+- **Headlamp** — Kubernetes web UI accessible locally at `headlamp.homelab.arpa`.
+
+### Logs
+
+- **Loki** (single-binary, filesystem storage, 7-day retention) is the log store.
+- **Grafana Alloy** runs as a DaemonSet, tailing `/var/log` on the node and pushing to Loki via the `loki.write` component. It auto-discovers pods on the local node and relabels with namespace, pod, container, and node metadata.
+- Loki is wired into Alertmanager via its `rulerConfig`.
+
+### Alerts (PrometheusRule)
+
+| Rule group   | Alerts                                                |
+| ------------ | ----------------------------------------------------- |
+| `backup.rules` | `BackupJobFailed`, `BackupCronJobStale` (>4 days)   |
+| `loki.rules`   | `LokiDown`, `LokiNoNewLogs` (15-min ingest at zero) |
 
 ---
 
@@ -186,11 +258,15 @@ All backup jobs are `CronJob` resources that write to the 2 TB HDD mounted at `/
 | CronJob                  | Schedule       | Method                                                                 |
 | ------------------------ | -------------- | ---------------------------------------------------------------------- |
 | `immich-files-backup`    | `0 3 */3 * *`  | [restic](https://restic.net) — dedup + prune (keep 7 daily, 4 weekly)  |
-| `immich-db-backup`       | `20 3 */3 * *` | `pg_dump` → gzip, 7-day retention                                     |
-| `nextcloud-db-backup`    | `40 3 */3 * *` | `pg_dump` → gzip, 7-day retention                                     |
+| `immich-db-backup`       | `20 3 */3 * *` | `pg_dump` → gzip, 7-day retention                                      |
+| `nextcloud-db-backup`    | `40 3 */3 * *` | `pg_dump` → gzip, 7-day retention                                      |
 | `nextcloud-minio-backup` | `0 4 */3 * *`  | `mc mirror` — incremental sync of the MinIO bucket                     |
 
-All jobs have `activeDeadlineSeconds` set (1–4 hours) to prevent hung jobs, and `concurrencyPolicy: Forbid` to avoid overlapping runs.
+All jobs have `activeDeadlineSeconds` set (1–4 hours) to prevent hung jobs, and `concurrencyPolicy: Forbid` to avoid overlapping runs. Failures and stale schedules trigger Prometheus alerts (see Monitoring).
+
+### Weekly cluster cleanup
+
+A separate `CronJob` (`k8s-resource-cleanup`, in `kube-system`, Sundays at 05:00) sweeps up stale `Evicted`/`Failed` pods and orphaned ReplicaSets cluster-wide. It runs with a dedicated `ServiceAccount` + `ClusterRole` scoped only to listing/deleting those resources.
 
 ---
 
@@ -205,16 +281,4 @@ Nextcloud is the most complex deployment in the cluster:
 - **HSTS middleware** via Traefik (`stsSeconds: 15552000`, preload enabled).
 - **PodDisruptionBudget** ensuring at least 1 pod is always available.
 - **HPA** scaling up to 3 replicas on 60% CPU utilization.
-
----
-
-## Monitoring
-
-The monitoring stack is deployed via the `kube-prometheus-stack` Helm chart and includes:
-
-- **Prometheus** with 10-day / 15 GB retention and 20 Gi persistent storage.
-- **Grafana** with persistent dashboards (5 Gi), admin credentials from secrets.
-- **Alertmanager**, **kube-state-metrics**, **node-exporter**, and the **Prometheus Operator** — all with resource requests and limits configured.
-- **Peanut** — a NUT (Network UPS Tools) web frontend for UPS monitoring, connected to the UPS host.
-- **Headlamp** — a Kubernetes web UI accessible locally at `headlamp.homelab.arpa`.
 
