@@ -1,0 +1,240 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homepage-config
+  namespace: monitoring
+data:
+  settings.yaml: |
+    title: Homelab
+    headerStyle: clean
+    background:
+      image: https://images.unsplash.com/photo-1506318137071-a8e063b4bec0
+      blur: sm
+      brightness: 50
+      opacity: 50
+    theme: dark
+    color: slate
+    target: _blank
+    layout:
+      Cloud:
+        style: row
+        columns: 2
+      Media:
+        style: row
+        columns: 2
+      Media Management:
+        style: row
+        columns: 4
+      Monitoring:
+        style: row
+        columns: 4
+      Storage:
+        style: row
+        columns: 2
+      Network:
+        style: row
+        columns: 2
+      Auth:
+        style: row
+        columns: 2
+    providers:
+      openweathermap: openweathermapapikey
+      weather: weatherapikey
+
+  services.yaml: |
+    - Cloud:
+        - Nextcloud:
+            href: https://nextcloud.gabro.ovh
+            description: Files, calendar, contacts (S3-backed)
+            icon: nextcloud.png
+            namespace: cloud
+            app: nextcloud
+        - Immich:
+            href: https://immich.gabro.ovh
+            description: Photo and video library
+            icon: immich.png
+            namespace: cloud
+            app: immich
+
+    - Media:
+        - Jellyfin:
+            href: https://jellyfin.gabro.ovh
+            description: Movies and TV
+            icon: jellyfin.png
+            namespace: jellyfin
+            app: jellyfin
+        - Navidrome:
+            href: https://navidrome.gabro.ovh
+            description: Music streaming
+            icon: navidrome.png
+            namespace: music
+            app: navidrome
+
+    - Media Management:
+        - Sonarr:
+            href: http://sonarr.homelab.arpa
+            description: TV series management
+            icon: sonarr.png
+            namespace: jellyfin
+            app: sonarr
+        - Radarr:
+            href: http://radarr.homelab.arpa
+            description: Movie management
+            icon: radarr.png
+            namespace: jellyfin
+            app: radarr
+        - Lidarr:
+            href: http://lidarr.homelab.arpa
+            description: Music management
+            icon: lidarr.png
+            namespace: music
+            app: lidarr
+        - Prowlarr:
+            href: http://prowlarr.homelab.arpa
+            description: Indexer manager
+            icon: prowlarr.png
+            namespace: jellyfin
+            app: prowlarr
+        - Jellyseerr:
+            href: http://seerr.homelab.arpa
+            description: Media request portal
+            icon: jellyseerr.png
+            namespace: jellyfin
+            app: seerr
+        - qBittorrent:
+            href: http://qbittorrent.homelab.arpa
+            description: Torrent client
+            icon: qbittorrent.png
+            namespace: jellyfin
+            app: qbittorrent
+        - Dispatcharr:
+            href: http://dispatcharr.homelab.arpa
+            description: IPTV manager
+            icon: mdi-satellite-uplink
+            namespace: jellyfin
+            app: dispatcharr
+
+    - Monitoring:
+        - Grafana:
+            href: https://grafana.gabro.ovh
+            description: Dashboards
+            icon: grafana.png
+            namespace: monitoring
+            app: grafana
+        - Prometheus:
+            href: http://prometheus.homelab.arpa
+            description: Metrics database
+            icon: prometheus.png
+            namespace: monitoring
+            app: prometheus
+        - Headlamp:
+            href: http://headlamp.homelab.arpa
+            description: Kubernetes dashboard
+            icon: mdi-kubernetes
+            namespace: kube-system
+            app: headlamp
+        - KubeView:
+            href: http://kubeview.homelab.arpa
+            description: Cluster visualizer
+            icon: mdi-graph
+            namespace: monitoring
+            app: kubeview
+        - Peanut:
+            href: http://peanut.homelab.arpa
+            description: UPS monitor
+            icon: mdi-power-plug
+            namespace: monitoring
+            app: peanut
+
+    - Storage:
+        - MinIO:
+            href: http://minio.homelab.arpa
+            description: S3-compatible object storage
+            icon: minio.png
+            namespace: minio
+            app: minio
+        - Longhorn:
+            href: http://192.168.1.50:32286
+            description: Distributed block storage
+            icon: longhorn.png
+            namespace: longhorn-system
+            app: longhorn-frontend
+
+    - Network:
+        - AdGuard Home:
+            href: https://adguard.gabro.ovh
+            description: DNS-level ad blocker
+            icon: adguard-home.png
+            namespace: adguard
+            app: adguardhome
+
+    - Auth:
+        - Authentik:
+            href: https://authentik.gabro.ovh
+            description: SSO / identity provider
+            icon: authentik.png
+            namespace: authentik
+            app: authentik
+
+  bookmarks.yaml: |
+    - External:
+        - Cloudflare Dashboard:
+            - abbr: CF
+              href: https://dash.cloudflare.com
+        - Cloudflare Zero Trust:
+            - abbr: ZT
+              href: https://one.dash.cloudflare.com
+        - GitHub Repo:
+            - abbr: GH
+              href: https://github.com/Gabroz4-server/kubernetes
+        - Anthropic Console:
+            - abbr: AN
+              href: https://console.anthropic.com
+
+    - Docs:
+        - Kubernetes Docs:
+            - abbr: K8
+              href: https://kubernetes.io/docs/
+        - Traefik Docs:
+            - abbr: TR
+              href: https://doc.traefik.io/traefik/
+        - gethomepage Docs:
+            - abbr: HP
+              href: https://gethomepage.dev/
+
+  widgets.yaml: |
+    - resources:
+        backend: kubernetes
+        expanded: true
+        cpu: true
+        memory: true
+    - kubernetes:
+        cluster:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+          label: k3s
+        nodes:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+    - search:
+        provider: duckduckgo
+        target: _blank
+    - datetime:
+        text_size: xl
+        format:
+          timeStyle: short
+          dateStyle: short
+          hourCycle: h23
+
+  kubernetes.yaml: |
+    mode: cluster
+
+  docker.yaml: |
+    {}
+
+  custom.css: ""
+  custom.js: ""
