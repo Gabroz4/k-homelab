@@ -66,3 +66,24 @@ spec:
           hostPath:
             path: /home/gabro/server/apps/peanut/config
             type: DirectoryOrCreate
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: peanut-secrets
+  namespace: monitoring
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: bitwarden-secretsmanager
+  target:
+    name: peanut-secrets
+    creationPolicy: Owner
+  data:
+    - secretKey: NUT_USER
+      remoteRef:
+        key: monitoring/peanut-secrets/NUT_USER
+    - secretKey: NUT_PASS
+      remoteRef:
+        key: monitoring/peanut-secrets/NUT_PASS
