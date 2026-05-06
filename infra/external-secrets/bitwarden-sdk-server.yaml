@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bitwarden-sdk-server
+  namespace: external-secrets
+  labels:
+    app: bitwarden-sdk-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bitwarden-sdk-server
+  template:
+    metadata:
+      labels:
+        app: bitwarden-sdk-server
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - pi-node
+      tolerations:
+        - key: workload
+          operator: Equal
+          value: stateless
+          effect: NoSchedule
+      containers:
+        - name: bitwarden-sdk-server
+          image: ghcr.io/external-secrets/bitwarden-sdk-server:v0.4.0
+          ports:
+            - containerPort: 9998
+              name: https
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: 9998
+              scheme: HTTPS
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 9998
+              scheme: HTTPS
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - name: tls
+              mountPath: /certs
+              readOnly: true
+      volumes:
+        - name: tls
+          secret:
+            secretName: bitwarden-sdk-server-tls
+            items:
+              - key: tls.crt
+                path: cert.pem
+              - key: tls.key
+                path: key.pem
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bitwarden-sdk-server
+  namespace: external-secrets
+  labels:
+    app: bitwarden-sdk-server
+spec:
+  selector:
+    app: bitwarden-sdk-server
+  ports:
+    - name: https
+      port: 9998
+      targetPort: 9998
+      protocol: TCP

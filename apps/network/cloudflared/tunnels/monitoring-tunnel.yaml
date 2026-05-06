@@ -61,3 +61,21 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 30
             failureThreshold: 3
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: monitoring-tunnel-token
+  namespace: cloudflared
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: bitwarden-secretsmanager
+  target:
+    name: monitoring-tunnel-token
+    creationPolicy: Owner
+  data:
+    - secretKey: token
+      remoteRef:
+        key: cloudflared/monitoring-tunnel-token/token
