@@ -12,6 +12,21 @@ spec:
       labels:
         app: cloudflared-monitoring
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - pi-node
+      tolerations:
+        - key: workload
+          operator: Equal
+          value: stateless
+          effect: NoSchedule
       containers:
         - name: cloudflared
           image: cloudflare/cloudflared:2026.3.0

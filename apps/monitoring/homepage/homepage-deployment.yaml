@@ -21,6 +21,21 @@ spec:
         app: homepage
     spec:
       serviceAccountName: homepage
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - pi-node
+      tolerations:
+        - key: workload
+          operator: Equal
+          value: stateless
+          effect: NoSchedule
       containers:
         - name: homepage
           image: ghcr.io/gethomepage/homepage:v1.12.3

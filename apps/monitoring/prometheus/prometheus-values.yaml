@@ -37,13 +37,6 @@ alertmanager:
 
 kubeStateMetrics:
   enabled: true
-  resources:
-    requests:
-      cpu: 10m
-      memory: 32Mi
-    limits:
-      cpu: 100m
-      memory: 64Mi
 
 nodeExporter:
   enabled: true
@@ -63,3 +56,35 @@ prometheusOperator:
     limits:
       cpu: 200m
       memory: 128Mi
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - pi-node
+  tolerations:
+    - key: workload
+      operator: Equal
+      value: stateless
+      effect: NoSchedule
+
+kube-state-metrics:
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - pi-node
+  tolerations:
+    - key: workload
+      operator: Equal
+      value: stateless
+      effect: NoSchedule
