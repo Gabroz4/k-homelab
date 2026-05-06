@@ -5,6 +5,8 @@
 *.pem
 *.key
 *.crt
+*.sh
+*.py
 
 /backup/
 /secrets/
