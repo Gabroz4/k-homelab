@@ -14,6 +14,7 @@
 ![MetalLB](https://img.shields.io/badge/MetalLB-load_balancer-4A90D9?style=flat-square)
 ![MinIO](https://img.shields.io/badge/MinIO-object_storage-C72E49?style=flat-square&logo=minio&logoColor=white)
 ![Authentik](https://img.shields.io/badge/Authentik-SSO-FD4B2D?style=flat-square)
+![Bitwarden](https://img.shields.io/badge/Bitwarden-secrets_manager-175DDC?style=flat-square&logo=bitwarden&logoColor=white)
 ![AdGuard](https://img.shields.io/badge/AdGuard-DNS-68BC71?style=flat-square&logo=adguard&logoColor=white)
 ![Nextcloud](https://img.shields.io/badge/Nextcloud-self_hosted_cloud-0082C9?style=flat-square&logo=nextcloud&logoColor=white)
 ![Jellyfin](https://img.shields.io/badge/Jellyfin-media_server-00A4DC?style=flat-square&logo=jellyfin&logoColor=white)
@@ -72,6 +73,7 @@ Almost all hardware was recycled from previous upgrades, found laying around, or
 | Storage engine     | Longhorn                |
 | Object storage     | MinIO                   |
 | SSO / auth         | Authentik (forward-auth)|
+| Secrets management | Bitwarden Secrets Manager + External Secrets Operator |
 | Network isolation  | Kubernetes NetworkPolicies |
 | Autoscaling        | HPA + VPA               |
 | Metrics            | Prometheus + Grafana    |
@@ -85,7 +87,7 @@ The server is only accessed through VPN + SSH.
 
 1. **MetalLB** reserves an IP pool (`192.168.1.55–69`); Traefik is assigned a stable IP from it. AdGuard gets a dedicated LB IP (`192.168.1.60`).
 2. **AdGuardHome** is configured with DNS rewrites so browsers can reach local services by hostname (e.g. `*.homelab.arpa`) via Traefik.
-3. **Cloudflare tunnels** expose public services. Each service gets its own dedicated tunnel deployment, with tokens stored in Kubernetes secrets.
+3. **Cloudflare tunnels** expose public services. Each service gets its own dedicated tunnel deployment; tunnel tokens are pulled from Bitwarden Secrets Manager via External Secrets Operator and projected into Kubernetes Secrets.
 4. An aggressive **HPA** is configured on each Cloudflare tunnel deployment (up to 10 replicas, 50% CPU target) since performance scales linearly with pod count.
 5. **Stateless offload**: stateless, multi-replica workloads (Cloudflare tunnels, Homepage, selected monitoring components) tolerate the Pi's `workload=stateless:NoSchedule` taint, freeing the x86 node for stateful services.
 6. **PodDisruptionBudgets** protect critical services (AdGuard, Nextcloud, Cloudflare tunnels) during voluntary disruptions.
@@ -179,6 +181,10 @@ Every namespace runs with a **default-deny** posture for both ingress and egress
 - **Egress** rules allow DNS to `kube-system`, in-cluster service discovery, and only the external endpoints each app actually needs (e.g. Cloudflare edge IPs for tunnels, package mirrors, indexer APIs, etc.).
 
 Namespaces covered: `adguard`, `authentik`, `cloudflared`, `immich`, `jellyfin`, `minio`, `monitoring`, `music`, `nextcloud`.
+
+### Secrets
+
+All sensitive values (database passwords, OAuth client secrets, tunnel tokens, S3 keys, restic encryption key, etc.) live in **Bitwarden Secrets Manager** (cloud). [External Secrets Operator](https://external-secrets.io) + a `bitwarden-sdk-server` sidecar sync values into Kubernetes Secrets via `ExternalSecret` resources. BW keys follow the convention `<namespace>/<secret-name>/<field>`. The only K8s Secret applied out-of-band is the BWS access token ESO itself uses to talk to Bitwarden.
 
 ### Authentik forward-auth (SSO)
 
