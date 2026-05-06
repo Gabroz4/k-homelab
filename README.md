@@ -1,7 +1,7 @@
 
 # Gabro's Homelab 🖥️
 
-> A single-node k3s cluster with production-grade infrastructure — built to learn, experiment, and run self-hosted services.
+> A two-node k3s cluster (x86 primary + Raspberry Pi 5 for stateless workloads) with production-grade infrastructure — built to learn, experiment, and run self-hosted services.
 
 ![k3s](https://img.shields.io/badge/k3s-lightweight_k8s-326CE5?style=flat-square&logo=kubernetes&logoColor=white)
 ![Traefik](https://img.shields.io/badge/Traefik-ingress-24A1C1?style=flat-square&logo=traefikproxy&logoColor=white)
@@ -36,6 +36,8 @@
 
 Almost all hardware was recycled from previous upgrades, found laying around, or gifted by friends. The only purchases were the micro-ATX parts (mobo, case, PSU — cheapest available, student budget).
 
+### Primary node (x86)
+
 | Component    | Spec                |
 | ------------ | ------------------- |
 | CPU          | AMD Ryzen 5 2600X   |
@@ -47,6 +49,15 @@ Almost all hardware was recycled from previous upgrades, found laying around, or
 | UPS          | 600 W               |
 
 > Cloud storage services and the main OS run on the NVMe drives for speed.
+
+### Stateless node (arm64)
+
+| Component | Spec                              |
+| --------- | --------------------------------- |
+| Board     | Raspberry Pi 5 (arm64), 8 GB RAM  |
+| Taint     | `workload=stateless:NoSchedule`   |
+
+> The Pi only takes pods that explicitly tolerate the taint and select it via `nodeSelector` — currently the Cloudflare tunnel deployments, Homepage, and parts of the monitoring stack.
 
 ---
 
@@ -76,10 +87,11 @@ The server is only accessed through VPN + SSH.
 2. **AdGuardHome** is configured with DNS rewrites so browsers can reach local services by hostname (e.g. `*.homelab.arpa`) via Traefik.
 3. **Cloudflare tunnels** expose public services. Each service gets its own dedicated tunnel deployment, with tokens stored in Kubernetes secrets.
 4. An aggressive **HPA** is configured on each Cloudflare tunnel deployment (up to 10 replicas, 50% CPU target) since performance scales linearly with pod count.
-5. **PodDisruptionBudgets** protect critical services (AdGuard, Nextcloud, Cloudflare tunnels) during voluntary disruptions.
-6. **NetworkPolicies** enforce a default-deny posture across every namespace, with explicit ingress/egress allow rules per service.
-7. **Authentik** sits in front of selected services as a Traefik forward-auth middleware, providing SSO before requests even reach the app.
-8. **VPAs** (in recommendation-only mode) are set up on the servarr stack, monitoring components, Authentik, and Nextcloud PostgreSQL for right-sizing guidance.
+5. **Stateless offload**: stateless, multi-replica workloads (Cloudflare tunnels, Homepage, selected monitoring components) tolerate the Pi's `workload=stateless:NoSchedule` taint, freeing the x86 node for stateful services.
+6. **PodDisruptionBudgets** protect critical services (AdGuard, Nextcloud, Cloudflare tunnels) during voluntary disruptions.
+7. **NetworkPolicies** enforce a default-deny posture across every namespace, with explicit ingress/egress allow rules per service.
+8. **Authentik** sits in front of selected services as a Traefik forward-auth middleware, providing SSO before requests even reach the app.
+9. **VPAs** (in recommendation-only mode) are set up on the servarr stack, monitoring components, Authentik, and Nextcloud PostgreSQL for right-sizing guidance.
 
 ---
 
@@ -90,7 +102,7 @@ The server is only accessed through VPN + SSH.
 ├── apps/
 │   ├── auth/                    # Authentik SSO + forward-auth middleware
 │   ├── cloud/                   # Nextcloud, Immich
-│   ├── monitoring/              # Prometheus, Grafana, Loki, Alloy, Peanut, Traefik SM
+│   ├── monitoring/              # Prometheus, Grafana, Loki, Alloy, Peanut, Homepage, Headlamp
 │   ├── network/                 # AdGuard, Cloudflare tunnels (one per public service)
 │   ├── storage/                 # MinIO, backup CronJobs, weekly cluster cleanup
 │   └── streaming/               # Jellyfin + servarr stack, Navidrome + Lidarr
@@ -121,6 +133,7 @@ The server is only accessed through VPN + SSH.
 | [Navidrome](https://navidrome.org)  | Music streaming (SSO-gated)        |
 | [Authentik](https://goauthentik.io) | Centralized SSO / auth provider    |
 | [Grafana](https://grafana.com)      | Monitoring & dashboards            |
+| [Homepage](https://gethomepage.dev) | Service dashboard / launcher       |
 
 ### 🔒 Private (local only — `*.homelab.arpa`)
 
@@ -144,6 +157,7 @@ All deployed in the `jellyfin` namespace, pinned to the node with `nodeSelector`
 | Radarr       | Movie management        |
 | Seerr        | Request management UI   |
 | qBittorrent  | Download client         |
+| Dispatcharr  | IPTV / channel manager  |
 
 ### 🎵 Servarr stack (Navidrome)
 
