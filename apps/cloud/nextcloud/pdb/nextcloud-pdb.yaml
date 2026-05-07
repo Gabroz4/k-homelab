@@ -7,4 +7,5 @@ spec:
   minAvailable: 1
   selector:
     matchLabels:
-      app: nextcloud
+      app.kubernetes.io/name: nextcloud
+      app.kubernetes.io/component: app
