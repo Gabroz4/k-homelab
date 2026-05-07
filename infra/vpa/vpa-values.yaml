@@ -6,6 +6,21 @@ recommender:
     limits:
       cpu: 200m
       memory: 128Mi
+  tolerations:
+    - key: workload
+      operator: Equal
+      value: stateless
+      effect: NoSchedule
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - pi-node
 
 updater:
   extraArgs:
@@ -18,6 +33,21 @@ updater:
     limits:
       cpu: 200m
       memory: 128Mi
+  tolerations:
+    - key: workload
+      operator: Equal
+      value: stateless
+      effect: NoSchedule
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - pi-node
 
 admissionController:
   extraArgs:
@@ -29,3 +59,18 @@ admissionController:
     limits:
       cpu: 200m
       memory: 128Mi
+  tolerations:
+    - key: workload
+      operator: Equal
+      value: stateless
+      effect: NoSchedule
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - pi-node

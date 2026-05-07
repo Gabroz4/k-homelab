@@ -33,3 +33,35 @@ redis:
 server:
   ingress:
     enabled: false
+  tolerations:
+    - key: workload
+      operator: Equal
+      value: stateless
+      effect: NoSchedule
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - pi-node
+
+worker:
+  tolerations:
+    - key: workload
+      operator: Equal
+      value: stateless
+      effect: NoSchedule
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - pi-node
