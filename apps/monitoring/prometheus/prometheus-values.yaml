@@ -1,4 +1,8 @@
 #helm upgrade monitoring prometheus-community/kube-prometheus-stack -n monitoring -f prometheus-values.yaml -f grafana-values.yaml
+defaultRules:
+  disabled:
+    KubeMemoryOvercommit: true
+
 prometheus:
   prometheusSpec:
     retention: 14d
