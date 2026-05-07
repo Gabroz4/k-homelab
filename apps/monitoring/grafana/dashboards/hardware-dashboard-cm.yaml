@@ -1,0 +1,345 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-hardware
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "hardware"
+data:
+  power-and-temps.json: |
+    {
+      "annotations": {"list": []},
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "type": "stat",
+          "title": "UPS Status",
+          "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+          "id": 1,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "network_ups_tools_ups_status == 1",
+              "instant": true,
+              "legendFormat": "{{flag}}",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "name",
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                {"options": {"OL": {"color": "green", "index": 0}}, "type": "value"},
+                {"options": {"OB": {"color": "red", "index": 1}}, "type": "value"},
+                {"options": {"LB": {"color": "red", "index": 2}}, "type": "value"},
+                {"options": {"CHRG": {"color": "yellow", "index": 3}}, "type": "value"},
+                {"options": {"DISCHRG": {"color": "orange", "index": 4}}, "type": "value"}
+              ],
+              "color": {"mode": "fixed", "fixedColor": "green"}
+            }
+          }
+        },
+        {
+          "type": "gauge",
+          "title": "UPS Load",
+          "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+          "id": 2,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "network_ups_tools_ups_load",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"]},
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 60},
+                  {"color": "orange", "value": 80},
+                  {"color": "red", "value": 90}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "gauge",
+          "title": "Battery Charge",
+          "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+          "id": 3,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "network_ups_tools_battery_charge",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"]},
+            "showThresholdMarkers": true
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "orange", "value": 30},
+                  {"color": "yellow", "value": 60},
+                  {"color": "green", "value": 80}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "stat",
+          "title": "Estimated Power Draw",
+          "description": "Approximate W = load% × 1000 VA × 0.6 PF",
+          "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+          "id": 4,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "network_ups_tools_ups_load * 6",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"]},
+            "textMode": "value",
+            "colorMode": "value",
+            "graphMode": "area"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "watt",
+              "decimals": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 300},
+                  {"color": "orange", "value": 450},
+                  {"color": "red", "value": 540}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "Estimated Power Draw (W)",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+          "id": 5,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "network_ups_tools_ups_load * 6",
+              "legendFormat": "Watts",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "watt",
+              "custom": {"fillOpacity": 20, "lineWidth": 2, "showPoints": "never"}
+            }
+          },
+          "options": {
+            "legend": {"displayMode": "list", "placement": "bottom"},
+            "tooltip": {"mode": "single"}
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "Voltage (V)",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+          "id": 6,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "network_ups_tools_input_voltage",
+              "legendFormat": "Input",
+              "refId": "A"
+            },
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "network_ups_tools_output_voltage",
+              "legendFormat": "Output",
+              "refId": "B"
+            },
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "network_ups_tools_battery_voltage",
+              "legendFormat": "Battery",
+              "refId": "C"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "volt",
+              "custom": {"fillOpacity": 0, "lineWidth": 2, "showPoints": "never"}
+            }
+          },
+          "options": {
+            "legend": {"displayMode": "list", "placement": "bottom"},
+            "tooltip": {"mode": "multi"}
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "NVMe Drive Temperatures",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+          "id": 7,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "node_hwmon_temp_celsius{chip=~\"nvme.*\"}",
+              "legendFormat": "{{chip}} {{sensor}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "celsius",
+              "custom": {"fillOpacity": 10, "lineWidth": 2, "showPoints": "never"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 60},
+                  {"color": "orange", "value": 70},
+                  {"color": "red", "value": 80}
+                ]
+              }
+            }
+          },
+          "options": {
+            "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"]},
+            "tooltip": {"mode": "multi"}
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "HDD Activity (spin-up indicator)",
+          "description": "Percent of time each spinning disk is busy. Long flat 0% periods = drive likely spun down. Spikes = spin-ups.",
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 20},
+          "id": 9,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "(rate(node_disk_io_time_seconds_total[5m]) * 100) * on(instance, device) group_left(model) node_disk_info{model=~\"ST.*|WDC.*|Hitachi.*|HGST.*|TOSHIBA.*\"}",
+              "legendFormat": "{{device}} ({{model}})",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "custom": {
+                "fillOpacity": 25,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "drawStyle": "bars",
+                "barAlignment": 0
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null}
+                ]
+              }
+            }
+          },
+          "options": {
+            "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "mean", "max"]},
+            "tooltip": {"mode": "multi"}
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "Motherboard / System Temperatures",
+          "description": "node_exporter hwmon sensors (NCT6775 and others). Some bus/sentinel sensors may report unrealistic values.",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+          "id": 8,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "node_hwmon_temp_celsius{chip!~\"nvme.*\"} > 0 < 110",
+              "legendFormat": "{{chip}} {{sensor}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "celsius",
+              "custom": {"fillOpacity": 0, "lineWidth": 2, "showPoints": "never"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 70},
+                  {"color": "orange", "value": 85},
+                  {"color": "red", "value": 95}
+                ]
+              }
+            }
+          },
+          "options": {
+            "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"]},
+            "tooltip": {"mode": "multi"}
+          }
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "tags": ["hardware", "homelab", "ups", "power"],
+      "templating": {"list": []},
+      "time": {"from": "now-6h", "to": "now"},
+      "timepicker": {},
+      "timezone": "",
+      "title": "Power & Temperatures",
+      "uid": "homelab-power-temps",
+      "version": 1,
+      "weekStart": ""
+    }

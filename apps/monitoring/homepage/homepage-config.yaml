@@ -139,12 +139,6 @@ data:
             icon: mdi-graph
             namespace: monitoring
             app: kubeview
-        - Peanut:
-            href: http://peanut.homelab.arpa
-            description: UPS monitor
-            icon: mdi-power-plug
-            namespace: monitoring
-            app: peanut
 
     - Storage:
         - MinIO:

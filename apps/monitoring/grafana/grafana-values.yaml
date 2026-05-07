@@ -54,10 +54,15 @@ grafana:
     - name: datasources-direct
       configMap:
         name: grafana-datasources
+    - name: dashboards-hardware
+      configMap:
+        name: grafana-dashboard-hardware
   extraVolumeMounts:
     - name: datasources-direct
       mountPath: /etc/grafana/provisioning/datasources/datasource.yaml
       subPath: datasource.yaml
+    - name: dashboards-hardware
+      mountPath: /var/lib/grafana/dashboards/hardware
 
   dashboardProviders:
     dashboardproviders.yaml:
@@ -95,6 +100,14 @@ grafana:
           editable: true
           options:
             path: /var/lib/grafana/dashboards/networking
+        - name: "hardware"
+          orgId: 1
+          folder: "Hardware"
+          type: file
+          disableDeletion: true
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/hardware
 
   dashboards:
     kubernetes:
