@@ -40,6 +40,21 @@ alertmanager:
         memory: 128Mi
     secrets:
       - alertmanager-telegram
+    tolerations:
+      - key: workload
+        operator: Equal
+        value: stateless
+        effect: NoSchedule
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                    - pi-node
   config:
     route:
       receiver: 'null'
