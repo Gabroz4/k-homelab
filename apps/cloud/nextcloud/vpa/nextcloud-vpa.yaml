@@ -14,6 +14,23 @@ spec:
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
 metadata:
+  name: nextcloud-postgresql-vpa
+  namespace: nextcloud
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: nextcloud-postgresql
+  updatePolicy:
+    updateMode: InPlaceOrRecreate
+  resourcePolicy:
+    containerPolicies:
+      - containerName: postgresql
+        controlledValues: RequestsOnly
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
   name: jellyfin-vpa
   namespace: jellyfin
 spec:
