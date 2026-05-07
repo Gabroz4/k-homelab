@@ -34,9 +34,54 @@ alertmanager:
       limits:
         cpu: 200m
         memory: 128Mi
+    secrets:
+      - alertmanager-telegram
+  config:
+    route:
+      receiver: 'null'
+      group_by: ['alertname', 'namespace']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+      routes:
+        - matchers:
+            - severity = "critical"
+          receiver: telegram
+          repeat_interval: 1h
+        - matchers:
+            - severity = "warning"
+          receiver: telegram
+          repeat_interval: 4h
+    receivers:
+      - name: 'null'
+      - name: telegram
+        telegram_configs:
+          - bot_token_file: /etc/alertmanager/secrets/alertmanager-telegram/bot-token
+            chat_id: 714757023
+            parse_mode: HTML
+            message: |
+              <b>{{ .Status | toUpper }}{{ if eq .Status "firing" }} 🔥{{ else }} ✅{{ end }}</b> {{ .CommonLabels.alertname }}
+              {{ range .Alerts -}}
+              <b>{{ .Labels.severity }}</b> · {{ .Labels.namespace }}/{{ if .Labels.pod }}{{ .Labels.pod }}{{ else }}-{{ end }}
+              {{ .Annotations.summary }}
+              {{ if .Annotations.description }}<i>{{ .Annotations.description }}</i>{{ end }}
+              {{ end }}
 
 kubeStateMetrics:
   enabled: true
+
+# k3s embeds controller-manager, scheduler, kube-proxy into a single binary
+# without exposing the standard metrics endpoints; default mode uses SQLite
+# instead of etcd. Disable the corresponding ServiceMonitors and alerts to
+# avoid permanent false positives.
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+kubeEtcd:
+  enabled: false
 
 nodeExporter:
   enabled: true
