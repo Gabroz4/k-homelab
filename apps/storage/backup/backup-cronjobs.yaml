@@ -16,6 +16,9 @@ spec:
       template:
         spec:
           restartPolicy: OnFailure
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
           affinity:
             podAffinity:
               requiredDuringSchedulingIgnoredDuringExecution:
@@ -26,6 +29,10 @@ spec:
           containers:
           - name: backup
             image: restic/restic
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["NET_RAW"]
             resources:
               requests:
                 cpu: 100m
@@ -80,9 +87,16 @@ spec:
       template:
         spec:
           restartPolicy: OnFailure
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
           containers:
           - name: backup
             image: postgres:16
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["NET_RAW"]
             resources:
               requests:
                 cpu: 50m
@@ -132,9 +146,16 @@ spec:
       template:
         spec:
           restartPolicy: OnFailure
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
           containers:
           - name: backup
             image: postgres:17
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["NET_RAW"]
             resources:
               requests:
                 cpu: 50m
@@ -187,9 +208,16 @@ spec:
             app.kubernetes.io/name: nextcloud
         spec:
           restartPolicy: Never
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
           containers:
           - name: backup
             image: minio/mc:RELEASE.2024-11-17T19-35-25Z
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["NET_RAW"]
             resources:
               requests:
                 cpu: 100m
@@ -255,9 +283,16 @@ spec:
       template:
         spec:
           restartPolicy: OnFailure
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
           containers:
           - name: backup
             image: postgres:17
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["NET_RAW"]
             resources:
               requests:
                 cpu: 50m

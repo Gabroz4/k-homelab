@@ -15,9 +15,16 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: homelab
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: prowlarr
           image: lscr.io/linuxserver/prowlarr:latest
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["NET_RAW"]
           ports:
             - containerPort: 9696
           env:

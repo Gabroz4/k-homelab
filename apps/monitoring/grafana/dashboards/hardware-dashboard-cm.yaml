@@ -230,8 +230,8 @@ data:
           "targets": [
             {
               "datasource": {"type": "prometheus", "uid": "prometheus"},
-              "expr": "node_hwmon_temp_celsius{chip=~\"nvme.*\"}",
-              "legendFormat": "{{chip}} {{sensor}}",
+              "expr": "label_replace(label_replace(node_hwmon_temp_celsius{chip=~\"nvme.*\"}, \"drive\", \"Samsung 970 EVO\", \"chip\", \"nvme_nvme0\"), \"drive\", \"Sabrent Rocket\", \"chip\", \"nvme_nvme1\")",
+              "legendFormat": "{{drive}} {{sensor}}",
               "refId": "A"
             }
           ],
@@ -297,17 +297,35 @@ data:
         },
         {
           "type": "timeseries",
-          "title": "Motherboard / System Temperatures",
-          "description": "node_exporter hwmon sensors (NCT6775 and others). Some bus/sentinel sensors may report unrealistic values.",
+          "title": "CPU & Motherboard Temperatures",
+          "description": "Server (AMD k10temp) and Pi5 (SoC thermal zone) CPU temps, plus connected NCT6775 motherboard channels. Disconnected/phantom NCT6775 inputs are filtered out.",
           "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
           "id": 8,
           "datasource": {"type": "prometheus", "uid": "prometheus"},
           "targets": [
             {
               "datasource": {"type": "prometheus", "uid": "prometheus"},
-              "expr": "node_hwmon_temp_celsius{chip!~\"nvme.*\"} > 0 < 110",
-              "legendFormat": "{{chip}} {{sensor}}",
+              "expr": "node_hwmon_temp_celsius{chip=\"pci0000:00_0000:00:18_3\"}",
+              "legendFormat": "Server CPU",
               "refId": "A"
+            },
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "node_hwmon_temp_celsius{chip=\"thermal_thermal_zone0\", sensor=\"temp0\"}",
+              "legendFormat": "Pi5 CPU",
+              "refId": "B"
+            },
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "node_hwmon_temp_celsius{chip=\"1000120000_pcie_1f000c8000_adc\"}",
+              "legendFormat": "Pi5 PCIe",
+              "refId": "C"
+            },
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "node_hwmon_temp_celsius{chip=~\"platform_nct6775.*\", sensor=~\"temp2|temp3|temp7|temp13\"}",
+              "legendFormat": "Server mobo {{sensor}}",
+              "refId": "D"
             }
           ],
           "fieldConfig": {

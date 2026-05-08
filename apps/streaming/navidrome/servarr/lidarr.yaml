@@ -13,9 +13,16 @@ spec:
       labels:
         app: lidarr
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: lidarr
         image: lscr.io/linuxserver/lidarr:latest
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["NET_RAW"]
         ports:
         - containerPort: 8686
         env:

@@ -15,9 +15,16 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: homelab
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: sonarr
           image: lscr.io/linuxserver/sonarr:latest
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["NET_RAW"]
           ports:
             - containerPort: 8989
           env:

@@ -27,13 +27,18 @@ spec:
           operator: Equal
           value: stateless
           effect: NoSchedule
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: cloudflared
           image: cloudflare/cloudflared:2026.3.0
           securityContext:
+            allowPrivilegeEscalation: false
             capabilities:
-              add:
-                - NET_ADMIN
+              drop:
+                - ALL
           resources:
             requests:
               cpu: 20m
