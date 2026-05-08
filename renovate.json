@@ -16,14 +16,14 @@
     "dependencies"
   ],
   "kubernetes": {
-    "fileMatch": [
-      "apps/.+\\.ya?ml$",
-      "infra/.+\\.ya?ml$"
+    "managerFilePatterns": [
+      "/apps/.+\\.ya?ml$/",
+      "/infra/.+\\.ya?ml$/"
     ]
   },
   "helm-values": {
-    "fileMatch": [
-      "(^|/)(apps|infra)/.+-values\\.ya?ml$"
+    "managerFilePatterns": [
+      "/(^|/)(apps|infra)/.+-values\\.ya?ml$/"
     ]
   },
   "packageRules": [
