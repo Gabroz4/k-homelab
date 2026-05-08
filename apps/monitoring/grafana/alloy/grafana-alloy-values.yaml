@@ -1,5 +1,3 @@
-#helm install alloy grafana/alloy -n monitoring -f grafana-alloy-values.yaml
-
 controller:
   type: daemonset
 
