@@ -30,9 +30,18 @@ spec:
           operator: Equal
           value: stateless
           effect: NoSchedule
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: bitwarden-sdk-server
-          image: ghcr.io/external-secrets/bitwarden-sdk-server:v0.4.0
+          image: ghcr.io/external-secrets/bitwarden-sdk-server:v0.6.0
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           ports:
             - containerPort: 9998
               name: https

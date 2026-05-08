@@ -20,7 +20,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: qbittorrent
-          image: lscr.io/linuxserver/qbittorrent:latest
+          image: lscr.io/linuxserver/qbittorrent:5.2.0_v2.0.12-ls454
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:

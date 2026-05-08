@@ -20,7 +20,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: sonarr
-          image: lscr.io/linuxserver/sonarr:latest
+          image: lscr.io/linuxserver/sonarr:4.0.17.2952-ls310
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:

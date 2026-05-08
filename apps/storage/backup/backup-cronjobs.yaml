@@ -28,7 +28,7 @@ spec:
                 topologyKey: kubernetes.io/hostname
           containers:
           - name: backup
-            image: restic/restic
+            image: restic/restic:0.18.1
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
@@ -92,7 +92,7 @@ spec:
               type: RuntimeDefault
           containers:
           - name: backup
-            image: postgres:16
+            image: postgres:16.13
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
@@ -151,7 +151,7 @@ spec:
               type: RuntimeDefault
           containers:
           - name: backup
-            image: postgres:17
+            image: postgres:17.9
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
@@ -213,7 +213,7 @@ spec:
               type: RuntimeDefault
           containers:
           - name: backup
-            image: minio/mc:RELEASE.2024-11-17T19-35-25Z
+            image: minio/mc:RELEASE.2025-08-13T08-35-41Z
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
@@ -288,7 +288,7 @@ spec:
               type: RuntimeDefault
           containers:
           - name: backup
-            image: postgres:17
+            image: postgres:17.9
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
