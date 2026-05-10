@@ -16,33 +16,18 @@ data:
     color: slate
     target: _blank
     layout:
-      Cloud:
-        style: row
-        columns: 2
-      Media:
-        style: row
-        columns: 2
-      Media Management:
+      Online:
         style: row
         columns: 4
-      Monitoring:
+      Local:
         style: row
         columns: 4
-      Storage:
-        style: row
-        columns: 2
-      Network:
-        style: row
-        columns: 2
-      Auth:
-        style: row
-        columns: 2
     providers:
       openweathermap: openweathermapapikey
       weather: weatherapikey
 
   services.yaml: |
-    - Cloud:
+    - Online:
         - Nextcloud:
             href: https://nextcloud.gabro.ovh
             description: Files, calendar, contacts (S3-backed)
@@ -55,8 +40,6 @@ data:
             icon: immich.png
             namespace: cloud
             app: immich
-
-    - Media:
         - Jellyfin:
             href: https://jellyfin.gabro.ovh
             description: Movies and TV
@@ -69,8 +52,50 @@ data:
             icon: navidrome.png
             namespace: music
             app: navidrome
+        - Grafana:
+            href: https://grafana.gabro.ovh
+            description: Dashboards
+            icon: grafana.png
+            namespace: monitoring
+            app: grafana
+        - AdGuard Home:
+            href: https://adguard.gabro.ovh
+            description: DNS-level ad blocker
+            icon: adguard-home.png
+            namespace: adguard
+            app: adguardhome
+        - Authentik:
+            href: https://authentik.gabro.ovh
+            description: SSO / identity provider
+            icon: authentik.png
+            namespace: authentik
+            app: authentik
 
-    - Media Management:
+    - Local:
+        - Jellyfin:
+            href: http://jellyfin.homelab.arpa
+            description: Movies and TV (LAN)
+            icon: jellyfin.png
+            namespace: jellyfin
+            app: jellyfin
+        - Navidrome:
+            href: http://navidrome.homelab.arpa
+            description: Music streaming (LAN)
+            icon: navidrome.png
+            namespace: music
+            app: navidrome
+        - Grafana:
+            href: http://grafana.homelab.arpa
+            description: Dashboards (LAN)
+            icon: grafana.png
+            namespace: monitoring
+            app: grafana
+        - AdGuard Home:
+            href: http://adguard.homelab.arpa
+            description: DNS-level ad blocker (LAN)
+            icon: adguard-home.png
+            namespace: adguard
+            app: adguardhome
         - Sonarr:
             href: http://sonarr.homelab.arpa
             description: TV series management
@@ -95,7 +120,7 @@ data:
             icon: prowlarr.png
             namespace: jellyfin
             app: prowlarr
-        - Jellyseerr:
+        - Seerr:
             href: http://seerr.homelab.arpa
             description: Media request portal
             icon: jellyseerr.png
@@ -113,14 +138,6 @@ data:
             icon: mdi-satellite-uplink
             namespace: jellyfin
             app: dispatcharr
-
-    - Monitoring:
-        - Grafana:
-            href: https://grafana.gabro.ovh
-            description: Dashboards
-            icon: grafana.png
-            namespace: monitoring
-            app: grafana
         - Prometheus:
             href: http://prometheus.homelab.arpa
             description: Metrics database
@@ -139,8 +156,6 @@ data:
             icon: mdi-graph
             namespace: monitoring
             app: kubeview
-
-    - Storage:
         - MinIO:
             href: http://minio.homelab.arpa
             description: S3-compatible object storage
@@ -154,44 +169,19 @@ data:
             namespace: longhorn-system
             app: longhorn-frontend
 
-    - Network:
-        - AdGuard Home:
-            href: https://adguard.gabro.ovh
-            description: DNS-level ad blocker
-            icon: adguard-home.png
-            namespace: adguard
-            app: adguardhome
-
-    - Auth:
-        - Authentik:
-            href: https://authentik.gabro.ovh
-            description: SSO / identity provider
-            icon: authentik.png
-            namespace: authentik
-            app: authentik
-
   bookmarks.yaml: |
     - External:
         - Cloudflare Dashboard:
             - abbr: CF
               href: https://dash.cloudflare.com
-        - Cloudflare Zero Trust:
-            - abbr: ZT
-              href: https://one.dash.cloudflare.com
         - GitHub Repo:
             - abbr: GH
-              href: https://github.com/Gabroz4-server/kubernetes
-        - Anthropic Console:
-            - abbr: AN
-              href: https://console.anthropic.com
+              href: https://github.com/Gabroz4/k-homelab
 
     - Docs:
         - Kubernetes Docs:
             - abbr: K8
               href: https://kubernetes.io/docs/
-        - Traefik Docs:
-            - abbr: TR
-              href: https://doc.traefik.io/traefik/
         - gethomepage Docs:
             - abbr: HP
               href: https://gethomepage.dev/
@@ -228,6 +218,9 @@ data:
     mode: cluster
 
   docker.yaml: |
+    {}
+
+  proxmox.yaml: |
     {}
 
   custom.css: ""

@@ -45,8 +45,13 @@ spec:
           image: ghcr.io/gethomepage/homepage:v1.12.3
           securityContext:
             allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
             capabilities:
               drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
           ports:
             - containerPort: 3000
               name: http
@@ -101,6 +106,9 @@ spec:
             - name: config
               mountPath: /app/config/docker.yaml
               subPath: docker.yaml
+            - name: config
+              mountPath: /app/config/proxmox.yaml
+              subPath: proxmox.yaml
             - name: config
               mountPath: /app/config/custom.css
               subPath: custom.css
