@@ -20,7 +20,8 @@ spec:
           type: RuntimeDefault
       containers:
         - name: dispatcharr
-          image: ghcr.io/dispatcharr/dispatcharr:v0.24.0
+          # upstream only publishes :latest and :dev — no per-release image tags exist
+          image: ghcr.io/dispatcharr/dispatcharr:latest
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
