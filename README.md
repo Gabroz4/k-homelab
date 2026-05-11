@@ -104,7 +104,7 @@ The server is only accessed through VPN + SSH.
 ├── apps/
 │   ├── auth/                    # Authentik SSO + forward-auth middleware
 │   ├── cloud/                   # Nextcloud, Immich
-│   ├── monitoring/              # Prometheus, Grafana, Loki, Alloy, Peanut, Homepage, Headlamp
+│   ├── monitoring/              # Prometheus, Grafana, Loki, Alloy, Homepage, Headlamp
 │   ├── network/                 # AdGuard, Cloudflare tunnels (one per public service)
 │   ├── storage/                 # MinIO, backup CronJobs, weekly cluster cleanup
 │   └── streaming/               # Jellyfin + servarr stack, Navidrome + Lidarr
@@ -144,7 +144,6 @@ The server is only accessed through VPN + SSH.
 | Servarr stack | Automated media acquisition (see below)  |
 | AdGuardHome   | Network-level ad blocking + local DNS    |
 | Headlamp      | Kubernetes web UI                        |
-| Peanut        | UPS monitoring (NUT web frontend)        |
 | MinIO Console | S3 object storage admin UI               |
 | Prometheus    | Metrics collection                       |
 
@@ -253,7 +252,6 @@ Deployed via the `kube-prometheus-stack` Helm chart:
 - **Grafana** with persistent dashboards (5 Gi), admin credentials from secrets.
 - **Alertmanager**, **kube-state-metrics**, **node-exporter**, and the **Prometheus Operator** — all with resource requests/limits configured.
 - **Traefik ServiceMonitor** scrapes Traefik's `/metrics` endpoint on port 9100.
-- **Peanut** — a NUT (Network UPS Tools) web frontend connected to the UPS host.
 - **Headlamp** — Kubernetes web UI accessible locally at `headlamp.homelab.arpa`.
 
 ### Logs
