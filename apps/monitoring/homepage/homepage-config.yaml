@@ -150,12 +150,6 @@ data:
             icon: mdi-kubernetes
             namespace: kube-system
             app: headlamp
-        - KubeView:
-            href: http://kubeview.homelab.arpa
-            description: Cluster visualizer
-            icon: mdi-graph
-            namespace: monitoring
-            app: kubeview
         - MinIO:
             href: http://minio.homelab.arpa
             description: S3-compatible object storage

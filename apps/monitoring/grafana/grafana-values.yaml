@@ -57,12 +57,33 @@ grafana:
     - name: dashboards-hardware
       configMap:
         name: grafana-dashboard-hardware
+    - name: dashboards-logs-custom
+      configMap:
+        name: grafana-dashboard-logs
+    - name: dashboards-kube-overviews
+      configMap:
+        name: grafana-dashboard-kubernetes-overviews
   extraVolumeMounts:
     - name: datasources-direct
       mountPath: /etc/grafana/provisioning/datasources/datasource.yaml
       subPath: datasource.yaml
     - name: dashboards-hardware
       mountPath: /var/lib/grafana/dashboards/hardware
+    - name: dashboards-logs-custom
+      mountPath: /var/lib/grafana/dashboards/logs/container-log-search.json
+      subPath: container-log-search.json
+    - name: dashboards-kube-overviews
+      mountPath: /var/lib/grafana/dashboards/kubernetes/k8s_views_global.json
+      subPath: k8s_views_global.json
+    - name: dashboards-kube-overviews
+      mountPath: /var/lib/grafana/dashboards/kubernetes/k8s_views_ns.json
+      subPath: k8s_views_ns.json
+    - name: dashboards-kube-overviews
+      mountPath: /var/lib/grafana/dashboards/kubernetes/k8s_views_nodes.json
+      subPath: k8s_views_nodes.json
+    - name: dashboards-kube-overviews
+      mountPath: /var/lib/grafana/dashboards/kubernetes/k8s_views_pods.json
+      subPath: k8s_views_pods.json
 
   dashboardProviders:
     dashboardproviders.yaml:
@@ -72,7 +93,7 @@ grafana:
           orgId: 1
           folder: "Kubernetes"
           type: file
-          disableDeletion: true
+          disableDeletion: false
           editable: true
           options:
             path: /var/lib/grafana/dashboards/kubernetes
@@ -88,7 +109,7 @@ grafana:
           orgId: 1
           folder: "Logs"
           type: file
-          disableDeletion: true
+          disableDeletion: false
           editable: true
           options:
             path: /var/lib/grafana/dashboards/logs
@@ -111,22 +132,8 @@ grafana:
 
   dashboards:
     kubernetes:
-      k8s-views-global:
-        gnetId: 15757
-        revision: 43
-        datasource: Prometheus
-      k8s-views-namespaces:
-        gnetId: 15758
-        revision: 42
-        datasource: Prometheus
-      k8s-views-nodes:
-        gnetId: 15759
-        revision: 35
-        datasource: Prometheus
-      k8s-views-pods:
-        gnetId: 15760
-        revision: 38
-        datasource: Prometheus
+      # k8s-views-* (15757-15760) served from grafana-dashboard-kubernetes-overviews ConfigMap
+      # with cluster=~"$cluster|" patched in so historical (pre-cluster-label) data still renders.
       k8s-system-coredns:
         gnetId: 15762
         revision: 22
@@ -149,10 +156,8 @@ grafana:
         gnetId: 17781
         revision: 1
         datasource: Loki
-      container-log-search:
-        gnetId: 16966
-        revision: 1
-        datasource: Loki
+      # container-log-search served from grafana-dashboard-logs ConfigMap
+      # (gnetId 16966 imports leave panel datasources unbound on current Grafana)
       alloy-overview:
         gnetId: 20033
         revision: 3

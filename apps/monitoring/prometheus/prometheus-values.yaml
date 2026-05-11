@@ -27,6 +27,16 @@ prometheus:
         static_configs:
           - targets: ["loki.monitoring.svc.cluster.local:3100"]
 
+    # Inject `cluster=homelab` on every scraped metric so grafana.com dashboards
+    # that filter by cluster="$cluster" populate their $cluster variable and return data.
+    scrapeClasses:
+      - name: cluster-label
+        default: true
+        relabelings:
+          - targetLabel: cluster
+            replacement: homelab
+            action: replace
+
 alertmanager:
   enabled: true
   alertmanagerSpec:
