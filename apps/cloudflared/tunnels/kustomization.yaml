@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - adguard-tunnel.yaml
+  - authentik-tunnel.yaml
+  - immich-tunnel.yaml
+  - jellyfin-tunnel.yaml
+  - monitoring-tunnel.yaml
+  - navidrome-tunnel.yaml
+  - nextcloud-tunnel.yaml

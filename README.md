@@ -99,21 +99,26 @@ The server is only accessed through VPN + SSH.
 
 ## Repo structure
 
+Flat per-app layout with a `kustomization.yaml` in every leaf — Flux-monorepo style. No GitOps controller is running yet; everything is applied manually with `kubectl apply -k <dir>` or `helm upgrade`.
+
 ```
 .
-├── apps/
-│   ├── auth/                    # Authentik SSO + forward-auth middleware
-│   ├── cloud/                   # Nextcloud, Immich
-│   ├── monitoring/              # Prometheus, Grafana, Loki, Alloy, Homepage, Headlamp
-│   ├── network/                 # AdGuard, Cloudflare tunnels (one per public service)
-│   ├── storage/                 # MinIO, backup CronJobs, weekly cluster cleanup
-│   └── streaming/               # Jellyfin + servarr stack, Navidrome + Lidarr
-├── infra/
-│   ├── metallb/                 # IP pool configuration
-│   ├── network-policies/        # Default-deny + per-namespace allow rules
-│   │   ├── ingress/
-│   │   └── egress/
-│   └── vpa/                     # Vertical Pod Autoscaler controller values
+├── apps/                        # one folder per workload
+│   ├── adguard/  alloy/  authentik/  backup/  cloudflared/
+│   ├── grafana/  headlamp/  homepage/  immich/  jellyfin/
+│   ├── lidarr/   loki/   minio/  navidrome/  nextcloud/
+│   ├── nut-exporter/  prometheus/  servarr/  traefik/
+│   └── kustomization.yaml       # aggregates all apps with k8s resources
+├── infrastructure/
+│   ├── controllers/             # cluster-scoped controllers
+│   │   ├── coredns/             # coredns-custom ConfigMap
+│   │   ├── external-secrets/    # ESO + bitwarden-sdk-server + ClusterSecretStore
+│   │   ├── metallb/             # IP pool (192.168.1.55–69)
+│   │   └── vpa/                 # VPA controller Helm values
+│   └── configs/                 # cluster-scoped config (no controllers)
+│       ├── namespaces/          # Namespaces + Pod Security Admission labels
+│       ├── network-policies/    # per-namespace NetworkPolicies (flat, one file per app)
+│       └── upgrade-plans/       # k3s system-upgrade-controller Plans
 └── schema/
     ├── cluster-schema-dark.puml # PlantUML source
     ├── cluster-schema-dark.png
@@ -174,7 +179,7 @@ Deployed in the `music` namespace.
 
 ### Network policies
 
-Every namespace runs with a **default-deny** posture for both ingress and egress. Explicit allow rules are then added per service in `infra/network-policies/`:
+Every namespace runs with a **default-deny** posture for both ingress and egress. Explicit allow rules are then added per service in `infrastructure/configs/network-policies/`:
 
 - **Ingress** rules typically allow traffic only from `kube-system` (Traefik) and `monitoring` (Prometheus scrape).
 - **Egress** rules allow DNS to `kube-system`, in-cluster service discovery, and only the external endpoints each app actually needs (e.g. Cloudflare edge IPs for tunnels, package mirrors, indexer APIs, etc.).

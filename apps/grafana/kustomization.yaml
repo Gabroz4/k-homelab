@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - grafana-admin-externalsecret.yaml
+  - grafana-datasources-cm.yaml
+  - grafana-ingress.yaml
+  - grafana-oauth-externalsecret.yaml
+  - grafana-vpa.yaml
+  - dashboards
