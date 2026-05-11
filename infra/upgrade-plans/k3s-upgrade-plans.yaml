@@ -33,6 +33,11 @@ spec:
     matchExpressions:
       - key: node-role.kubernetes.io/control-plane
         operator: DoesNotExist
+  tolerations:
+    - key: workload
+      operator: Equal
+      value: stateless
+      effect: NoSchedule
   prepare:
     args: [prepare, server-plan]
     image: rancher/k3s-upgrade

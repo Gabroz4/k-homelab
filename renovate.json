@@ -67,6 +67,11 @@
       ],
       "matchUpdateTypes": ["major"],
       "dependencyDashboardApproval": true
+    },
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/dispatcharr/dispatcharr"],
+      "enabled": false
     }
   ]
 }
