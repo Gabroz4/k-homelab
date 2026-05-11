@@ -53,7 +53,6 @@ node "  **Homelab Node**  //AMD Ryzen 5 2600X · 16 GB DDR4//  " {
     rectangle "**Servarr**" as sarr
     rectangle "**Prometheus**" as prom
     rectangle "**Headlamp**" as hl
-    rectangle "**Peanut**" as pnut
   }
   frame "Data" {
     database "**PostgreSQL**" as pg
@@ -68,7 +67,6 @@ node "  **Homelab Node**  //AMD Ryzen 5 2600X · 16 GB DDR4//  " {
   }
   rectangle "**Backups**" as bkp
 }
-rectangle "**UPS 600W**" as ups
 ' ─── Ordering ───
 cf -[hidden]down-> jf
 nc -[hidden]down-> sarr
@@ -91,5 +89,4 @@ sarr -[#3b82f6]down-> d3
 bkp -[#64748b]-> d4
 bkp .[#64748b].> pg : " dump"
 bkp .[#64748b].> s3 : " sync"
-ups -[#64748b]-> pnut : " NUT"
 @enduml

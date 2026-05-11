@@ -60,7 +60,6 @@ node "  **Homelab Node**  //AMD Ryzen 5 2600X · 16 GB DDR4//  " {
     rectangle "**Servarr**" as sarr
     rectangle "**Prometheus**" as prom
     rectangle "**Headlamp**" as hl
-    rectangle "**Peanut**" as pnut
   }
 
   frame "Data" {
@@ -78,8 +77,6 @@ node "  **Homelab Node**  //AMD Ryzen 5 2600X · 16 GB DDR4//  " {
 
   rectangle "**Backups**" as bkp
 }
-
-rectangle "**UPS 600W**" as ups
 
 ' ─── Ordering ───
 cf -[hidden]down-> jf
@@ -107,7 +104,5 @@ sarr -[#537791]down-> d3
 bkp -[#7f8c9b]-> d4
 bkp .[#7f8c9b].> pg : " dump"
 bkp .[#7f8c9b].> s3 : " sync"
-
-ups -[#7f8c9b]-> pnut : " NUT"
 
 @enduml
