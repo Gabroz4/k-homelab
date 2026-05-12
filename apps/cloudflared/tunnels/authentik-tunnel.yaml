@@ -73,7 +73,7 @@ metadata:
   name: authentik-tunnel-token
   namespace: cloudflared
 spec:
-  refreshInterval: 1h
+  refreshInterval: 12h5m
   secretStoreRef:
     kind: ClusterSecretStore
     name: bitwarden-secretsmanager

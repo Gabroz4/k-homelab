@@ -73,7 +73,7 @@ metadata:
   name: adguard-tunnel-token
   namespace: cloudflared
 spec:
-  refreshInterval: 1h
+  refreshInterval: 12h
   secretStoreRef:
     kind: ClusterSecretStore
     name: bitwarden-secretsmanager
