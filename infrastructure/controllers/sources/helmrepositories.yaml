@@ -70,3 +70,12 @@ metadata:
 spec:
   interval: 1h
   url: https://nextcloud.github.io/helm
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: stakater
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://stakater.github.io/stakater-charts

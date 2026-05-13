@@ -4,5 +4,6 @@ resources:
   - coredns
   - external-secrets
   - metallb
+  - reloader
   - sources
   - vpa
