@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - nextcloud-cron.yaml
   - nextcloud-externalsecret.yaml
+  - nextcloud-helmrelease.yaml
   - nextcloud-hpa.yaml
   - nextcloud-hsts.yaml
   - nextcloud-pdb.yaml
