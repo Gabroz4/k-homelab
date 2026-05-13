@@ -1,0 +1,72 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: external-secrets
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://charts.external-secrets.io
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: fairwinds-stable
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://charts.fairwinds.com/stable
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: grafana
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://grafana.github.io/helm-charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: prometheus-community
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://prometheus-community.github.io/helm-charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: minio
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://charts.min.io/
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: jellyfin
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://jellyfin.github.io/jellyfin-helm
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: authentik
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://charts.goauthentik.io
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: nextcloud
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://nextcloud.github.io/helm

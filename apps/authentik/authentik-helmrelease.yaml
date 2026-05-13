@@ -1,0 +1,99 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: authentik
+  namespace: authentik
+spec:
+  interval: 1h
+  releaseName: authentik
+  chart:
+    spec:
+      chart: authentik
+      version: "2026.2.2"
+      sourceRef:
+        kind: HelmRepository
+        name: authentik
+        namespace: flux-system
+      interval: 12h
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+      remediateLastFailure: true
+    cleanupOnFail: true
+  values:
+    authentik:
+      secret_key: ""
+      postgresql:
+        password: ""
+
+    global:
+      env:
+        - name: AUTHENTIK_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: authentik-credentials
+              key: secret-key
+        - name: AUTHENTIK_POSTGRESQL__PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: authentik-credentials
+              key: postgresql-password
+
+    postgresql:
+      enabled: true
+      auth:
+        existingSecret: authentik-credentials
+        secretKeys:
+          adminPasswordKey: postgresql-password
+          userPasswordKey: postgresql-password
+
+    redis:
+      enabled: true
+      master:
+        persistence:
+          size: 1Gi
+
+    server:
+      ingress:
+        enabled: false
+      tolerations:
+        - key: workload
+          operator: Equal
+          value: stateless
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - pi-node
+
+    worker:
+      tolerations:
+        - key: workload
+          operator: Equal
+          value: stateless
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - pi-node
+      livenessProbe:
+        timeoutSeconds: 10
+      readinessProbe:
+        timeoutSeconds: 10
+      startupProbe:
+        timeoutSeconds: 10

@@ -1,0 +1,351 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: monitoring
+  namespace: monitoring
+spec:
+  interval: 1h
+  releaseName: monitoring
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      version: "84.5.0"
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+      interval: 12h
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+      remediateLastFailure: true
+    cleanupOnFail: true
+  values:
+    defaultRules:
+      disabled:
+        KubeMemoryOvercommit: true
+
+    prometheus:
+      prometheusSpec:
+        retention: 14d
+        retentionSize: 18GB
+        resources:
+          requests:
+            cpu: 500m
+            memory: 768Mi
+          limits:
+            cpu: 2000m
+            memory: 2Gi
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              accessModes: ["ReadWriteOnce"]
+              storageClassName: longhorn
+              resources:
+                requests:
+                  storage: 25Gi
+
+        additionalScrapeConfigs:
+          - job_name: "loki"
+            static_configs:
+              - targets: ["loki.monitoring.svc.cluster.local:3100"]
+
+        scrapeClasses:
+          - name: cluster-label
+            default: true
+            relabelings:
+              - targetLabel: cluster
+                replacement: homelab
+                action: replace
+
+    alertmanager:
+      enabled: true
+      alertmanagerSpec:
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+        secrets:
+          - alertmanager-telegram
+        tolerations:
+          - key: workload
+            operator: Equal
+            value: stateless
+            effect: NoSchedule
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                preference:
+                  matchExpressions:
+                    - key: kubernetes.io/hostname
+                      operator: In
+                      values:
+                        - pi-node
+      config:
+        route:
+          receiver: 'null'
+          group_by: ['alertname', 'namespace']
+          group_wait: 30s
+          group_interval: 5m
+          repeat_interval: 4h
+          routes:
+            - matchers:
+                - severity = "critical"
+              receiver: telegram
+              repeat_interval: 1h
+            - matchers:
+                - severity = "warning"
+              receiver: telegram
+              repeat_interval: 4h
+        receivers:
+          - name: 'null'
+          - name: telegram
+            telegram_configs:
+              - bot_token_file: /etc/alertmanager/secrets/alertmanager-telegram/bot-token
+                chat_id: 714757023
+                parse_mode: HTML
+                message: |
+                  <b>{{ .Status | toUpper }}{{ if eq .Status "firing" }} 🔥{{ else }} ✅{{ end }}</b> {{ .CommonLabels.alertname }}
+                  {{ range .Alerts -}}
+                  <b>{{ .Labels.severity }}</b> · {{ .Labels.namespace }}/{{ if .Labels.pod }}{{ .Labels.pod }}{{ else }}-{{ end }}
+                  {{ .Annotations.summary }}
+                  {{ if .Annotations.description }}<i>{{ .Annotations.description }}</i>{{ end }}
+                  {{ end }}
+
+    kubeStateMetrics:
+      enabled: true
+
+    kubeControllerManager:
+      enabled: false
+    kubeScheduler:
+      enabled: false
+    kubeProxy:
+      enabled: false
+    kubeEtcd:
+      enabled: false
+
+    nodeExporter:
+      enabled: true
+      resources:
+        requests:
+          cpu: 50m
+          memory: 32Mi
+        limits:
+          cpu: 200m
+          memory: 64Mi
+
+    prometheusOperator:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 200m
+          memory: 128Mi
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - pi-node
+      tolerations:
+        - key: workload
+          operator: Equal
+          value: stateless
+          effect: NoSchedule
+
+    kube-state-metrics:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - pi-node
+      tolerations:
+        - key: workload
+          operator: Equal
+          value: stateless
+          effect: NoSchedule
+
+    grafana:
+      enabled: true
+      admin:
+        existingSecret: grafana-admin-credentials
+        userKey: adminUser
+        passwordKey: adminPassword
+      service:
+        type: ClusterIP
+      persistence:
+        enabled: true
+        size: 5Gi
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      plugins:
+        - grafana-lokiexplore-app
+      envValueFrom:
+        GF_AUTH_GENERIC_OAUTH_CLIENT_ID:
+          secretKeyRef:
+            name: grafana-authentik-oauth
+            key: client-id
+        GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET:
+          secretKeyRef:
+            name: grafana-authentik-oauth
+            key: client-secret
+      grafana.ini:
+        feature_toggles:
+          enable: lokiExploreDataVisualization
+        server:
+          root_url: https://grafana.gabro.ovh
+        auth:
+          signout_redirect_url: "https://authentik.gabro.ovh/application/o/grafana/end-session/"
+          oauth_auto_login: true
+        auth.generic_oauth:
+          enabled: true
+          name: Authentik
+          scopes: "openid email profile"
+          auth_url: "https://authentik.gabro.ovh/application/o/authorize/"
+          token_url: "http://authentik-server.authentik.svc.cluster.local/application/o/token/"
+          api_url: "http://authentik-server.authentik.svc.cluster.local/application/o/userinfo/"
+          role_attribute_path: "contains(groups[*], 'admin') && 'Admin' || 'Viewer'"
+
+      sidecar:
+        datasources:
+          enabled: false
+        dashboards:
+          enabled: false
+
+      extraVolumes:
+        - name: datasources-direct
+          configMap:
+            name: grafana-datasources
+        - name: dashboards-hardware
+          configMap:
+            name: grafana-dashboard-hardware
+        - name: dashboards-logs-custom
+          configMap:
+            name: grafana-dashboard-logs
+        - name: dashboards-kube-overviews
+          configMap:
+            name: grafana-dashboard-kubernetes-overviews
+      extraVolumeMounts:
+        - name: datasources-direct
+          mountPath: /etc/grafana/provisioning/datasources/datasource.yaml
+          subPath: datasource.yaml
+        - name: dashboards-hardware
+          mountPath: /var/lib/grafana/dashboards/hardware
+        - name: dashboards-logs-custom
+          mountPath: /var/lib/grafana/dashboards/logs/container-log-search.json
+          subPath: container-log-search.json
+        - name: dashboards-kube-overviews
+          mountPath: /var/lib/grafana/dashboards/kubernetes/k8s_views_global.json
+          subPath: k8s_views_global.json
+        - name: dashboards-kube-overviews
+          mountPath: /var/lib/grafana/dashboards/kubernetes/k8s_views_ns.json
+          subPath: k8s_views_ns.json
+        - name: dashboards-kube-overviews
+          mountPath: /var/lib/grafana/dashboards/kubernetes/k8s_views_nodes.json
+          subPath: k8s_views_nodes.json
+        - name: dashboards-kube-overviews
+          mountPath: /var/lib/grafana/dashboards/kubernetes/k8s_views_pods.json
+          subPath: k8s_views_pods.json
+
+      dashboardProviders:
+        dashboardproviders.yaml:
+          apiVersion: 1
+          providers:
+            - name: "kubernetes"
+              orgId: 1
+              folder: "Kubernetes"
+              type: file
+              disableDeletion: false
+              editable: true
+              options:
+                path: /var/lib/grafana/dashboards/kubernetes
+            - name: "storage"
+              orgId: 1
+              folder: "Storage"
+              type: file
+              disableDeletion: true
+              editable: true
+              options:
+                path: /var/lib/grafana/dashboards/storage
+            - name: "logs"
+              orgId: 1
+              folder: "Logs"
+              type: file
+              disableDeletion: false
+              editable: true
+              options:
+                path: /var/lib/grafana/dashboards/logs
+            - name: "networking"
+              orgId: 1
+              folder: "Networking"
+              type: file
+              disableDeletion: true
+              editable: true
+              options:
+                path: /var/lib/grafana/dashboards/networking
+            - name: "hardware"
+              orgId: 1
+              folder: "Hardware"
+              type: file
+              disableDeletion: true
+              editable: true
+              options:
+                path: /var/lib/grafana/dashboards/hardware
+
+      dashboards:
+        kubernetes:
+          k8s-system-coredns:
+            gnetId: 15762
+            revision: 22
+            datasource: Prometheus
+          k8s-system-api-server:
+            gnetId: 15761
+            revision: 21
+            datasource: Prometheus
+          node-exporter-full:
+            gnetId: 1860
+            revision: 37
+            datasource: Prometheus
+        storage:
+          longhorn:
+            gnetId: 16888
+            revision: 9
+            datasource: Prometheus
+        logs:
+          loki-kubernetes-logs:
+            gnetId: 17781
+            revision: 1
+            datasource: Loki
+          alloy-overview:
+            gnetId: 20033
+            revision: 3
+            datasource: Prometheus
+        networking:
+          traefik:
+            gnetId: 17346
+            revision: 9
+            datasource: Prometheus
