@@ -5,3 +5,4 @@ resources:
   - external-secrets
   - metallb
   - sources
+  - vpa
