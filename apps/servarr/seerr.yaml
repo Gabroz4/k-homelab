@@ -15,24 +15,6 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: homelab
-      dnsPolicy: None
-      dnsConfig:
-        nameservers:
-          - 10.43.0.10
-          - 1.1.1.1
-          - 8.8.8.8
-        searches:
-          - jellyfin.svc.cluster.local
-          - svc.cluster.local
-          - cluster.local
-        options:
-          - name: ndots
-            value: "2"
-          - name: edns0
-          - name: timeout
-            value: "2"
-          - name: attempts
-            value: "2"
       securityContext:
         fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
@@ -100,7 +82,7 @@ spec:
               memory: 256Mi
             limits:
               cpu: 1000m
-              memory: 512Mi
+              memory: 768Mi
 
           volumeMounts:
             - name: config
