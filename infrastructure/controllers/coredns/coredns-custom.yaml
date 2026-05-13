@@ -10,10 +10,3 @@ data:
         cache 300
         forward . 192.168.1.60 1.1.1.1
     }
-  external.server: |
-    .:53 {
-        forward . 1.1.1.1 8.8.8.8 {
-            max_concurrent 1000
-        }
-        cache 30
-    }
