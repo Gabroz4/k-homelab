@@ -32,4 +32,5 @@ system-cleanup.yaml
 !**/*-externalsecret.yaml
 !infrastructure/configs/network-policies/external-secrets-policies.yaml
 !infrastructure/controllers/external-secrets/cluster-secret-store.yaml
+!infrastructure/controllers/external-secrets/external-secrets-helmrelease.yaml
 !apps/immich/valkey-deployment.yaml
