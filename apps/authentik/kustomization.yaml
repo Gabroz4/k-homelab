@@ -3,5 +3,6 @@ kind: Kustomization
 resources:
   - authentik-externalsecret.yaml
   - authentik-fw-middleware.yaml
+  - authentik-helmrelease.yaml
   - authentik-ingress.yaml
   - authentik-vpa.yaml
