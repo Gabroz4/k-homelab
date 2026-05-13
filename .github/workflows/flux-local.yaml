@@ -1,0 +1,56 @@
+---
+name: Flux Local
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - apps/**
+      - infrastructure/**
+      - clusters/**
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  flux-local:
+    name: Diff (${{ matrix.resource }})
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        path:
+          - clusters/homelab
+        resource:
+          - helmrelease
+          - kustomization
+    steps:
+      - name: Setup Flux CLI
+        uses: fluxcd/flux2/action@main
+
+      - name: Diff Resources
+        uses: allenporter/flux-local/action/diff@8.2.0
+        id: diff
+        with:
+          sources: flux-system=./
+          path: ${{ matrix.path }}
+          resource: ${{ matrix.resource }}
+
+      - name: Update PR comment
+        if: ${{ steps.diff.outputs.diff != '' }}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: ${{ matrix.path }}-${{ matrix.resource }}
+          message: |
+            <details>
+            <summary>Diff: <code>${{ matrix.path }}</code> (<code>${{ matrix.resource }}</code>)</summary>
+
+            ```diff
+            ${{ steps.diff.outputs.diff }}
+            ```
+            </details>
