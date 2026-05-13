@@ -18,12 +18,12 @@
   "kubernetes": {
     "managerFilePatterns": [
       "/apps/.+\\.ya?ml$/",
-      "/infra/.+\\.ya?ml$/"
+      "/infrastructure/.+\\.ya?ml$/"
     ]
   },
   "helm-values": {
     "managerFilePatterns": [
-      "/(^|/)(apps|infra)/.+-values\\.ya?ml$/"
+      "/(^|/)(apps|infrastructure)/.+-values\\.ya?ml$/"
     ]
   },
   "packageRules": [
