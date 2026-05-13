@@ -11,11 +11,11 @@ spec:
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: fairwinds-stable
+  name: cowboysysop
   namespace: flux-system
 spec:
   interval: 1h
-  url: https://charts.fairwinds.com/stable
+  url: https://cowboysysop.github.io/charts/
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository

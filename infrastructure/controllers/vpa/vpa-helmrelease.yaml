@@ -12,7 +12,7 @@ spec:
       version: "11.1.1"
       sourceRef:
         kind: HelmRepository
-        name: fairwinds-stable
+        name: cowboysysop
         namespace: flux-system
       interval: 12h
   install:
