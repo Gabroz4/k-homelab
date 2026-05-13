@@ -21,9 +21,10 @@
       "/infrastructure/.+\\.ya?ml$/"
     ]
   },
-  "helm-values": {
+  "flux": {
     "managerFilePatterns": [
-      "/(^|/)(apps|infrastructure)/.+-values\\.ya?ml$/"
+      "/(^|/)(apps|infrastructure)/.+-helmrelease\\.ya?ml$/",
+      "/infrastructure/controllers/sources/helmrepositories\\.ya?ml$/"
     ]
   },
   "packageRules": [
