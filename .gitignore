@@ -31,3 +31,5 @@ system-cleanup.yaml
 
 !**/*-externalsecret.yaml
 !infrastructure/configs/network-policies/external-secrets-policies.yaml
+!infrastructure/controllers/external-secrets/cluster-secret-store.yaml
+!apps/immich/valkey-deployment.yaml
