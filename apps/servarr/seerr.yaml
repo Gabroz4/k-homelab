@@ -15,11 +15,16 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: homelab
-      dnsPolicy: ClusterFirst
+      dnsPolicy: None
       dnsConfig:
         nameservers:
+          - 10.43.0.10
           - 1.1.1.1
           - 8.8.8.8
+        searches:
+          - jellyfin.svc.cluster.local
+          - svc.cluster.local
+          - cluster.local
         options:
           - name: ndots
             value: "2"
@@ -28,7 +33,6 @@ spec:
             value: "2"
           - name: attempts
             value: "2"
-
       securityContext:
         fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
@@ -66,6 +70,7 @@ spec:
               path: /api/v1/status
               port: 5055
             initialDelaySeconds: 30
+            timeoutSeconds: 10
             periodSeconds: 30
             failureThreshold: 3
 
@@ -91,7 +96,7 @@ spec:
 
           resources:
             requests:
-              cpu: 200m
+              cpu: 300m
               memory: 256Mi
             limits:
               cpu: 1000m

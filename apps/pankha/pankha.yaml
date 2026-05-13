@@ -1,0 +1,284 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pankha-postgres-pvc
+  namespace: pankha
+  labels:
+    app: pankha-postgres
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pankha-staging-pvc
+  namespace: pankha
+  labels:
+    app: pankha-app
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pankha-postgres
+  namespace: pankha
+  labels:
+    app: pankha-postgres
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: pankha-postgres
+  template:
+    metadata:
+      labels:
+        app: pankha-postgres
+    spec:
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      nodeSelector:
+        kubernetes.io/hostname: homelab
+      containers:
+        - name: postgres
+          image: postgres:18-alpine
+          args:
+            - "postgres"
+            - "-c"
+            - "max_wal_size=256MB"
+            - "-c"
+            - "min_wal_size=80MB"
+            - "-c"
+            - "checkpoint_timeout=5min"
+            - "-c"
+            - "wal_keep_size=128MB"
+            - "-c"
+            - "log_min_messages=WARNING"
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: pankha-secrets
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pankha-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pankha-secrets
+                  key: POSTGRES_PASSWORD
+          ports:
+            - containerPort: 5432
+              name: postgres
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 999
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: pankha-postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pankha-postgres
+  namespace: pankha
+spec:
+  selector:
+    app: pankha-postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgres
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pankha-app
+  namespace: pankha
+  labels:
+    app: pankha-app
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 0
+  selector:
+    matchLabels:
+      app: pankha-app
+  template:
+    metadata:
+      labels:
+        app: pankha-app
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      nodeSelector:
+        kubernetes.io/hostname: homelab
+      containers:
+        - name: pankha-app
+          image: anexgohan/pankha:v0.4.23
+          ports:
+            - containerPort: 3143
+              name: http
+          env:
+            - name: PORT
+              value: "3143"
+            - name: TZ
+              value: "Europe/Rome"
+            - name: LOG_LEVEL
+              value: "warn"
+            - name: PANKHA_STAGING_DIR
+              value: "/app/backend/data/staging"
+            - name: PANKHA_HUB_IP
+              value: "pankha.homelab.arpa"
+            - name: PANKHA_PORT
+              value: "80"
+            - name: POSTGRES_HOST
+              value: "pankha-postgres"
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: pankha-secrets
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pankha-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pankha-secrets
+                  key: POSTGRES_PASSWORD
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: pankha-secrets
+                  key: JWT_SECRET
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: pankha-secrets
+                  key: SESSION_SECRET
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3143
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3143
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: staging
+              mountPath: /app/backend/data/staging
+      volumes:
+        - name: staging
+          persistentVolumeClaim:
+            claimName: pankha-staging-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pankha-app
+  namespace: pankha
+spec:
+  selector:
+    app: pankha-app
+  ports:
+    - port: 80
+      targetPort: 3143
+      name: http
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: pankha
+  namespace: pankha
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`pankha.homelab.arpa`)
+      kind: Rule
+      services:
+        - name: pankha-app
+          port: 80

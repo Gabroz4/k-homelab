@@ -12,3 +12,4 @@ resources:
   - monitoring-policies.yaml
   - music-policies.yaml
   - nextcloud-policies.yaml
+  - pankha-policies.yaml

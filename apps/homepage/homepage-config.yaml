@@ -22,6 +22,9 @@ data:
       Local:
         style: row
         columns: 4
+      Media:
+        style: row
+        columns: 4
     providers:
       openweathermap: openweathermapapikey
       weather: weatherapikey
@@ -71,7 +74,7 @@ data:
             namespace: authentik
             app: authentik
 
-    - Local:
+    - Media:
         - Jellyfin:
             href: http://jellyfin.homelab.arpa
             description: Movies and TV (LAN)
@@ -84,18 +87,6 @@ data:
             icon: navidrome.png
             namespace: music
             app: navidrome
-        - Grafana:
-            href: http://grafana.homelab.arpa
-            description: Dashboards (LAN)
-            icon: grafana.png
-            namespace: monitoring
-            app: grafana
-        - AdGuard Home:
-            href: http://adguard.homelab.arpa
-            description: DNS-level ad blocker (LAN)
-            icon: adguard-home.png
-            namespace: adguard
-            app: adguardhome
         - Sonarr:
             href: http://sonarr.homelab.arpa
             description: TV series management
@@ -138,6 +129,20 @@ data:
             icon: mdi-satellite-uplink
             namespace: jellyfin
             app: dispatcharr
+
+    - Local:
+        - Grafana:
+            href: http://grafana.homelab.arpa
+            description: Dashboards (LAN)
+            icon: grafana.png
+            namespace: monitoring
+            app: grafana
+        - AdGuard Home:
+            href: http://adguard.homelab.arpa
+            description: DNS-level ad blocker (LAN)
+            icon: adguard-home.png
+            namespace: adguard
+            app: adguardhome
         - Prometheus:
             href: http://prometheus.homelab.arpa
             description: Metrics database
@@ -162,6 +167,12 @@ data:
             icon: longhorn.png
             namespace: longhorn-system
             app: longhorn-frontend
+        - Pankha:
+            href: http://pankha.homelab.arpa
+            description: Fan control and hardware monitoring
+            icon: mdi-fan
+            namespace: pankha
+            app: pankha-app
 
   bookmarks.yaml: |
     - External:
