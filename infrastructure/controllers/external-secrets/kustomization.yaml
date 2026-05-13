@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - bitwarden-sdk-server.yaml
   - cluster-secret-store.yaml
+  - external-secrets-helmrelease.yaml
