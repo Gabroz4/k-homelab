@@ -35,7 +35,10 @@ spec:
     kind: Deployment
     name: qbittorrent
   updatePolicy:
-    updateMode: "InPlaceOrRecreate"
+    updateMode: "Off"
+  resourcePolicy:
+    containerPolicies:
+      - containerName: qbittorrent
 ---
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
