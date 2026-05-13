@@ -123,12 +123,6 @@ data:
             icon: qbittorrent.png
             namespace: jellyfin
             app: qbittorrent
-        - Dispatcharr:
-            href: http://dispatcharr.homelab.arpa
-            description: IPTV manager
-            icon: mdi-satellite-uplink
-            namespace: jellyfin
-            app: dispatcharr
 
     - Local:
         - Grafana:

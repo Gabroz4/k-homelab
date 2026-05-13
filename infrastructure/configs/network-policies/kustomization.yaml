@@ -4,7 +4,6 @@ resources:
   - adguard-policies.yaml
   - authentik-policies.yaml
   - cloudflared-policies.yaml
-  - dispatcharr-policies.yaml
   - external-secrets-policies.yaml
   - immich-policies.yaml
   - jellyfin-policies.yaml
