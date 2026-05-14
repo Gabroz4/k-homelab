@@ -275,7 +275,6 @@ metadata:
   namespace: pankha
 spec:
   entryPoints:
-    - web
     - websecure
   routes:
     - match: Host(`pankha.${LOCAL_DOMAIN}`) || Host(`pankha.homelab.arpa`)
@@ -285,3 +284,18 @@ spec:
           port: 80
   tls:
     secretName: wildcard-local-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: pankha-http
+  namespace: pankha
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`pankha.${LOCAL_DOMAIN}`) || Host(`pankha.homelab.arpa`)
+      kind: Rule
+      services:
+        - name: pankha-app
+          port: 80
