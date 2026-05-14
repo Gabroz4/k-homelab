@@ -214,8 +214,8 @@ spec:
                 - name: PGPASSWORD
                   valueFrom:
                     secretKeyRef:
-                      name: nextcloud-db
-                      key: db-password
+                      name: nextcloud-secrets
+                      key: POSTGRES_PASSWORD
               volumeMounts:
                 - name: dump
                   mountPath: /dump
