@@ -275,9 +275,10 @@ metadata:
   namespace: pankha
 spec:
   entryPoints:
+    - web
     - websecure
   routes:
-    - match: Host(`pankha.${LOCAL_DOMAIN}`)
+    - match: Host(`pankha.${LOCAL_DOMAIN}`) || Host(`pankha.homelab.arpa`)
       kind: Rule
       services:
         - name: pankha-app
