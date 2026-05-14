@@ -30,7 +30,7 @@ spec:
       pullPolicy: IfNotPresent
 
     env:
-      TZ: Europe/Rome
+      TZ: ${TIMEZONE}
 
     service:
       main:

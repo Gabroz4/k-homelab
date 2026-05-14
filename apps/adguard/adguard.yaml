@@ -155,7 +155,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: adguard.homelab.arpa
+    - host: adguard.${PRIVATE_DOMAIN}
       http:
         paths:
           - path: /
@@ -176,7 +176,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: adguard.gabro.ovh
+    - host: adguard.${PUBLIC_DOMAIN}
       http:
         paths:
           - path: /

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-settings
+  namespace: flux-system
+data:
+  PUBLIC_DOMAIN: gabro.ovh
+  PRIVATE_DOMAIN: homelab.arpa
+  TIMEZONE: Europe/Rome
+  LB_RANGE: 192.168.1.55-192.168.1.69

@@ -182,13 +182,13 @@ spec:
             - name: PORT
               value: "3143"
             - name: TZ
-              value: "Europe/Rome"
+              value: "${TIMEZONE}"
             - name: LOG_LEVEL
               value: "warn"
             - name: PANKHA_STAGING_DIR
               value: "/app/backend/data/staging"
             - name: PANKHA_HUB_IP
-              value: "pankha.homelab.arpa"
+              value: "pankha.${PRIVATE_DOMAIN}"
             - name: PANKHA_PORT
               value: "80"
             - name: POSTGRES_HOST
@@ -277,7 +277,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`pankha.homelab.arpa`)
+    - match: Host(`pankha.${PRIVATE_DOMAIN}`)
       kind: Rule
       services:
         - name: pankha-app

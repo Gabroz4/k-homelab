@@ -43,7 +43,7 @@ spec:
 
           env:
             - name: TZ
-              value: "Europe/Rome"
+              value: "${TIMEZONE}"
             - name: LOG_LEVEL
               value: "info"
 

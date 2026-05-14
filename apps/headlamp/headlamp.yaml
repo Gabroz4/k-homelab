@@ -135,7 +135,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: headlamp.homelab.arpa
+    - host: headlamp.${PRIVATE_DOMAIN}
       http:
         paths:
           - path: /

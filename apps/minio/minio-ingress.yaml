@@ -6,7 +6,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: minio.homelab.arpa
+    - host: minio.${PRIVATE_DOMAIN}
       http:
         paths:
           - path: /

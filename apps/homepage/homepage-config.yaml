@@ -32,43 +32,43 @@ data:
   services.yaml: |
     - Online:
         - Nextcloud:
-            href: https://nextcloud.gabro.ovh
+            href: https://nextcloud.${PUBLIC_DOMAIN}
             description: Files, calendar, contacts (S3-backed)
             icon: nextcloud.png
             namespace: nextcloud
             app: nextcloud
         - Immich:
-            href: https://immich.gabro.ovh
+            href: https://immich.${PUBLIC_DOMAIN}
             description: Photo and video library
             icon: immich.png
             namespace: immich
             app: immich
         - Jellyfin:
-            href: https://jellyfin.gabro.ovh
+            href: https://jellyfin.${PUBLIC_DOMAIN}
             description: Movies and TV
             icon: jellyfin.png
             namespace: jellyfin
             app: jellyfin
         - Navidrome:
-            href: https://navidrome.gabro.ovh
+            href: https://navidrome.${PUBLIC_DOMAIN}
             description: Music streaming
             icon: navidrome.png
             namespace: music
             app: navidrome
         - Grafana:
-            href: https://grafana.gabro.ovh
+            href: https://grafana.${PUBLIC_DOMAIN}
             description: Dashboards
             icon: grafana.png
             namespace: monitoring
             app: grafana
         - AdGuard Home:
-            href: https://adguard.gabro.ovh
+            href: https://adguard.${PUBLIC_DOMAIN}
             description: DNS-level ad blocker
             icon: adguard-home.png
             namespace: adguard
             app: adguardhome
         - Authentik:
-            href: https://authentik.gabro.ovh
+            href: https://authentik.${PUBLIC_DOMAIN}
             description: SSO / identity provider
             icon: authentik.png
             namespace: authentik
@@ -76,49 +76,49 @@ data:
 
     - Media:
         - Jellyfin:
-            href: http://jellyfin.homelab.arpa
+            href: http://jellyfin.${PRIVATE_DOMAIN}
             description: Movies and TV (LAN)
             icon: jellyfin.png
             namespace: jellyfin
             app: jellyfin
         - Navidrome:
-            href: http://navidrome.homelab.arpa
+            href: http://navidrome.${PRIVATE_DOMAIN}
             description: Music streaming (LAN)
             icon: navidrome.png
             namespace: music
             app: navidrome
         - Sonarr:
-            href: http://sonarr.homelab.arpa
+            href: http://sonarr.${PRIVATE_DOMAIN}
             description: TV series management
             icon: sonarr.png
             namespace: jellyfin
             app: sonarr
         - Radarr:
-            href: http://radarr.homelab.arpa
+            href: http://radarr.${PRIVATE_DOMAIN}
             description: Movie management
             icon: radarr.png
             namespace: jellyfin
             app: radarr
         - Lidarr:
-            href: http://lidarr.homelab.arpa
+            href: http://lidarr.${PRIVATE_DOMAIN}
             description: Music management
             icon: lidarr.png
             namespace: music
             app: lidarr
         - Prowlarr:
-            href: http://prowlarr.homelab.arpa
+            href: http://prowlarr.${PRIVATE_DOMAIN}
             description: Indexer manager
             icon: prowlarr.png
             namespace: jellyfin
             app: prowlarr
         - Seerr:
-            href: http://seerr.homelab.arpa
+            href: http://seerr.${PRIVATE_DOMAIN}
             description: Media request portal
             icon: jellyseerr.png
             namespace: jellyfin
             app: seerr
         - qBittorrent:
-            href: http://qbittorrent.homelab.arpa
+            href: http://qbittorrent.${PRIVATE_DOMAIN}
             description: Torrent client
             icon: qbittorrent.png
             namespace: jellyfin
@@ -126,31 +126,31 @@ data:
 
     - Local:
         - Grafana:
-            href: http://grafana.homelab.arpa
+            href: http://grafana.${PRIVATE_DOMAIN}
             description: Dashboards (LAN)
             icon: grafana.png
             namespace: monitoring
             app: grafana
         - AdGuard Home:
-            href: http://adguard.homelab.arpa
+            href: http://adguard.${PRIVATE_DOMAIN}
             description: DNS-level ad blocker (LAN)
             icon: adguard-home.png
             namespace: adguard
             app: adguardhome
         - Prometheus:
-            href: http://prometheus.homelab.arpa
+            href: http://prometheus.${PRIVATE_DOMAIN}
             description: Metrics database
             icon: prometheus.png
             namespace: monitoring
             app: prometheus
         - Headlamp:
-            href: http://headlamp.homelab.arpa
+            href: http://headlamp.${PRIVATE_DOMAIN}
             description: Kubernetes dashboard
             icon: mdi-kubernetes
             namespace: kube-system
             app: headlamp
         - MinIO:
-            href: http://minio.homelab.arpa
+            href: http://minio.${PRIVATE_DOMAIN}
             description: S3-compatible object storage
             icon: minio.png
             namespace: minio
@@ -162,7 +162,7 @@ data:
             namespace: longhorn-system
             app: longhorn-frontend
         - Pankha:
-            href: http://pankha.homelab.arpa
+            href: http://pankha.${PRIVATE_DOMAIN}
             description: Fan control and hardware monitoring
             icon: mdi-fan
             namespace: pankha

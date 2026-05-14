@@ -9,7 +9,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: authentik.gabro.ovh
+    - host: authentik.${PUBLIC_DOMAIN}
       http:
         paths:
           - path: /

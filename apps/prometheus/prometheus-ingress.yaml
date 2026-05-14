@@ -6,7 +6,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: prometheus.homelab.arpa
+    - host: prometheus.${PRIVATE_DOMAIN}
       http:
         paths:
           - path: /

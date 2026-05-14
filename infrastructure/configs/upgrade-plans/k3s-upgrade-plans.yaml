@@ -19,7 +19,7 @@ spec:
     days: [monday, tuesday, wednesday, thursday, friday]
     startTime: "02:00"
     endTime: "04:00"
-    timeZone: Europe/Rome
+    timeZone: ${TIMEZONE}
 ---
 apiVersion: upgrade.cattle.io/v1
 kind: Plan
@@ -49,4 +49,4 @@ spec:
     days: [monday, tuesday, wednesday, thursday, friday]
     startTime: "02:00"
     endTime: "04:00"
-    timeZone: Europe/Rome
+    timeZone: ${TIMEZONE}

@@ -6,7 +6,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: jellyfin.homelab.arpa
+    - host: jellyfin.${PRIVATE_DOMAIN}
       http:
         paths:
           - path: /
@@ -27,7 +27,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: jellyfin.gabro.ovh
+    - host: jellyfin.${PUBLIC_DOMAIN}
       http:
         paths:
           - path: /
@@ -46,7 +46,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: jellyfin.gabro.ovh
+    - host: jellyfin.${PUBLIC_DOMAIN}
       http:
         paths:
           - path: /api

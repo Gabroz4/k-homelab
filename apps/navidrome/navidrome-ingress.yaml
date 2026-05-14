@@ -21,7 +21,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: navidrome.gabro.ovh
+    - host: navidrome.${PUBLIC_DOMAIN}
       http:
         paths:
           - path: /
@@ -40,7 +40,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: navidrome.gabro.ovh
+    - host: navidrome.${PUBLIC_DOMAIN}
       http:
         paths:
           - path: /rest
@@ -59,7 +59,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: navidrome.homelab.arpa
+    - host: navidrome.${PRIVATE_DOMAIN}
       http:
         paths:
           - path: /
@@ -80,7 +80,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: lidarr.homelab.arpa
+    - host: lidarr.${PRIVATE_DOMAIN}
       http:
         paths:
           - path: /
