@@ -70,6 +70,8 @@ spec:
       containers:
         - name: rest-server
           image: restic/rest-server:0.13.0
+          command:
+            - rest-server
           args:
             - --path=/data
             - --listen=:8000
