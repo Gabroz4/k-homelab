@@ -31,13 +31,6 @@ spec:
             - containerPort: 8001
               name: metrics
           env:
-            - name: RESTIC_REPOSITORY
-              value: "rest:http://$(REST_USER):$(REST_PASSWORD)@restic-rest-server.backup.svc.cluster.local:8000/immich-files"
-            - name: RESTIC_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: restic-admin-creds
-                  key: immich-files-password
             - name: REST_USER
               valueFrom:
                 secretKeyRef:
@@ -48,6 +41,13 @@ spec:
                 secretKeyRef:
                   name: restic-admin-creds
                   key: rest-admin-password
+            - name: RESTIC_REPOSITORY
+              value: "rest:http://$(REST_USER):$(REST_PASSWORD)@restic-rest-server.backup.svc.cluster.local:8000/immich-files"
+            - name: RESTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: immich-files-password
             - name: REFRESH_INTERVAL
               value: "1800"
           resources:
@@ -96,13 +96,6 @@ spec:
             - containerPort: 8001
               name: metrics
           env:
-            - name: RESTIC_REPOSITORY
-              value: "rest:http://$(REST_USER):$(REST_PASSWORD)@restic-rest-server.backup.svc.cluster.local:8000/immich-db"
-            - name: RESTIC_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: restic-admin-creds
-                  key: immich-db-password
             - name: REST_USER
               valueFrom:
                 secretKeyRef:
@@ -113,6 +106,13 @@ spec:
                 secretKeyRef:
                   name: restic-admin-creds
                   key: rest-admin-password
+            - name: RESTIC_REPOSITORY
+              value: "rest:http://$(REST_USER):$(REST_PASSWORD)@restic-rest-server.backup.svc.cluster.local:8000/immich-db"
+            - name: RESTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: immich-db-password
             - name: REFRESH_INTERVAL
               value: "1800"
           resources:
@@ -161,13 +161,6 @@ spec:
             - containerPort: 8001
               name: metrics
           env:
-            - name: RESTIC_REPOSITORY
-              value: "rest:http://$(REST_USER):$(REST_PASSWORD)@restic-rest-server.backup.svc.cluster.local:8000/nextcloud-db"
-            - name: RESTIC_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: restic-admin-creds
-                  key: nextcloud-db-password
             - name: REST_USER
               valueFrom:
                 secretKeyRef:
@@ -178,6 +171,13 @@ spec:
                 secretKeyRef:
                   name: restic-admin-creds
                   key: rest-admin-password
+            - name: RESTIC_REPOSITORY
+              value: "rest:http://$(REST_USER):$(REST_PASSWORD)@restic-rest-server.backup.svc.cluster.local:8000/nextcloud-db"
+            - name: RESTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: nextcloud-db-password
             - name: REFRESH_INTERVAL
               value: "1800"
           resources:
@@ -226,13 +226,6 @@ spec:
             - containerPort: 8001
               name: metrics
           env:
-            - name: RESTIC_REPOSITORY
-              value: "rest:http://$(REST_USER):$(REST_PASSWORD)@restic-rest-server.backup.svc.cluster.local:8000/nextcloud-minio"
-            - name: RESTIC_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: restic-admin-creds
-                  key: nextcloud-minio-password
             - name: REST_USER
               valueFrom:
                 secretKeyRef:
@@ -243,6 +236,13 @@ spec:
                 secretKeyRef:
                   name: restic-admin-creds
                   key: rest-admin-password
+            - name: RESTIC_REPOSITORY
+              value: "rest:http://$(REST_USER):$(REST_PASSWORD)@restic-rest-server.backup.svc.cluster.local:8000/nextcloud-minio"
+            - name: RESTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: nextcloud-minio-password
             - name: REFRESH_INTERVAL
               value: "1800"
           resources:
@@ -291,13 +291,6 @@ spec:
             - containerPort: 8001
               name: metrics
           env:
-            - name: RESTIC_REPOSITORY
-              value: "rest:http://$(REST_USER):$(REST_PASSWORD)@restic-rest-server.backup.svc.cluster.local:8000/authentik-db"
-            - name: RESTIC_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: restic-admin-creds
-                  key: authentik-db-password
             - name: REST_USER
               valueFrom:
                 secretKeyRef:
@@ -308,6 +301,13 @@ spec:
                 secretKeyRef:
                   name: restic-admin-creds
                   key: rest-admin-password
+            - name: RESTIC_REPOSITORY
+              value: "rest:http://$(REST_USER):$(REST_PASSWORD)@restic-rest-server.backup.svc.cluster.local:8000/authentik-db"
+            - name: RESTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: authentik-db-password
             - name: REFRESH_INTERVAL
               value: "1800"
           resources:
