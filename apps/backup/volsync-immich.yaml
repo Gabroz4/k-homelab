@@ -1,0 +1,59 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: volsync-restic-immich-library
+  namespace: immich
+spec:
+  refreshInterval: 12h50m
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: bitwarden-secretsmanager
+  target:
+    name: volsync-restic-immich-library
+    creationPolicy: Owner
+    template:
+      engineVersion: v2
+      data:
+        RESTIC_REPOSITORY: "rest:http://{{ .writerUser }}:{{ .writerPassword }}@restic-rest-server.backup.svc.cluster.local:8000/immich-files"
+        RESTIC_PASSWORD: "{{ .resticPassword }}"
+  data:
+    - secretKey: writerUser
+      remoteRef:
+        key: backup/restic-rest-server/writer-user
+    - secretKey: writerPassword
+      remoteRef:
+        key: backup/restic-rest-server/writer-password
+    - secretKey: resticPassword
+      remoteRef:
+        key: backup/restic-immich-files/password
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: immich-library
+  namespace: immich
+spec:
+  sourcePVC: immich-library
+  trigger:
+    schedule: "30 2 */3 * *"
+  restic:
+    repository: volsync-restic-immich-library
+    copyMethod: Snapshot
+    volumeSnapshotClassName: longhorn-snapshot
+    storageClassName: longhorn
+    accessModes:
+      - ReadWriteOnce
+    cacheCapacity: 2Gi
+    cacheStorageClassName: longhorn
+    pruneIntervalDays: 7
+    retain:
+      daily: 7
+      weekly: 4
+      monthly: 12
+    moverAffinity:
+      podAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: immich-server
+            topologyKey: kubernetes.io/hostname

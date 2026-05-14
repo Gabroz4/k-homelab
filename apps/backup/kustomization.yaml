@@ -9,3 +9,4 @@ resources:
   - restic-exporter.yaml
   - restic-prune-cronjob.yaml
   - system-cleanup.yaml
+  - volsync-immich.yaml
