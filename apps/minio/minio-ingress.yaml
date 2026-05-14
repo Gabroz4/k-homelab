@@ -5,8 +5,12 @@ metadata:
   namespace: minio
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - minio.${LOCAL_DOMAIN}
+      secretName: wildcard-local-tls
   rules:
-    - host: minio.${PRIVATE_DOMAIN}
+    - host: minio.${LOCAL_DOMAIN}
       http:
         paths:
           - path: /

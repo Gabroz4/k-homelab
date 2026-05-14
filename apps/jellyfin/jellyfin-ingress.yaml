@@ -5,8 +5,12 @@ metadata:
   namespace: jellyfin
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - jellyfin.${LOCAL_DOMAIN}
+      secretName: wildcard-local-tls
   rules:
-    - host: jellyfin.${PRIVATE_DOMAIN}
+    - host: jellyfin.${LOCAL_DOMAIN}
       http:
         paths:
           - path: /

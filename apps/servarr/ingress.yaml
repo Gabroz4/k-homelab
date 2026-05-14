@@ -4,8 +4,17 @@ metadata:
   name: servarr
   namespace: jellyfin
 spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - prowlarr.${LOCAL_DOMAIN}
+        - sonarr.${LOCAL_DOMAIN}
+        - radarr.${LOCAL_DOMAIN}
+        - seerr.${LOCAL_DOMAIN}
+        - qbittorrent.${LOCAL_DOMAIN}
+      secretName: wildcard-local-tls
   rules:
-  - host: prowlarr.${PRIVATE_DOMAIN}
+  - host: prowlarr.${LOCAL_DOMAIN}
     http:
       paths:
       - path: /
@@ -16,7 +25,7 @@ spec:
             port:
               number: 9696
 
-  - host: sonarr.${PRIVATE_DOMAIN}
+  - host: sonarr.${LOCAL_DOMAIN}
     http:
       paths:
       - path: /
@@ -27,7 +36,7 @@ spec:
             port:
               number: 8989
 
-  - host: radarr.${PRIVATE_DOMAIN}
+  - host: radarr.${LOCAL_DOMAIN}
     http:
       paths:
       - path: /
@@ -38,7 +47,7 @@ spec:
             port:
               number: 7878
 
-  - host: seerr.${PRIVATE_DOMAIN}
+  - host: seerr.${LOCAL_DOMAIN}
     http:
       paths:
       - path: /
@@ -49,7 +58,7 @@ spec:
             port:
               number: 5055
 
-  - host: qbittorrent.${PRIVATE_DOMAIN}
+  - host: qbittorrent.${LOCAL_DOMAIN}
     http:
       paths:
       - path: /

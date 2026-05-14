@@ -57,7 +57,7 @@ spec:
               name: http
           env:
             - name: HOMEPAGE_ALLOWED_HOSTS
-              value: "home.${PRIVATE_DOMAIN},home.${PUBLIC_DOMAIN}"
+              value: "home.${LOCAL_DOMAIN},home.${PUBLIC_DOMAIN}"
             - name: LOG_TARGETS
               value: stdout
           resources:
@@ -73,7 +73,7 @@ spec:
               port: 3000
               httpHeaders:
                 - name: Host
-                  value: home.${PRIVATE_DOMAIN}
+                  value: home.${LOCAL_DOMAIN}
             initialDelaySeconds: 10
             periodSeconds: 10
             failureThreshold: 3
@@ -83,7 +83,7 @@ spec:
               port: 3000
               httpHeaders:
                 - name: Host
-                  value: home.${PRIVATE_DOMAIN}
+                  value: home.${LOCAL_DOMAIN}
             initialDelaySeconds: 30
             periodSeconds: 30
             failureThreshold: 3

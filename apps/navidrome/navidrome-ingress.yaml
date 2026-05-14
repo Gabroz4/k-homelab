@@ -58,8 +58,12 @@ metadata:
   namespace: music
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - navidrome.${LOCAL_DOMAIN}
+      secretName: wildcard-local-tls
   rules:
-    - host: navidrome.${PRIVATE_DOMAIN}
+    - host: navidrome.${LOCAL_DOMAIN}
       http:
         paths:
           - path: /
@@ -79,8 +83,12 @@ metadata:
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - lidarr.${LOCAL_DOMAIN}
+      secretName: wildcard-local-tls
   rules:
-    - host: lidarr.${PRIVATE_DOMAIN}
+    - host: lidarr.${LOCAL_DOMAIN}
       http:
         paths:
           - path: /

@@ -76,49 +76,49 @@ data:
 
     - Media:
         - Jellyfin:
-            href: http://jellyfin.${PRIVATE_DOMAIN}
+            href: https://jellyfin.${LOCAL_DOMAIN}
             description: Movies and TV (LAN)
             icon: jellyfin.png
             namespace: jellyfin
             app: jellyfin
         - Navidrome:
-            href: http://navidrome.${PRIVATE_DOMAIN}
+            href: https://navidrome.${LOCAL_DOMAIN}
             description: Music streaming (LAN)
             icon: navidrome.png
             namespace: music
             app: navidrome
         - Sonarr:
-            href: http://sonarr.${PRIVATE_DOMAIN}
+            href: https://sonarr.${LOCAL_DOMAIN}
             description: TV series management
             icon: sonarr.png
             namespace: jellyfin
             app: sonarr
         - Radarr:
-            href: http://radarr.${PRIVATE_DOMAIN}
+            href: https://radarr.${LOCAL_DOMAIN}
             description: Movie management
             icon: radarr.png
             namespace: jellyfin
             app: radarr
         - Lidarr:
-            href: http://lidarr.${PRIVATE_DOMAIN}
+            href: https://lidarr.${LOCAL_DOMAIN}
             description: Music management
             icon: lidarr.png
             namespace: music
             app: lidarr
         - Prowlarr:
-            href: http://prowlarr.${PRIVATE_DOMAIN}
+            href: https://prowlarr.${LOCAL_DOMAIN}
             description: Indexer manager
             icon: prowlarr.png
             namespace: jellyfin
             app: prowlarr
         - Seerr:
-            href: http://seerr.${PRIVATE_DOMAIN}
+            href: https://seerr.${LOCAL_DOMAIN}
             description: Media request portal
             icon: jellyseerr.png
             namespace: jellyfin
             app: seerr
         - qBittorrent:
-            href: http://qbittorrent.${PRIVATE_DOMAIN}
+            href: https://qbittorrent.${LOCAL_DOMAIN}
             description: Torrent client
             icon: qbittorrent.png
             namespace: jellyfin
@@ -126,31 +126,31 @@ data:
 
     - Local:
         - Grafana:
-            href: http://grafana.${PRIVATE_DOMAIN}
+            href: https://grafana.${LOCAL_DOMAIN}
             description: Dashboards (LAN)
             icon: grafana.png
             namespace: monitoring
             app: grafana
         - AdGuard Home:
-            href: http://adguard.${PRIVATE_DOMAIN}
+            href: https://adguard.${LOCAL_DOMAIN}
             description: DNS-level ad blocker (LAN)
             icon: adguard-home.png
             namespace: adguard
             app: adguardhome
         - Prometheus:
-            href: http://prometheus.${PRIVATE_DOMAIN}
+            href: https://prometheus.${LOCAL_DOMAIN}
             description: Metrics database
             icon: prometheus.png
             namespace: monitoring
             app: prometheus
         - Headlamp:
-            href: http://headlamp.${PRIVATE_DOMAIN}
+            href: https://headlamp.${LOCAL_DOMAIN}
             description: Kubernetes dashboard
             icon: mdi-kubernetes
             namespace: kube-system
             app: headlamp
         - MinIO:
-            href: http://minio.${PRIVATE_DOMAIN}
+            href: https://minio.${LOCAL_DOMAIN}
             description: S3-compatible object storage
             icon: minio.png
             namespace: minio
@@ -162,7 +162,7 @@ data:
             namespace: longhorn-system
             app: longhorn-frontend
         - Pankha:
-            href: http://pankha.${PRIVATE_DOMAIN}
+            href: https://pankha.${LOCAL_DOMAIN}
             description: Fan control and hardware monitoring
             icon: mdi-fan
             namespace: pankha

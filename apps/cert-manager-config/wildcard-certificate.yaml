@@ -5,6 +5,12 @@ metadata:
   namespace: kube-system
 spec:
   secretName: wildcard-local-tls
+  secretTemplate:
+    annotations:
+      reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: "adguard,authentik,default,immich,jellyfin,kube-system,minio,monitoring,music,nextcloud,pankha"
+      reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+      reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: "adguard,authentik,default,immich,jellyfin,kube-system,minio,monitoring,music,nextcloud,pankha"
   issuerRef:
     name: letsencrypt-prod
     kind: ClusterIssuer

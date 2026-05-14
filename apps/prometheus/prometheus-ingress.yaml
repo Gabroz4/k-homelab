@@ -5,8 +5,12 @@ metadata:
   namespace: monitoring
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - prometheus.${LOCAL_DOMAIN}
+      secretName: wildcard-local-tls
   rules:
-    - host: prometheus.${PRIVATE_DOMAIN}
+    - host: prometheus.${LOCAL_DOMAIN}
       http:
         paths:
           - path: /

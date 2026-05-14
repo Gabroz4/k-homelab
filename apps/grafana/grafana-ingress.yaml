@@ -5,8 +5,12 @@ metadata:
   namespace: monitoring
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - grafana.${LOCAL_DOMAIN}
+      secretName: wildcard-local-tls
   rules:
-    - host: grafana.${PRIVATE_DOMAIN}
+    - host: grafana.${LOCAL_DOMAIN}
       http:
         paths:
           - path: /

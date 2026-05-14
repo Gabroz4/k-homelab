@@ -188,7 +188,7 @@ spec:
             - name: PANKHA_STAGING_DIR
               value: "/app/backend/data/staging"
             - name: PANKHA_HUB_IP
-              value: "pankha.${PRIVATE_DOMAIN}"
+              value: "pankha.${LOCAL_DOMAIN}"
             - name: PANKHA_PORT
               value: "80"
             - name: POSTGRES_HOST
@@ -275,10 +275,12 @@ metadata:
   namespace: pankha
 spec:
   entryPoints:
-    - web
+    - websecure
   routes:
-    - match: Host(`pankha.${PRIVATE_DOMAIN}`)
+    - match: Host(`pankha.${LOCAL_DOMAIN}`)
       kind: Rule
       services:
         - name: pankha-app
           port: 80
+  tls:
+    secretName: wildcard-local-tls

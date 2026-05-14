@@ -154,8 +154,12 @@ metadata:
   namespace: adguard
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - adguard.${LOCAL_DOMAIN}
+      secretName: wildcard-local-tls
   rules:
-    - host: adguard.${PRIVATE_DOMAIN}
+    - host: adguard.${LOCAL_DOMAIN}
       http:
         paths:
           - path: /

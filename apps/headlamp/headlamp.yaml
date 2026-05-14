@@ -134,8 +134,12 @@ metadata:
   namespace: kube-system
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - headlamp.${LOCAL_DOMAIN}
+      secretName: wildcard-local-tls
   rules:
-    - host: headlamp.${PRIVATE_DOMAIN}
+    - host: headlamp.${LOCAL_DOMAIN}
       http:
         paths:
           - path: /
