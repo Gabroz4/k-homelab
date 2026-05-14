@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - pankha.yaml
   - pankha-externalsecret.yaml
+  - pankha-agent.yaml

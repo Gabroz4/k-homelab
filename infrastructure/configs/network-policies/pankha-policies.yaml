@@ -73,6 +73,9 @@ spec:
     - from:
         - ipBlock:
             cidr: 192.168.1.0/24
+        - podSelector:
+            matchLabels:
+              app: pankha-agent
       ports:
         - port: 3143
           protocol: TCP
@@ -155,4 +158,47 @@ spec:
         - port: 443
           protocol: TCP
         - port: 80
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-agent-egress-to-app
+  namespace: pankha
+spec:
+  podSelector:
+    matchLabels:
+      app: pankha-agent
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: pankha-app
+      ports:
+        - port: 3143
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-agent-egress-internet
+  namespace: pankha
+spec:
+  podSelector:
+    matchLabels:
+      app: pankha-agent
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - port: 443
           protocol: TCP

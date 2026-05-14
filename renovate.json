@@ -27,6 +27,19 @@
       "/infrastructure/controllers/sources/helmrepositories\\.ya?ml$/"
     ]
   },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/apps/pankha/pankha-agent\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "releases/download/(?<currentValue>v\\d+\\.\\d+\\.\\d+)/pankha-agent-linux_arm64"
+      ],
+      "depNameTemplate": "Anexgohan/pankha",
+      "datasourceTemplate": "github-releases"
+    }
+  ],
   "packageRules": [
     {
       "matchDatasources": ["docker"],

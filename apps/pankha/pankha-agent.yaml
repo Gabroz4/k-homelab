@@ -1,0 +1,119 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pankha-agent-config
+  namespace: pankha
+data:
+  config.json: |
+    {
+      "agent": {
+        "id": "linux-pi-node",
+        "name": "pi-node",
+        "update_interval": 3.0,
+        "log_level": "INFO"
+      },
+      "backend": {
+        "server_url": "ws://pankha-app.pankha.svc.cluster.local:80/websocket",
+        "reconnect_interval": 5.0,
+        "max_reconnect_attempts": -1,
+        "connection_timeout": 10.0
+      },
+      "hardware": {
+        "enable_fan_control": true,
+        "enable_sensor_monitoring": true,
+        "failsafe_speed": 70,
+        "fan_step_percent": 5,
+        "hysteresis_temp": 3.0,
+        "emergency_temp": 80.0
+      },
+      "logging": {
+        "enable_file_logging": false,
+        "log_file": "/var/log/pankha-agent/agent.log",
+        "max_log_size_mb": 10,
+        "log_retention_days": 7
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pankha-agent
+  namespace: pankha
+  labels:
+    app: pankha-agent
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: pankha-agent
+  template:
+    metadata:
+      labels:
+        app: pankha-agent
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: ${STATELESS_NODE}
+      tolerations:
+        - key: workload
+          operator: Equal
+          value: stateless
+          effect: NoSchedule
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      initContainers:
+        - name: download-agent
+          image: alpine:3.20
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              wget -q -O /agent/pankha-agent \
+                "https://github.com/Anexgohan/pankha/releases/download/v0.4.24/pankha-agent-linux_arm64"
+              chmod +x /agent/pankha-agent
+              cp /config/config.json /agent/config.json
+          volumeMounts:
+            - name: agent-dir
+              mountPath: /agent
+            - name: config
+              mountPath: /config
+              readOnly: true
+      containers:
+        - name: pankha-agent
+          image: debian:stable-slim
+          workingDir: /agent
+          command:
+            - /agent/pankha-agent
+            - --daemon-child
+          env:
+            - name: TZ
+              value: "${TIMEZONE}"
+            - name: LOG_LEVEL
+              value: "info"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          volumeMounts:
+            - name: agent-dir
+              mountPath: /agent
+            - name: sys
+              mountPath: /sys
+      volumes:
+        - name: agent-dir
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: pankha-agent-config
+        - name: sys
+          hostPath:
+            path: /sys
+            type: Directory
