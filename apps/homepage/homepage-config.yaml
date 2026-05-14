@@ -35,13 +35,13 @@ data:
             href: https://nextcloud.gabro.ovh
             description: Files, calendar, contacts (S3-backed)
             icon: nextcloud.png
-            namespace: cloud
+            namespace: nextcloud
             app: nextcloud
         - Immich:
             href: https://immich.gabro.ovh
             description: Photo and video library
             icon: immich.png
-            namespace: cloud
+            namespace: immich
             app: immich
         - Jellyfin:
             href: https://jellyfin.gabro.ovh
