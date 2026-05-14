@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - adguard-policies.yaml
   - authentik-policies.yaml
+  - backup-policies.yaml
   - cloudflared-policies.yaml
   - external-secrets-policies.yaml
   - immich-policies.yaml

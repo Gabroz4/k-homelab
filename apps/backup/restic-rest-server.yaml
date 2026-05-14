@@ -1,0 +1,149 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restic-rest-server
+  namespace: backup
+  labels:
+    app: restic-rest-server
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: restic-rest-server
+  template:
+    metadata:
+      labels:
+        app: restic-rest-server
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: homelab
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: build-htpasswd
+          image: httpd:2.4-alpine
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              umask 077
+              htpasswd -B -b -c /auth/.htpasswd "$WRITER_USER" "$WRITER_PASSWORD"
+              htpasswd -B -b    /auth/.htpasswd "$ADMIN_USER"  "$ADMIN_PASSWORD"
+          env:
+            - name: WRITER_USER
+              valueFrom:
+                secretKeyRef:
+                  name: restic-rest-server-creds
+                  key: writer-user
+            - name: WRITER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-rest-server-creds
+                  key: writer-password
+            - name: ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: restic-rest-server-creds
+                  key: admin-user
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-rest-server-creds
+                  key: admin-password
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: auth
+              mountPath: /auth
+      containers:
+        - name: rest-server
+          image: restic/rest-server:0.13.0
+          args:
+            - --path=/data
+            - --listen=:8000
+            - --htpasswd-file=/auth/.htpasswd
+            - --append-only
+            - --prometheus
+          ports:
+            - containerPort: 8000
+              name: http
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          readinessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 2
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: auth
+              mountPath: /auth
+              readOnly: true
+      volumes:
+        - name: data
+          hostPath:
+            path: ${BACKUP_PATH}/restic
+            type: Directory
+        - name: auth
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: restic-rest-server
+  namespace: backup
+  labels:
+    app: restic-rest-server
+spec:
+  selector:
+    app: restic-rest-server
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: http
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: restic-rest-server
+  namespace: backup
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: restic-rest-server
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s

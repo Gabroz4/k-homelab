@@ -148,3 +148,21 @@ spec:
           protocol: TCP
         - port: 80
           protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-to-restic-rest-server
+  namespace: immich
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: backup
+      ports:
+        - port: 8000
+          protocol: TCP

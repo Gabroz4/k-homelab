@@ -69,3 +69,49 @@ spec:
               CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} has no
               recorded successful completion. This may be a newly created job,
               or it may have been failing silently since creation.
+        - alert: ResticRepoStale
+          expr: (time() - restic_snapshots_latest_timestamp) > (4 * 86400)
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Restic repo {{ $labels.client_hostname }} has no fresh snapshot (>4d)"
+            description: >
+              The latest snapshot in restic repo `{{ $labels.client_hostname }}`
+              is {{ $value | humanizeDuration }} old. The backup CronJob may be
+              succeeding (exit 0) without actually writing data — inspect the
+              repo with `restic -r <url> snapshots`.
+        - alert: ResticRepoCheckFailed
+          expr: restic_check_success == 0
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Restic repo integrity check failed ({{ $labels.client_hostname }})"
+            description: >
+              `restic check` reported corruption for repo
+              `{{ $labels.client_hostname }}`. Do not run `forget --prune`
+              against this repo until investigated.
+        - alert: ResticRestServerDown
+          expr: up{namespace="backup", service="restic-rest-server"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "restic-rest-server is down"
+            description: >
+              The in-cluster restic REST server is unreachable. All backup
+              CronJobs and VolSync ReplicationSources will fail until it
+              recovers. Check the Deployment in the `backup` namespace.
+        - alert: ResticExporterDown
+          expr: up{namespace="backup", service="restic-exporter"} == 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "restic-exporter is not scraping ({{ $labels.pod }})"
+            description: >
+              One of the restic-exporter instances is down — its repo's
+              freshness/check metrics will go stale and the ResticRepoStale
+              alert may fire spuriously. Check the Deployment in the `backup`
+              namespace.

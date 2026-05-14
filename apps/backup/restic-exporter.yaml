@@ -1,0 +1,355 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restic-exporter-immich-files
+  namespace: backup
+  labels:
+    app: restic-exporter
+    repo: immich-files
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: restic-exporter
+      repo: immich-files
+  template:
+    metadata:
+      labels:
+        app: restic-exporter
+        repo: immich-files
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: exporter
+          image: ngosang/restic-exporter:2.0.2
+          ports:
+            - containerPort: 8001
+              name: metrics
+          env:
+            - name: RESTIC_REPOSITORY
+              value: "rest:http://$(REST_USER):$(REST_PASSWORD)@restic-rest-server.backup.svc.cluster.local:8000/immich-files"
+            - name: RESTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: immich-files-password
+            - name: REST_USER
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: rest-admin-user
+            - name: REST_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: rest-admin-password
+            - name: REFRESH_INTERVAL
+              value: "1800"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restic-exporter-immich-db
+  namespace: backup
+  labels:
+    app: restic-exporter
+    repo: immich-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: restic-exporter
+      repo: immich-db
+  template:
+    metadata:
+      labels:
+        app: restic-exporter
+        repo: immich-db
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: exporter
+          image: ngosang/restic-exporter:2.0.2
+          ports:
+            - containerPort: 8001
+              name: metrics
+          env:
+            - name: RESTIC_REPOSITORY
+              value: "rest:http://$(REST_USER):$(REST_PASSWORD)@restic-rest-server.backup.svc.cluster.local:8000/immich-db"
+            - name: RESTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: immich-db-password
+            - name: REST_USER
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: rest-admin-user
+            - name: REST_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: rest-admin-password
+            - name: REFRESH_INTERVAL
+              value: "1800"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restic-exporter-nextcloud-db
+  namespace: backup
+  labels:
+    app: restic-exporter
+    repo: nextcloud-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: restic-exporter
+      repo: nextcloud-db
+  template:
+    metadata:
+      labels:
+        app: restic-exporter
+        repo: nextcloud-db
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: exporter
+          image: ngosang/restic-exporter:2.0.2
+          ports:
+            - containerPort: 8001
+              name: metrics
+          env:
+            - name: RESTIC_REPOSITORY
+              value: "rest:http://$(REST_USER):$(REST_PASSWORD)@restic-rest-server.backup.svc.cluster.local:8000/nextcloud-db"
+            - name: RESTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: nextcloud-db-password
+            - name: REST_USER
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: rest-admin-user
+            - name: REST_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: rest-admin-password
+            - name: REFRESH_INTERVAL
+              value: "1800"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restic-exporter-nextcloud-minio
+  namespace: backup
+  labels:
+    app: restic-exporter
+    repo: nextcloud-minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: restic-exporter
+      repo: nextcloud-minio
+  template:
+    metadata:
+      labels:
+        app: restic-exporter
+        repo: nextcloud-minio
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: exporter
+          image: ngosang/restic-exporter:2.0.2
+          ports:
+            - containerPort: 8001
+              name: metrics
+          env:
+            - name: RESTIC_REPOSITORY
+              value: "rest:http://$(REST_USER):$(REST_PASSWORD)@restic-rest-server.backup.svc.cluster.local:8000/nextcloud-minio"
+            - name: RESTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: nextcloud-minio-password
+            - name: REST_USER
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: rest-admin-user
+            - name: REST_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: rest-admin-password
+            - name: REFRESH_INTERVAL
+              value: "1800"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restic-exporter-authentik-db
+  namespace: backup
+  labels:
+    app: restic-exporter
+    repo: authentik-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: restic-exporter
+      repo: authentik-db
+  template:
+    metadata:
+      labels:
+        app: restic-exporter
+        repo: authentik-db
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: exporter
+          image: ngosang/restic-exporter:2.0.2
+          ports:
+            - containerPort: 8001
+              name: metrics
+          env:
+            - name: RESTIC_REPOSITORY
+              value: "rest:http://$(REST_USER):$(REST_PASSWORD)@restic-rest-server.backup.svc.cluster.local:8000/authentik-db"
+            - name: RESTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: authentik-db-password
+            - name: REST_USER
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: rest-admin-user
+            - name: REST_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: rest-admin-password
+            - name: REFRESH_INTERVAL
+              value: "1800"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: restic-exporter
+  namespace: backup
+  labels:
+    app: restic-exporter
+spec:
+  selector:
+    app: restic-exporter
+  ports:
+    - port: 8001
+      targetPort: 8001
+      name: metrics
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: restic-exporter
+  namespace: backup
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: restic-exporter
+  endpoints:
+    - port: metrics
+      path: /
+      interval: 60s
