@@ -9,10 +9,10 @@ spec:
   chart:
     spec:
       chart: reflector
-      version: "9.1.30"
+      version: "10.0.42"
       sourceRef:
         kind: HelmRepository
-        name: stakater
+        name: emberstack
         namespace: flux-system
       interval: 12h
   install:
