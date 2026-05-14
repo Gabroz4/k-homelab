@@ -29,6 +29,10 @@ spec:
       tag: latest
       pullPolicy: IfNotPresent
 
+    replicaCount: 1
+    strategy:
+      type: Recreate
+
     env:
       TZ: ${TIMEZONE}
 

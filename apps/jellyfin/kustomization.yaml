@@ -3,6 +3,5 @@ kind: Kustomization
 resources:
   - authentik-forward-auth.yaml
   - jellyfin-helmrelease.yaml
-  - jellyfin-hpa.yaml
   - jellyfin-ingress.yaml
   - jellyfin-vpa.yaml
