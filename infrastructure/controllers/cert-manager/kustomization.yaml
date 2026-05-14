@@ -3,6 +3,3 @@ kind: Kustomization
 resources:
   - cert-manager-helmrelease.yaml
   - cloudflare-api-token-externalsecret.yaml
-  - cluster-issuer.yaml
-  - wildcard-certificate.yaml
-  - traefik-tlsstore.yaml

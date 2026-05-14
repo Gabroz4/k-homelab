@@ -5,6 +5,7 @@ resources:
   - alloy/ks.yaml
   - authentik/ks.yaml
   - backup/ks.yaml
+  - cert-manager-config/ks.yaml
   - cloudflared/ks.yaml
   - flux-webhook/ks.yaml
   - grafana/ks.yaml
