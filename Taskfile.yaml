@@ -1,0 +1,72 @@
+version: '3'
+
+tasks:
+  default:
+    silent: true
+    cmds:
+      - task --list-all
+
+  build:
+    desc: Smoke-test kustomize build of apps/ and infrastructure/
+    cmds:
+      - kubectl kustomize apps/ > /dev/null
+      - kubectl kustomize infrastructure/ > /dev/null
+      - echo "kustomize OK"
+
+  reconcile:
+    desc: Pull latest from git and reconcile every root Kustomization
+    cmds:
+      - flux reconcile source git flux-system
+      - flux reconcile kustomization flux-system
+      - flux reconcile kustomization infrastructure-configs
+      - flux reconcile kustomization infrastructure-controllers
+      - flux reconcile kustomization apps
+
+  reconcile-hr:
+    desc: 'Reconcile one HelmRelease — task reconcile-hr ns=monitoring name=loki'
+    requires:
+      vars: [ns, name]
+    cmds:
+      - flux -n {{.ns}} reconcile helmrelease {{.name}}
+
+  reconcile-ks:
+    desc: 'Reconcile one app Kustomization — task reconcile-ks name=nextcloud'
+    requires:
+      vars: [name]
+    cmds:
+      - flux -n flux-system reconcile kustomization {{.name}}
+
+  status:
+    desc: Overview of Flux state
+    cmds:
+      - flux get kustomizations -A
+      - flux get helmreleases -A
+      - flux get sources git -A
+      - flux get sources helm -A
+
+  bad:
+    desc: Show Flux resources that are not Ready and pods not Running
+    ignore_error: true
+    cmds:
+      - flux get kustomizations -A --status-selector=ready=false
+      - flux get helmreleases -A --status-selector=ready=false
+      - kubectl get pods -A --field-selector=status.phase!=Running,status.phase!=Succeeded
+
+  sync-es:
+    desc: 'Force ExternalSecret re-sync — task sync-es ns=nextcloud name=nextcloud-secrets'
+    requires:
+      vars: [ns, name]
+    cmds:
+      - kubectl annotate externalsecret {{.name}} force-sync=$(date +%s) --overwrite -n {{.ns}}
+
+  logs:
+    desc: 'Follow logs for a Deployment — task logs ns=monitoring name=loki'
+    requires:
+      vars: [ns, name]
+    cmds:
+      - kubectl -n {{.ns}} logs deployment/{{.name}} --follow
+
+  webhook-url:
+    desc: Print the GitHub webhook URL to paste into the repo's webhook settings
+    cmds:
+      - 'echo "https://flux-webhook.gabro.ovh$(kubectl -n flux-system get receiver github-receiver -o jsonpath=''{.status.webhookPath}'')"'

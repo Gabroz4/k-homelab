@@ -112,4 +112,7 @@ spec:
               kubernetes.io/metadata.name: adguard
         - namespaceSelector:
             matchLabels:
+              kubernetes.io/metadata.name: flux-system
+        - namespaceSelector:
+            matchLabels:
               kubernetes.io/metadata.name: kube-system
