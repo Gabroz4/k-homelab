@@ -89,7 +89,7 @@ spec:
                     - key: kubernetes.io/hostname
                       operator: In
                       values:
-                        - pi-node
+                        - ${STATELESS_NODE}
       config:
         route:
           receiver: 'null'
@@ -111,7 +111,7 @@ spec:
           - name: telegram
             telegram_configs:
               - bot_token_file: /etc/alertmanager/secrets/alertmanager-telegram/bot-token
-                chat_id: 714757023
+                chat_id: ${TELEGRAM_CHAT_ID}
                 parse_mode: HTML
                 message: |
                   <b>{{ .Status | toUpper }}{{ if eq .Status "firing" }} 🔥{{ else }} ✅{{ end }}</b> {{ .CommonLabels.alertname }}
@@ -160,7 +160,7 @@ spec:
                   - key: kubernetes.io/hostname
                     operator: In
                     values:
-                      - pi-node
+                      - ${STATELESS_NODE}
       tolerations:
         - key: workload
           operator: Equal
@@ -177,7 +177,7 @@ spec:
                   - key: kubernetes.io/hostname
                     operator: In
                     values:
-                      - pi-node
+                      - ${STATELESS_NODE}
       tolerations:
         - key: workload
           operator: Equal

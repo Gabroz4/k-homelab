@@ -8,3 +8,8 @@ data:
   PRIVATE_DOMAIN: homelab.arpa
   TIMEZONE: Europe/Rome
   LB_RANGE: 192.168.1.55-192.168.1.69
+  BACKUP_PATH: /mnt/backups
+  MEDIA_PATH: /media/gabro/Volume
+  MUSIC_PATH: /home/gabro/Music
+  STATELESS_NODE: pi-node
+  TELEGRAM_CHAT_ID: "714757023"

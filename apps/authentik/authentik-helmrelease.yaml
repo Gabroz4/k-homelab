@@ -73,7 +73,7 @@ spec:
                   - key: kubernetes.io/hostname
                     operator: In
                     values:
-                      - pi-node
+                      - ${STATELESS_NODE}
 
     worker:
       tolerations:
@@ -90,7 +90,7 @@ spec:
                   - key: kubernetes.io/hostname
                     operator: In
                     values:
-                      - pi-node
+                      - ${STATELESS_NODE}
       livenessProbe:
         timeoutSeconds: 10
       readinessProbe:

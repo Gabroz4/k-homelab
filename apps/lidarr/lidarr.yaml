@@ -73,11 +73,11 @@ spec:
           type: DirectoryOrCreate
       - name: music
         hostPath:
-          path: /home/gabro/Music/
+          path: ${MUSIC_PATH}/
           type: Directory
       - name: media
         hostPath:
-          path: /media/gabro/Volume
+          path: ${MEDIA_PATH}
           type: Directory
 ---
 apiVersion: v1

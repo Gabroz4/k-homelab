@@ -48,7 +48,7 @@ spec:
                   - key: kubernetes.io/hostname
                     operator: In
                     values:
-                      - pi-node
+                      - ${STATELESS_NODE}
 
     updater:
       extraArgs:
@@ -75,7 +75,7 @@ spec:
                   - key: kubernetes.io/hostname
                     operator: In
                     values:
-                      - pi-node
+                      - ${STATELESS_NODE}
 
     admissionController:
       extraArgs:
@@ -101,4 +101,4 @@ spec:
                   - key: kubernetes.io/hostname
                     operator: In
                     values:
-                      - pi-node
+                      - ${STATELESS_NODE}

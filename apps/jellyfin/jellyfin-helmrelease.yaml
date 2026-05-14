@@ -54,7 +54,7 @@ spec:
       media:
         enabled: true
         type: hostPath
-        hostPath: /media/gabro/Volume
+        hostPath: ${MEDIA_PATH}
         mountPath: /media
 
       cache:

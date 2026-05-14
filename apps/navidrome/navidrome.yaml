@@ -67,5 +67,5 @@ spec:
             type: DirectoryOrCreate
         - name: music
           hostPath:
-            path: /home/gabro/Music
+            path: ${MUSIC_PATH}
             type: Directory
