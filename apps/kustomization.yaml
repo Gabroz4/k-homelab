@@ -1,23 +1,23 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - adguard
-  - alloy
-  - authentik
-  - backup
-  - cloudflared
-  - grafana
-  - headlamp
-  - homepage
-  - immich
-  - jellyfin
-  - lidarr
-  - loki
-  - minio
-  - navidrome
-  - nextcloud
-  - nut-exporter
-  - prometheus
-  - servarr
-  - traefik
-  - pankha
+  - adguard/ks.yaml
+  - alloy/ks.yaml
+  - authentik/ks.yaml
+  - backup/ks.yaml
+  - cloudflared/ks.yaml
+  - grafana/ks.yaml
+  - headlamp/ks.yaml
+  - homepage/ks.yaml
+  - immich/ks.yaml
+  - jellyfin/ks.yaml
+  - lidarr/ks.yaml
+  - loki/ks.yaml
+  - minio/ks.yaml
+  - navidrome/ks.yaml
+  - nextcloud/ks.yaml
+  - nut-exporter/ks.yaml
+  - pankha/ks.yaml
+  - prometheus/ks.yaml
+  - servarr/ks.yaml
+  - traefik/ks.yaml
