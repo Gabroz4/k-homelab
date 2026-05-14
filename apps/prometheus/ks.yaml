@@ -13,7 +13,7 @@ spec:
     name: flux-system
   path: ./apps/prometheus
   prune: true
-  wait: false
+  wait: true
   postBuild:
     substituteFrom:
       - kind: ConfigMap

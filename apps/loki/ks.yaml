@@ -13,7 +13,7 @@ spec:
     name: flux-system
   path: ./apps/loki
   prune: true
-  wait: false
+  wait: true
   postBuild:
     substituteFrom:
       - kind: ConfigMap
