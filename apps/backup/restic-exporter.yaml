@@ -353,3 +353,7 @@ spec:
     - port: metrics
       path: /
       interval: 60s
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_label_repo]
+          action: replace
+          targetLabel: repo

@@ -1,0 +1,401 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-backups
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "backups"
+data:
+  backups.json: |
+    {
+      "annotations": {"list": []},
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "tags": ["backups", "restic", "volsync"],
+      "templating": {"list": []},
+      "time": {"from": "now-7d", "to": "now"},
+      "timepicker": {},
+      "timezone": "",
+      "title": "Backups",
+      "uid": "backups",
+      "panels": [
+        {
+          "type": "row",
+          "title": "Restic repositories",
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+          "id": 100,
+          "collapsed": false,
+          "panels": []
+        },
+        {
+          "type": "stat",
+          "title": "Last snapshot age",
+          "gridPos": {"h": 6, "w": 12, "x": 0, "y": 1},
+          "id": 1,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "time() - max by (repo) (restic_backup_timestamp{job=\"restic-exporter\"})",
+              "instant": true,
+              "legendFormat": "{{repo}}",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "value_and_name",
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 259200},
+                  {"color": "red", "value": 345600}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "stat",
+          "title": "Snapshots in repo",
+          "gridPos": {"h": 6, "w": 12, "x": 12, "y": 1},
+          "id": 2,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "max by (repo) (restic_snapshots_total{job=\"restic-exporter\"})",
+              "instant": true,
+              "legendFormat": "{{repo}}",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"]},
+            "textMode": "value_and_name",
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "center"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "color": {"mode": "palette-classic"}
+            }
+          }
+        },
+        {
+          "type": "stat",
+          "title": "Repo size",
+          "gridPos": {"h": 6, "w": 12, "x": 0, "y": 7},
+          "id": 3,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "max by (repo) (restic_size_total{job=\"restic-exporter\"})",
+              "instant": true,
+              "legendFormat": "{{repo}}",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"]},
+            "textMode": "value_and_name",
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "center"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "color": {"mode": "palette-classic"}
+            }
+          }
+        },
+        {
+          "type": "stat",
+          "title": "Repo check (last)",
+          "gridPos": {"h": 6, "w": 12, "x": 12, "y": 7},
+          "id": 4,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "max by (repo) (restic_check_success{job=\"restic-exporter\"})",
+              "instant": true,
+              "legendFormat": "{{repo}}",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"]},
+            "textMode": "value_and_name",
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "mappings": [
+                {"options": {"0": {"color": "red", "text": "FAIL", "index": 0}}, "type": "value"},
+                {"options": {"1": {"color": "green", "text": "OK", "index": 1}}, "type": "value"}
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "Snapshot count over time",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 13},
+          "id": 5,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "max by (repo) (restic_snapshots_total{job=\"restic-exporter\"})",
+              "legendFormat": "{{repo}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "color": {"mode": "palette-classic"},
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "stepAfter",
+                "lineWidth": 2,
+                "fillOpacity": 5,
+                "showPoints": "auto"
+              }
+            }
+          },
+          "options": {
+            "legend": {"displayMode": "table", "placement": "right", "calcs": ["lastNotNull"]},
+            "tooltip": {"mode": "multi"}
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "Repo size over time",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 13},
+          "id": 6,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "max by (repo) (restic_size_total{job=\"restic-exporter\"})",
+              "legendFormat": "{{repo}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "color": {"mode": "palette-classic"},
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "fillOpacity": 10,
+                "showPoints": "auto"
+              }
+            }
+          },
+          "options": {
+            "legend": {"displayMode": "table", "placement": "right", "calcs": ["lastNotNull"]},
+            "tooltip": {"mode": "multi"}
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "Last backup duration",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 21},
+          "id": 7,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "max by (repo) (restic_backup_duration_seconds{job=\"restic-exporter\"})",
+              "legendFormat": "{{repo}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "color": {"mode": "palette-classic"},
+              "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 5}
+            }
+          },
+          "options": {
+            "legend": {"displayMode": "table", "placement": "right", "calcs": ["lastNotNull"]},
+            "tooltip": {"mode": "multi"}
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "Last backup data added",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 21},
+          "id": 8,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "max by (repo) (restic_backup_data_added_bytes{job=\"restic-exporter\"})",
+              "legendFormat": "{{repo}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "color": {"mode": "palette-classic"},
+              "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 5}
+            }
+          },
+          "options": {
+            "legend": {"displayMode": "table", "placement": "right", "calcs": ["lastNotNull"]},
+            "tooltip": {"mode": "multi"}
+          }
+        },
+        {
+          "type": "row",
+          "title": "VolSync",
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 29},
+          "id": 200,
+          "collapsed": false,
+          "panels": []
+        },
+        {
+          "type": "stat",
+          "title": "Sync state per source",
+          "gridPos": {"h": 6, "w": 12, "x": 0, "y": 30},
+          "id": 10,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "max by (obj_namespace, obj_name) (volsync_volume_out_of_sync{role=\"source\"})",
+              "instant": true,
+              "legendFormat": "{{obj_namespace}}/{{obj_name}}",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"]},
+            "textMode": "value_and_name",
+            "colorMode": "background",
+            "graphMode": "none"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                {"options": {"0": {"color": "green", "text": "in sync", "index": 0}}, "type": "value"},
+                {"options": {"1": {"color": "red", "text": "out of sync", "index": 1}}, "type": "value"}
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "stat",
+          "title": "Missed intervals (cumulative)",
+          "gridPos": {"h": 6, "w": 12, "x": 12, "y": 30},
+          "id": 11,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "max by (obj_namespace, obj_name) (volsync_missed_intervals_total{role=\"source\"})",
+              "instant": true,
+              "legendFormat": "{{obj_namespace}}/{{obj_name}}",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"]},
+            "textMode": "value_and_name",
+            "colorMode": "value",
+            "graphMode": "area"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 1},
+                  {"color": "red", "value": 5}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "Sync duration (p50/p90)",
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 36},
+          "id": 12,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "max by (obj_namespace, obj_name) (volsync_sync_duration_seconds{role=\"source\",quantile=\"0.5\"})",
+              "legendFormat": "p50 {{obj_namespace}}/{{obj_name}}",
+              "refId": "A"
+            },
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "max by (obj_namespace, obj_name) (volsync_sync_duration_seconds{role=\"source\",quantile=\"0.9\"})",
+              "legendFormat": "p90 {{obj_namespace}}/{{obj_name}}",
+              "refId": "B"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "color": {"mode": "palette-classic"},
+              "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 5, "showPoints": "auto"}
+            }
+          },
+          "options": {
+            "legend": {"displayMode": "table", "placement": "right", "calcs": ["lastNotNull"]},
+            "tooltip": {"mode": "multi"}
+          }
+        }
+      ]
+    }

@@ -3,3 +3,5 @@ kind: Kustomization
 resources:
   - volsync-helmrelease.yaml
   - longhorn-volumesnapshotclass.yaml
+  - volsync-servicemonitor.yaml
+  - longhorn-single-storageclass.yaml

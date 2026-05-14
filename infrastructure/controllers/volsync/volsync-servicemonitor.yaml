@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: volsync-scrape
+  namespace: volsync-system
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      control-plane: volsync-controller
+  endpoints:
+    - port: https
+      scheme: https
+      interval: 30s
+      path: /metrics
+      tlsConfig:
+        insecureSkipVerify: true

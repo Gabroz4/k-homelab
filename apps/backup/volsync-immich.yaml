@@ -40,11 +40,11 @@ spec:
     repository: volsync-restic-immich-library
     copyMethod: Snapshot
     volumeSnapshotClassName: longhorn-snapshot
-    storageClassName: longhorn
+    storageClassName: longhorn-single
     accessModes:
       - ReadWriteOnce
     cacheCapacity: 2Gi
-    cacheStorageClassName: longhorn
+    cacheStorageClassName: longhorn-single
     pruneIntervalDays: 7
     retain:
       daily: 7
