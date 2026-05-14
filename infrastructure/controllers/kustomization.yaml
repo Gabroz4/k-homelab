@@ -9,4 +9,5 @@ resources:
   - reloader
   - snapshot-controller
   - sources
+  - volsync
   - vpa
