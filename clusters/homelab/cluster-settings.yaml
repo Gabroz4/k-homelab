@@ -13,3 +13,5 @@ data:
   MUSIC_PATH: /home/gabro/Music
   STATELESS_NODE: pi-node
   TELEGRAM_CHAT_ID: "714757023"
+  LOCAL_DOMAIN: local.gabro.ovh
+  LETSENCRYPT_EMAIL: gabriele.broccoli@gmail.com
