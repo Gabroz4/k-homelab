@@ -31,7 +31,15 @@
     {
       "matchDatasources": ["docker"],
       "matchUpdateTypes": ["digest"],
-      "enabled": false
+      "automerge": true,
+      "platformAutomerge": true,
+      "automergeStrategy": "squash"
+    },
+    {
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "platformAutomerge": true,
+      "automergeStrategy": "squash"
     },
     {
       "matchDatasources": ["docker"],
