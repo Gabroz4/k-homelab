@@ -10,3 +10,4 @@ resources:
   - restic-prune-cronjob.yaml
   - system-cleanup.yaml
   - volsync-immich.yaml
+  - volsync-minio.yaml

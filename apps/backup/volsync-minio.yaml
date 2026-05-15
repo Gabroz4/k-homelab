@@ -1,0 +1,59 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: volsync-restic-minio
+  namespace: minio
+spec:
+  refreshInterval: 12h50m
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: bitwarden-secretsmanager
+  target:
+    name: volsync-restic-minio
+    creationPolicy: Owner
+    template:
+      engineVersion: v2
+      data:
+        RESTIC_REPOSITORY: "rest:http://{{ .writerUser }}:{{ .writerPassword }}@restic-rest-server.backup.svc.cluster.local:8000/nextcloud-minio"
+        RESTIC_PASSWORD: "{{ .resticPassword }}"
+  data:
+    - secretKey: writerUser
+      remoteRef:
+        key: backup/restic-rest-server/writer-user
+    - secretKey: writerPassword
+      remoteRef:
+        key: backup/restic-rest-server/writer-password
+    - secretKey: resticPassword
+      remoteRef:
+        key: backup/restic-nextcloud-minio/password
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: minio
+  namespace: minio
+spec:
+  sourcePVC: minio
+  trigger:
+    schedule: "0 4 */3 * *"
+  restic:
+    repository: volsync-restic-minio
+    copyMethod: Snapshot
+    volumeSnapshotClassName: longhorn-snapshot
+    storageClassName: longhorn-single
+    accessModes:
+      - ReadWriteOnce
+    cacheCapacity: 2Gi
+    cacheStorageClassName: longhorn-single
+    pruneIntervalDays: 7
+    retain:
+      daily: 7
+      weekly: 4
+      monthly: 12
+    moverAffinity:
+      podAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: minio
+            topologyKey: kubernetes.io/hostname
