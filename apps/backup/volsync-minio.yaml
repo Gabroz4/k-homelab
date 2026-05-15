@@ -38,11 +38,7 @@ spec:
     schedule: "0 4 */3 * *"
   restic:
     repository: volsync-restic-minio
-    copyMethod: Snapshot
-    volumeSnapshotClassName: longhorn-snapshot
-    storageClassName: longhorn-single
-    accessModes:
-      - ReadWriteOnce
+    copyMethod: Direct
     cacheCapacity: 2Gi
     cacheStorageClassName: longhorn-single
     pruneIntervalDays: 7

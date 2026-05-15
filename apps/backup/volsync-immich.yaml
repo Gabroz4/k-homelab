@@ -38,11 +38,7 @@ spec:
     schedule: "30 2 */3 * *"
   restic:
     repository: volsync-restic-immich-library
-    copyMethod: Snapshot
-    volumeSnapshotClassName: longhorn-snapshot
-    storageClassName: longhorn-single
-    accessModes:
-      - ReadWriteOnce
+    copyMethod: Direct
     cacheCapacity: 2Gi
     cacheStorageClassName: longhorn-single
     pruneIntervalDays: 7
