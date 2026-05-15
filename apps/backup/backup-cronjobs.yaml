@@ -21,7 +21,7 @@ spec:
               type: RuntimeDefault
           initContainers:
             - name: pg-dump
-              image: postgres:16.13
+              image: postgres:16.14
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
@@ -117,7 +117,7 @@ spec:
               type: RuntimeDefault
           initContainers:
             - name: pg-dump
-              image: postgres:17.9
+              image: postgres:17.10
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
@@ -213,7 +213,7 @@ spec:
               type: RuntimeDefault
           initContainers:
             - name: pg-dump
-              image: postgres:17.9
+              image: postgres:17.10
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
