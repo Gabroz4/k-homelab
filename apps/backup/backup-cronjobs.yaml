@@ -67,7 +67,7 @@ spec:
                 - -c
                 - |
                   set -euo pipefail
-                  REST_URL="rest:http://${REST_USER}:${REST_PASSWORD}@restic-rest-server.backup.svc.cluster.local:8000/immich-db"
+                  REST_URL="rest:http://$REST_USER:$REST_PASSWORD@restic-rest-server.backup.svc.cluster.local:8000/immich-db"
                   restic -r "$REST_URL" snapshots > /dev/null 2>&1 || restic -r "$REST_URL" init
                   restic -r "$REST_URL" backup --host immich /dump
               env:
@@ -163,7 +163,7 @@ spec:
                 - -c
                 - |
                   set -euo pipefail
-                  REST_URL="rest:http://${REST_USER}:${REST_PASSWORD}@restic-rest-server.backup.svc.cluster.local:8000/nextcloud-db"
+                  REST_URL="rest:http://$REST_USER:$REST_PASSWORD@restic-rest-server.backup.svc.cluster.local:8000/nextcloud-db"
                   restic -r "$REST_URL" snapshots > /dev/null 2>&1 || restic -r "$REST_URL" init
                   restic -r "$REST_URL" backup --host nextcloud /dump
               env:
@@ -259,7 +259,7 @@ spec:
                 - -c
                 - |
                   set -euo pipefail
-                  REST_URL="rest:http://${REST_USER}:${REST_PASSWORD}@restic-rest-server.backup.svc.cluster.local:8000/authentik-db"
+                  REST_URL="rest:http://$REST_USER:$REST_PASSWORD@restic-rest-server.backup.svc.cluster.local:8000/authentik-db"
                   restic -r "$REST_URL" snapshots > /dev/null 2>&1 || restic -r "$REST_URL" init
                   restic -r "$REST_URL" backup --host authentik /dump
               env:

@@ -49,11 +49,11 @@ spec:
                   prune_repo() {
                     local repo_name="$1"
                     local repo_password_var="$2"
-                    local url="rest:http://${REST_USER}:${REST_PASSWORD}@restic-rest-server.backup.svc.cluster.local:8000/${repo_name}"
+                    local url="rest:http://$REST_USER:$REST_PASSWORD@restic-rest-server.backup.svc.cluster.local:8000/$repo_name"
                     export RESTIC_PASSWORD="$(eval echo "\$$repo_password_var")"
-                    echo "== forget+prune: ${repo_name} =="
+                    echo "== forget+prune: $repo_name =="
                     restic -r "$url" forget --keep-daily 7 --keep-weekly 4 --keep-monthly 12 --prune
-                    echo "== check: ${repo_name} =="
+                    echo "== check: $repo_name =="
                     restic -r "$url" check --read-data-subset=2%
                   }
 
