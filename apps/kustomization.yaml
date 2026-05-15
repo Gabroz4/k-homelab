@@ -14,6 +14,7 @@ resources:
   - immich/ks.yaml
   - jellyfin/ks.yaml
   - lidarr/ks.yaml
+  - longhorn/ks.yaml
   - loki/ks.yaml
   - minio/ks.yaml
   - navidrome/ks.yaml
