@@ -57,7 +57,7 @@ spec:
         versioning: true
 
     users:
-      - accessKey: nextcloud
+      - accessKey: nextcloud-access-key
         existingSecret: minio-nextcloud-user
         existingSecretKey: secretKey
         policy: readwrite
