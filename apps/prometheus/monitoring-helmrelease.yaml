@@ -249,6 +249,9 @@ spec:
         - name: dashboards-kube-overviews
           configMap:
             name: grafana-dashboard-kubernetes-overviews
+        - name: dashboards-backups
+          configMap:
+            name: grafana-dashboard-backups
       extraVolumeMounts:
         - name: datasources-direct
           mountPath: /etc/grafana/provisioning/datasources/datasource.yaml
@@ -270,6 +273,9 @@ spec:
         - name: dashboards-kube-overviews
           mountPath: /var/lib/grafana/dashboards/kubernetes/k8s_views_pods.json
           subPath: k8s_views_pods.json
+        - name: dashboards-backups
+          mountPath: /var/lib/grafana/dashboards/backups/backups.json
+          subPath: backups.json
 
       dashboardProviders:
         dashboardproviders.yaml:
@@ -315,6 +321,14 @@ spec:
               editable: true
               options:
                 path: /var/lib/grafana/dashboards/hardware
+            - name: "backups"
+              orgId: 1
+              folder: "Backups"
+              type: file
+              disableDeletion: true
+              editable: true
+              options:
+                path: /var/lib/grafana/dashboards/backups
 
       dashboards:
         kubernetes:
