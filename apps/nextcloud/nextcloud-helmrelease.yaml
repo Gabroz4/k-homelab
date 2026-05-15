@@ -44,6 +44,10 @@ spec:
           value: "10.42.0.0/16 10.43.0.0/16"
         - name: APACHE_SERVER_NAME
           value: nextcloud.${PUBLIC_DOMAIN}
+        - name: PHP_MEMORY_LIMIT
+          value: "1024M"
+        - name: PHP_UPLOAD_LIMIT
+          value: "150G"
         - name: S3_ACCESS_KEY
           valueFrom:
             secretKeyRef:
@@ -56,6 +60,7 @@ spec:
               key: S3_SECRET_KEY
       defaultConfigs:
         s3.config.php: false
+        swift.config.php: false
       configs:
         objectstore.config.php: |-
           <?php
@@ -74,6 +79,12 @@ spec:
                 'use_path_style' => true,
               ],
             ],
+          ];
+        extra.config.php: |-
+          <?php
+          $CONFIG = [
+            'maintenance_window_start' => 1,
+            'default_phone_region' => 'IT',
           ];
       livenessProbe:
         enabled: true
