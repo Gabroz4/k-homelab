@@ -277,7 +277,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`pankha.${LOCAL_DOMAIN}`) || Host(`pankha.homelab.arpa`)
+    - match: Host(`pankha.${LOCAL_DOMAIN}`)
       kind: Rule
       services:
         - name: pankha-app
@@ -294,7 +294,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`pankha.${LOCAL_DOMAIN}`) || Host(`pankha.homelab.arpa`)
+    - match: Host(`pankha.${LOCAL_DOMAIN}`)
       kind: Rule
       services:
         - name: pankha-app
