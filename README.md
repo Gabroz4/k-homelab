@@ -192,3 +192,12 @@ schema/               # architecture diagrams
 Every leaf folder carries a `kustomization.yaml`, and each app folder a `ks.yaml` — the Flux `Kustomization` that reconciles it.
 
 </details>
+
+## 📓 Operating the cluster
+
+<details>
+<summary>How it works, how to change it, how to debug it</summary>
+
+[**`schema/INSTRUCTIONS.md`**](schema/INSTRUCTIONS.md) is the operator's guide — a deep dive into how the Flux Kustomization tree fits together and the reconciliation workflow, plus practical chapters on adding services, managing secrets, a symptom-keyed debugging playbook, backups & restore, and bootstrapping the cluster from zero.
+
+</details>
