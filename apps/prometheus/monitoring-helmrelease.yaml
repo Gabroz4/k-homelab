@@ -360,7 +360,7 @@ spec:
             datasource: Loki
           alloy-overview:
             gnetId: 20033
-            revision: 3
+            revision: 1
             datasource: Prometheus
         networking:
           traefik:
