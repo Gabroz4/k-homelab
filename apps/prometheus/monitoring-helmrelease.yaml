@@ -274,8 +274,7 @@ spec:
           mountPath: /var/lib/grafana/dashboards/kubernetes/k8s_views_pods.json
           subPath: k8s_views_pods.json
         - name: dashboards-backups
-          mountPath: /var/lib/grafana/dashboards/backups/backups.json
-          subPath: backups.json
+          mountPath: /var/lib/grafana/dashboards/backups
 
       dashboardProviders:
         dashboardproviders.yaml:
