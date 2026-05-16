@@ -38,6 +38,10 @@ spec:
                 - -c
                 - |
                   set -euo pipefail
+                  until pg_isready -h immich-postgresql -p 5432 -U immich -t 5; do
+                    echo "waiting for postgres (db/netpol not ready)..."
+                    sleep 3
+                  done
                   pg_dump -U immich -h immich-postgresql immich | gzip > /dump/immich-db.sql.gz
               env:
                 - name: PGPASSWORD
@@ -134,6 +138,10 @@ spec:
                 - -c
                 - |
                   set -euo pipefail
+                  until pg_isready -h nextcloud-postgresql -p 5432 -U nextcloud -t 5; do
+                    echo "waiting for postgres (db/netpol not ready)..."
+                    sleep 3
+                  done
                   pg_dump -U nextcloud -h nextcloud-postgresql nextcloud | gzip > /dump/nextcloud-db.sql.gz
               env:
                 - name: PGPASSWORD
@@ -230,6 +238,10 @@ spec:
                 - -c
                 - |
                   set -euo pipefail
+                  until pg_isready -h authentik-postgresql -p 5432 -U authentik -t 5; do
+                    echo "waiting for postgres (db/netpol not ready)..."
+                    sleep 3
+                  done
                   pg_dump -U authentik -h authentik-postgresql authentik | gzip > /dump/authentik-db.sql.gz
               env:
                 - name: PGPASSWORD
