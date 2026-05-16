@@ -65,6 +65,7 @@ node "  **Homelab Node** · x86  //AMD Ryzen 5 2600X · 16 GB DDR4//  " as x86 {
     rectangle "**Servarr**" as sarr
     rectangle "**Prometheus**" as prom
     rectangle "**Headlamp**" as hl
+    rectangle "**pankha**" as pk
   }
 
   frame "Data" {
@@ -109,6 +110,7 @@ nc -[#3b82f6]down-> s3
 im -[#3b82f6]down-> pg
 im -[#3b82f6]down-> d2
 auth -[#3b82f6]down-> pg
+pk -[#3b82f6]down-> pg
 
 jf -[#3b82f6]down-> d3
 sarr -[#3b82f6]down-> d3
