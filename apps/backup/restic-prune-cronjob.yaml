@@ -19,6 +19,8 @@ spec:
             app: restic-prune
         spec:
           restartPolicy: OnFailure
+          nodeSelector:
+            kubernetes.io/hostname: homelab
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
@@ -40,6 +42,9 @@ spec:
                 limits:
                   cpu: 1000m
                   memory: 1Gi
+              volumeMounts:
+                - name: data
+                  mountPath: /data
               command:
                 - /bin/sh
                 - -c
@@ -49,7 +54,7 @@ spec:
                   prune_repo() {
                     local repo_name="$1"
                     local repo_password_var="$2"
-                    local url="rest:http://$REST_USER:$REST_PASSWORD@restic-rest-server.backup.svc.cluster.local:8000/$repo_name"
+                    local url="/data/$repo_name"
                     export RESTIC_PASSWORD="$(eval echo "\$$repo_password_var")"
                     echo "== forget+prune: $repo_name =="
                     restic -r "$url" forget --keep-daily 7 --keep-weekly 4 --keep-monthly 12 --prune
@@ -63,16 +68,6 @@ spec:
                   prune_repo nextcloud-minio  NEXTCLOUD_MINIO_PASSWORD
                   prune_repo authentik-db     AUTHENTIK_DB_PASSWORD
               env:
-                - name: REST_USER
-                  valueFrom:
-                    secretKeyRef:
-                      name: restic-admin-creds
-                      key: rest-admin-user
-                - name: REST_PASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      name: restic-admin-creds
-                      key: rest-admin-password
                 - name: IMMICH_FILES_PASSWORD
                   valueFrom:
                     secretKeyRef:
@@ -98,3 +93,8 @@ spec:
                     secretKeyRef:
                       name: restic-admin-creds
                       key: authentik-db-password
+          volumes:
+            - name: data
+              hostPath:
+                path: ${BACKUP_PATH}/restic
+                type: Directory
