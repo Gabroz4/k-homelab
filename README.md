@@ -37,6 +37,34 @@ This repo is the single source of truth for my homelab: a small Kubernetes clust
 
 Everything is declarative. I don't `kubectl apply` anything by hand; I commit a change and Flux reconciles the cluster to match. The repo is written to be forked and redeployed elsewhere, with all site-specific values isolated in one ConfigMap.
 
+## 🖥️ Hardware
+
+Almost everything here was recycled from old upgrades, found laying around, or gifted by friends. The only purchases were the micro-ATX parts — motherboard, case, PSU — bought as cheap as possible on a student budget.
+
+<details>
+<summary>Specs</summary>
+
+**Primary node (x86)**
+
+| Component | Spec |
+| --------- | ---- |
+| CPU | AMD Ryzen 5 2600X |
+| RAM | 16 GB DDR4 |
+| Boot / OS | 1 TB Sabrent NVMe |
+| Storage NVMe | 500 GB Samsung NVMe |
+| Media drive | 4 TB HDD |
+| Backup drive | 2 TB HDD |
+| UPS | 600 W |
+
+**Stateless node (arm64)**
+
+| Component | Spec |
+| --------- | ---- |
+| Board | Raspberry Pi 5, 8 GB RAM |
+| Taint | `workload=stateless:NoSchedule` |
+
+</details>
+
 ## ⛵ GitOps
 
 [Flux](https://fluxcd.io) watches this repo and reconciles the cluster every 10 minutes — or instantly, via a GitHub push webhook. Pruning is enabled, so deleting a manifest deletes the resource.
@@ -146,34 +174,6 @@ All backups are restic repositories on a dedicated 2 TB disk, written through an
 - A weekly job prunes old snapshots and verifies repository integrity; a Prometheus exporter raises an alert if any repo goes stale.
 
 Retention is 7 daily / 4 weekly / 12 monthly snapshots.
-
-## 🖥️ Hardware
-
-Almost everything here was recycled from old upgrades, found laying around, or gifted by friends. The only purchases were the micro-ATX parts — motherboard, case, PSU — bought as cheap as possible on a student budget.
-
-<details>
-<summary>Specs</summary>
-
-**Primary node (x86)**
-
-| Component | Spec |
-| --------- | ---- |
-| CPU | AMD Ryzen 5 2600X |
-| RAM | 16 GB DDR4 |
-| Boot / OS | 1 TB Sabrent NVMe |
-| Storage NVMe | 500 GB Samsung NVMe |
-| Media drive | 4 TB HDD |
-| Backup drive | 2 TB HDD |
-| UPS | 600 W |
-
-**Stateless node (arm64)**
-
-| Component | Spec |
-| --------- | ---- |
-| Board | Raspberry Pi 5, 8 GB RAM |
-| Taint | `workload=stateless:NoSchedule` |
-
-</details>
 
 ## 📂 Repository layout
 
