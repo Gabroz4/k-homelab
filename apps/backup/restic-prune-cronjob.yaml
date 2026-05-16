@@ -67,6 +67,8 @@ spec:
                   prune_repo nextcloud-minio  "$NEXTCLOUD_MINIO_PASSWORD"
                   prune_repo authentik-db     "$AUTHENTIK_DB_PASSWORD"
               env:
+                - name: RESTIC_CACHE_DIR
+                  value: /tmp/restic-cache
                 - name: IMMICH_FILES_PASSWORD
                   valueFrom:
                     secretKeyRef:
