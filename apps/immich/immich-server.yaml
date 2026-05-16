@@ -45,17 +45,21 @@ spec:
           volumeMounts:
             - name: library
               mountPath: /usr/src/app/upload
+          startupProbe:
+            httpGet:
+              path: /api/server/ping
+              port: 2283
+            periodSeconds: 10
+            failureThreshold: 30
           livenessProbe:
             httpGet:
               path: /api/server/ping
               port: 2283
-            initialDelaySeconds: 30
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /api/server/ping
               port: 2283
-            initialDelaySeconds: 30
             periodSeconds: 10
           resources:
             requests:
