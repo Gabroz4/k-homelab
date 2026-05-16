@@ -500,6 +500,190 @@ data:
             "legend": {"displayMode": "list", "placement": "bottom", "calcs": []},
             "tooltip": {"mode": "single"}
           }
+        },
+        {
+          "type": "row",
+          "title": "Disk space",
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 59},
+          "id": 400,
+          "collapsed": false,
+          "panels": []
+        },
+        {
+          "type": "stat",
+          "title": "root (/)",
+          "gridPos": {"h": 6, "w": 6, "x": 0, "y": 60},
+          "id": 30,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "node_filesystem_avail_bytes{instance=\"192.168.1.50:9100\", mountpoint=\"/\"}",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"]},
+            "textMode": "value",
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "yellow", "value": 21474836480},
+                  {"color": "green", "value": 80530636800}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "stat",
+          "title": "nvme500 (/mnt/nvme500)",
+          "gridPos": {"h": 6, "w": 6, "x": 6, "y": 60},
+          "id": 31,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "node_filesystem_avail_bytes{instance=\"192.168.1.50:9100\", mountpoint=\"/mnt/nvme500\"}",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"]},
+            "textMode": "value",
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "yellow", "value": 21474836480},
+                  {"color": "green", "value": 80530636800}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "stat",
+          "title": "backups (/mnt/backups)",
+          "gridPos": {"h": 6, "w": 6, "x": 12, "y": 60},
+          "id": 32,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "node_filesystem_avail_bytes{instance=\"192.168.1.50:9100\", mountpoint=\"/mnt/backups\"}",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"]},
+            "textMode": "value",
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "yellow", "value": 21474836480},
+                  {"color": "green", "value": 80530636800}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "stat",
+          "title": "media (/media/gabro/Volume)",
+          "gridPos": {"h": 6, "w": 6, "x": 18, "y": 60},
+          "id": 33,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "node_filesystem_avail_bytes{instance=\"192.168.1.50:9100\", mountpoint=\"/media/gabro/Volume\"}",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"]},
+            "textMode": "value",
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "yellow", "value": 21474836480},
+                  {"color": "green", "value": 80530636800}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "Free space over time",
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 66},
+          "id": 34,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "node_filesystem_avail_bytes{instance=\"192.168.1.50:9100\", mountpoint=~\"/|/mnt/nvme500|/mnt/backups|/media/gabro/Volume\"}",
+              "legendFormat": "{{mountpoint}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "color": {"mode": "palette-classic"},
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "fillOpacity": 5,
+                "showPoints": "auto"
+              }
+            }
+          },
+          "options": {
+            "legend": {"displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "min"]},
+            "tooltip": {"mode": "multi"}
+          }
         }
       ]
     }
