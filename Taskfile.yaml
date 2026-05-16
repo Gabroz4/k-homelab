@@ -66,6 +66,47 @@ tasks:
     cmds:
       - kubectl -n {{.ns}} logs deployment/{{.name}} --follow
 
+  events:
+    desc: Recent non-Normal events across the cluster
+    cmds:
+      - kubectl get events -A --field-selector type!=Normal --sort-by=.lastTimestamp
+
+  diff:
+    desc: 'Preview what a Kustomization would change — task diff name=apps path=./apps'
+    requires:
+      vars: [name, path]
+    cmds:
+      - flux diff kustomization {{.name}} --path {{.path}}
+
+  tree:
+    desc: 'List every resource a Kustomization manages — task tree name=nextcloud'
+    requires:
+      vars: [name]
+    cmds:
+      - flux tree kustomization {{.name}}
+
+  restart:
+    desc: 'Roll a Deployment and wait — task restart ns=nextcloud name=nextcloud'
+    requires:
+      vars: [ns, name]
+    cmds:
+      - kubectl -n {{.ns}} rollout restart deployment/{{.name}}
+      - kubectl -n {{.ns}} rollout status deployment/{{.name}}
+
+  suspend:
+    desc: 'Pause Flux on a HelmRelease (for manual intervention) — task suspend ns=monitoring name=loki'
+    requires:
+      vars: [ns, name]
+    cmds:
+      - flux -n {{.ns}} suspend helmrelease {{.name}}
+
+  resume:
+    desc: 'Resume Flux on a HelmRelease — task resume ns=monitoring name=loki'
+    requires:
+      vars: [ns, name]
+    cmds:
+      - flux -n {{.ns}} resume helmrelease {{.name}}
+
   webhook-url:
     desc: Print the GitHub webhook URL to paste into the repo's webhook settings
     cmds:
