@@ -53,20 +53,19 @@ spec:
 
                   prune_repo() {
                     local repo_name="$1"
-                    local repo_password_var="$2"
+                    export RESTIC_PASSWORD="$2"
                     local url="/data/$repo_name"
-                    export RESTIC_PASSWORD="$(eval echo "\$$repo_password_var")"
                     echo "== forget+prune: $repo_name =="
                     restic -r "$url" forget --keep-daily 7 --keep-weekly 4 --keep-monthly 12 --prune
                     echo "== check: $repo_name =="
                     restic -r "$url" check --read-data-subset=2%
                   }
 
-                  prune_repo immich-files     IMMICH_FILES_PASSWORD
-                  prune_repo immich-db        IMMICH_DB_PASSWORD
-                  prune_repo nextcloud-db     NEXTCLOUD_DB_PASSWORD
-                  prune_repo nextcloud-minio  NEXTCLOUD_MINIO_PASSWORD
-                  prune_repo authentik-db     AUTHENTIK_DB_PASSWORD
+                  prune_repo immich-files     "$IMMICH_FILES_PASSWORD"
+                  prune_repo immich-db        "$IMMICH_DB_PASSWORD"
+                  prune_repo nextcloud-db     "$NEXTCLOUD_DB_PASSWORD"
+                  prune_repo nextcloud-minio  "$NEXTCLOUD_MINIO_PASSWORD"
+                  prune_repo authentik-db     "$AUTHENTIK_DB_PASSWORD"
               env:
                 - name: IMMICH_FILES_PASSWORD
                   valueFrom:
