@@ -1,4 +1,4 @@
-@startuml cluster-schema
+@startuml cluster-schema-dark
 
 skinparam backgroundColor #1a1a2e
 skinparam defaultFontColor #e0e0e0
@@ -39,12 +39,17 @@ skinparam arrow {
 }
 
 cloud "  **Internet**  " as inet
+cloud "  **GitHub**  //config repo//  " as gh
 
-node "  **Homelab Node**  //AMD Ryzen 5 2600X · 16 GB DDR4//  " {
+node "  **Pi Node** · arm64  //Raspberry Pi 5 · 8 GB//  " as pinode {
+  rectangle "**Cloudflare Tunnels**" as cf
+  rectangle "**Homepage**" as hp
+}
+
+node "  **Homelab Node** · x86  //AMD Ryzen 5 2600X · 16 GB DDR4//  " as x86 {
 
   frame "Ingress" {
-    rectangle "**Cloudflare Tunnels**" as cf
-    rectangle "**MetalLB** \n**Traefik**\n**AdGuard**" as netstack
+    rectangle "**MetalLB**  ·  **Traefik**  ·  **AdGuard**" as netstack
   }
 
   frame "Public   *.gabro.ovh" as pubframe {
@@ -56,7 +61,7 @@ node "  **Homelab Node**  //AMD Ryzen 5 2600X · 16 GB DDR4//  " {
     rectangle "**Grafana**" as graf
   }
 
-  frame "Private   *.homelab.arpa" as privframe {
+  frame "Local   *.local.gabro.ovh" as privframe {
     rectangle "**Servarr**" as sarr
     rectangle "**Prometheus**" as prom
     rectangle "**Headlamp**" as hl
@@ -64,7 +69,7 @@ node "  **Homelab Node**  //AMD Ryzen 5 2600X · 16 GB DDR4//  " {
 
   frame "Data" {
     database "**PostgreSQL**" as pg
-    database "**Redis**" as rd
+    database "**Redis · Valkey**" as rd
     database "**MinIO**" as s3
   }
 
@@ -75,18 +80,22 @@ node "  **Homelab Node**  //AMD Ryzen 5 2600X · 16 GB DDR4//  " {
     database "**2TB HDD** Backups" as d4
   }
 
-  rectangle "**Backups**" as bkp
+  rectangle "**Backups**  //restic · VolSync//" as bkp
 }
 
 ' ─── Ordering ───
-cf -[hidden]down-> jf
+inet -[hidden]right-> gh
+cf -[hidden]down-> hp
+netstack -[hidden]down-> pubframe
 nc -[hidden]down-> sarr
 sarr -[hidden]down-> pg
 pg -[hidden]down-> d1
+pinode -[hidden]down-> x86
 
 ' ─── Connections ───
 inet -[#e94560,bold]down-> cf : " HTTPS"
-cf -[#537791]down-> pubframe
+gh -[#5468FF,bold]down-> x86 : " Flux reconcile"
+cf -[#537791]down-> netstack
 netstack -[#24A1C1]down-> pubframe
 netstack -[#24A1C1]down-> privframe
 
@@ -95,14 +104,16 @@ sarr .[#e94560].> nv : " music"
 graf -[#F46800]-> prom
 
 nc -[#537791]down-> pg
+nc -[#537791]down-> rd
 nc -[#537791]down-> s3
 im -[#537791]down-> pg
+im -[#537791]down-> d2
 auth -[#537791]down-> pg
 
 jf -[#537791]down-> d3
 sarr -[#537791]down-> d3
 bkp -[#7f8c9b]-> d4
-bkp .[#7f8c9b].> pg : " dump"
-bkp .[#7f8c9b].> s3 : " sync"
+bkp .[#7f8c9b].> pg : " db dump"
+bkp .[#7f8c9b].> s3 : " VolSync"
 
 @enduml
