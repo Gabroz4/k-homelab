@@ -1,9 +1,10 @@
 
 # Gabro's Homelab 🖥️
 
-> A two-node k3s cluster (x86 primary + Raspberry Pi 5 for stateless workloads) with production-grade infrastructure — built to learn, experiment, and run self-hosted services.
+> A two-node k3s cluster (x86 primary + Raspberry Pi 5 for stateless workloads) with production-grade infrastructure — built to learn, experiment, and run self-hosted services. Fully GitOps-managed by Flux.
 
 ![k3s](https://img.shields.io/badge/k3s-lightweight_k8s-326CE5?style=flat-square&logo=kubernetes&logoColor=white)
+![Flux](https://img.shields.io/badge/Flux-GitOps-5468FF?style=flat-square&logo=flux&logoColor=white)
 ![Traefik](https://img.shields.io/badge/Traefik-ingress-24A1C1?style=flat-square&logo=traefikproxy&logoColor=white)
 ![Cloudflare](https://img.shields.io/badge/Cloudflare-tunnels-F38020?style=flat-square&logo=cloudflare&logoColor=white)
 ![Longhorn](https://img.shields.io/badge/Longhorn-storage-5F259F?style=flat-square)
@@ -58,7 +59,21 @@ Almost all hardware was recycled from previous upgrades, found laying around, or
 | Board     | Raspberry Pi 5 (arm64), 8 GB RAM  |
 | Taint     | `workload=stateless:NoSchedule`   |
 
-> The Pi only takes pods that explicitly tolerate the taint and select it via `nodeSelector` — currently the Cloudflare tunnel deployments, Homepage, and parts of the monitoring stack.
+> The Pi only takes pods that explicitly tolerate the taint and select it via soft `nodeSelector` affinity — currently the Cloudflare tunnel deployments, Homepage, Authentik, and parts of the monitoring stack. Affinity is *soft* (`preferredDuringScheduling`), so the Pi can be unplugged at any time without blocking scheduling.
+
+---
+
+## GitOps with Flux
+
+The entire cluster is managed declaratively by [Flux](https://fluxcd.io) — **git is the single source of truth**. Every change flows through a `git push` to this repo; nothing is applied by hand.
+
+- Four `Kustomization`s (`flux-system`, `infrastructure-controllers`, `infrastructure-configs`, `apps`) reconcile every 10 minutes with `prune: true` — deleting a manifest from git deletes it from the cluster.
+- A GitHub push webhook triggers an instant reconcile, so the 10-minute interval is mostly a fallback.
+- Helm charts are managed as Flux `HelmRelease` resources (helm-controller performs upgrades); chart values are inline in each `*-helmrelease.yaml`.
+- Per-deployment values (domain, timezone, LB range, paths) are kept in a single `cluster-settings` ConfigMap and substituted into manifests at reconcile time, so the repo can be forked and redeployed at another site.
+- Container image and chart versions are bumped automatically by Renovate; digest and patch updates auto-merge once CI (`kubeconform` + `flux-local`) passes.
+
+`kubectl apply` / `kubectl edit` / `helm upgrade` against a Flux-managed resource is reverted at the next reconciliation — edit the YAML and push instead.
 
 ---
 
@@ -67,9 +82,11 @@ Almost all hardware was recycled from previous upgrades, found laying around, or
 | Layer              | Tool                    |
 | ------------------ | ----------------------- |
 | Kubernetes distro  | k3s                     |
+| GitOps             | Flux                    |
 | Ingress controller | Traefik                 |
 | Load balancer      | MetalLB                 |
 | Remote access      | Cloudflare tunnels      |
+| TLS certificates   | cert-manager (Let's Encrypt) |
 | Storage engine     | Longhorn                |
 | Object storage     | MinIO                   |
 | SSO / auth         | Authentik (forward-auth)|
@@ -78,43 +95,57 @@ Almost all hardware was recycled from previous upgrades, found laying around, or
 | Autoscaling        | HPA + VPA               |
 | Metrics            | Prometheus + Grafana    |
 | Logs               | Loki + Grafana Alloy    |
-
-Most configuration is deployed with standard `kubectl apply`. Helm is used for Nextcloud, Authentik, Jellyfin, MinIO, Prometheus/Grafana, Loki, Alloy, and the VPA controller. No patches are applied to maximize reproducibility — pods are configured as-is in the YAML files.
+| Backups            | restic + VolSync        |
 
 The server is only accessed through VPN + SSH.
 
 ### How it works
 
-1. **MetalLB** reserves an IP pool (`192.168.1.55–69`); Traefik is assigned a stable IP from it. AdGuard gets a dedicated LB IP (`192.168.1.60`).
-2. **AdGuardHome** is configured with DNS rewrites so browsers can reach local services by hostname (e.g. `*.homelab.arpa`) via Traefik.
-3. **Cloudflare tunnels** expose public services. Each service gets its own dedicated tunnel deployment; tunnel tokens are pulled from Bitwarden Secrets Manager via External Secrets Operator and projected into Kubernetes Secrets.
-4. An aggressive **HPA** is configured on each Cloudflare tunnel deployment (up to 10 replicas, 50% CPU target) since performance scales linearly with pod count.
-5. **Stateless offload**: stateless, multi-replica workloads (Cloudflare tunnels, Homepage, selected monitoring components) tolerate the Pi's `workload=stateless:NoSchedule` taint, freeing the x86 node for stateful services.
-6. **PodDisruptionBudgets** protect critical services (AdGuard, Nextcloud, Cloudflare tunnels) during voluntary disruptions.
-7. **NetworkPolicies** enforce a default-deny posture across every namespace, with explicit ingress/egress allow rules per service.
-8. **Authentik** sits in front of selected services as a Traefik forward-auth middleware, providing SSO before requests even reach the app.
-9. **VPAs** (in recommendation-only mode) are set up on the servarr stack, monitoring components, Authentik, and Nextcloud PostgreSQL for right-sizing guidance.
+1. **Flux** reconciles the whole cluster from this git repo every 10 minutes (or instantly via webhook).
+2. **MetalLB** reserves an IP pool (`192.168.1.55–69`); Traefik is assigned a stable IP from it. AdGuard gets a dedicated LB IP (`192.168.1.60`).
+3. **AdGuardHome** runs split-horizon DNS: local services resolve to Traefik's LB IP and are reachable by hostname at `*.local.gabro.ovh`.
+4. **TLS**: public services terminate TLS at the Cloudflare edge (cluster-internal ingress is plain HTTP); local services use a wildcard `*.local.gabro.ovh` Let's Encrypt certificate issued by **cert-manager** (Cloudflare DNS-01) and mirrored into every namespace by **Reflector**.
+5. **Cloudflare tunnels** expose public services. Each service gets its own dedicated tunnel deployment; tunnel tokens are pulled from Bitwarden Secrets Manager via External Secrets Operator.
+6. An aggressive **HPA** is configured on each Cloudflare tunnel deployment (up to 10 replicas, 50% CPU target) since performance scales linearly with pod count.
+7. **Stateless offload**: stateless, multi-replica workloads (Cloudflare tunnels, Homepage, Authentik, selected monitoring components) tolerate the Pi's `workload=stateless:NoSchedule` taint, freeing the x86 node for stateful services.
+8. **PodDisruptionBudgets** protect critical services (AdGuard, Nextcloud, Cloudflare tunnels) during voluntary disruptions.
+9. **NetworkPolicies** enforce a default-deny posture across every namespace, with explicit ingress/egress allow rules per service.
+10. **Authentik** sits in front of selected services as a Traefik forward-auth middleware, providing SSO before requests even reach the app.
+11. **VPAs** right-size workloads — most run in active mode (`InPlaceOrRecreate`), auto-applying recommended requests/limits; a few stay recommendation-only where active mutation caused churn.
+12. **Reloader** rolls workloads automatically when their Secrets or ConfigMaps change.
 
 ---
 
 ## Repo structure
 
-Flat per-app layout with a `kustomization.yaml` in every leaf — Flux-monorepo style. No GitOps controller is running yet; everything is applied manually with `kubectl apply -k <dir>` or `helm upgrade`.
+Flat per-app layout with a `kustomization.yaml` in every leaf — Flux-monorepo style. Each app folder also has a `ks.yaml` (the Flux `Kustomization` that reconciles it).
 
 ```
 .
+├── clusters/homelab/            # Flux entrypoint
+│   ├── flux-system/             # Flux components + GitRepository sync
+│   ├── cluster-settings.yaml    # per-site values (domain, timezone, paths…)
+│   ├── apps.yaml                # apps Kustomization
+│   └── infrastructure.yaml      # infrastructure Kustomizations
 ├── apps/                        # one folder per workload
-│   ├── adguard/  alloy/  authentik/  backup/  cloudflared/
-│   ├── grafana/  headlamp/  homepage/  immich/  jellyfin/
-│   ├── lidarr/   loki/   minio/  navidrome/  nextcloud/
-│   ├── nut-exporter/  prometheus/  servarr/  traefik/
-│   └── kustomization.yaml       # aggregates all apps with k8s resources
+│   ├── adguard/  alloy/  authentik/  backup/  cert-manager-config/
+│   ├── cloudflared/  flux-webhook/  grafana/  headlamp/  homepage/
+│   ├── immich/  jellyfin/  lidarr/  longhorn/  loki/  minio/
+│   ├── navidrome/  nextcloud/  nut-exporter/  pankha/  prometheus/
+│   ├── servarr/  traefik/
+│   └── kustomization.yaml
 ├── infrastructure/
 │   ├── controllers/             # cluster-scoped controllers
+│   │   ├── cert-manager/        # cert-manager + Cloudflare API token
 │   │   ├── coredns/             # coredns-custom ConfigMap
 │   │   ├── external-secrets/    # ESO + bitwarden-sdk-server + ClusterSecretStore
 │   │   ├── metallb/             # IP pool (192.168.1.55–69)
-│   │   └── vpa/                 # VPA controller Helm values
+│   │   ├── reflector/           # Stakater Reflector (mirrors the wildcard TLS Secret)
+│   │   ├── reloader/            # Stakater Reloader (rolls pods on Secret/CM change)
+│   │   ├── snapshot-controller/ # CSI external-snapshotter
+│   │   ├── sources/             # HelmRepository CRs
+│   │   ├── volsync/             # VolSync controller + StorageClasses
+│   │   └── vpa/                 # VPA controller
 │   └── configs/                 # cluster-scoped config (no controllers)
 │       ├── namespaces/          # Namespaces + Pod Security Admission labels
 │       ├── network-policies/    # per-namespace NetworkPolicies (flat, one file per app)
@@ -142,7 +173,7 @@ Flat per-app layout with a `kustomization.yaml` in every leaf — Flux-monorepo 
 | [Grafana](https://grafana.com)      | Monitoring & dashboards            |
 | [Homepage](https://gethomepage.dev) | Service dashboard / launcher       |
 
-### 🔒 Private (local only — `*.homelab.arpa`)
+### 🔒 Private (local only — `*.local.gabro.ovh`)
 
 | Service       | Purpose                                  |
 | ------------- | ---------------------------------------- |
@@ -184,21 +215,23 @@ Every namespace runs with a **default-deny** posture for both ingress and egress
 - **Ingress** rules typically allow traffic only from `kube-system` (Traefik) and `monitoring` (Prometheus scrape).
 - **Egress** rules allow DNS to `kube-system`, in-cluster service discovery, and only the external endpoints each app actually needs (e.g. Cloudflare edge IPs for tunnels, package mirrors, indexer APIs, etc.).
 
-Namespaces covered: `adguard`, `authentik`, `cloudflared`, `immich`, `jellyfin`, `minio`, `monitoring`, `music`, `nextcloud`.
+Namespaces covered: `adguard`, `authentik`, `backup`, `cloudflared`, `external-secrets`, `immich`, `jellyfin`, `minio`, `monitoring`, `music`, `nextcloud`, `pankha`.
+
+### Pod Security Admission
+
+Per-namespace PSA labels enforce the `baseline` profile (with `restricted` as a warning) on namespaces with no privileged workloads, and `privileged` on namespaces that genuinely need hostPath / host-namespace access (media stacks, monitoring, backups). New stateless workloads ship a `restricted`-compatible securityContext regardless of namespace.
 
 ### Secrets
 
-All sensitive values (database passwords, OAuth client secrets, tunnel tokens, S3 keys, restic encryption key, etc.) live in **Bitwarden Secrets Manager** (cloud). [External Secrets Operator](https://external-secrets.io) + a `bitwarden-sdk-server` sidecar sync values into Kubernetes Secrets via `ExternalSecret` resources. BW keys follow the convention `<namespace>/<secret-name>/<field>`. The only K8s Secret applied out-of-band is the BWS access token ESO itself uses to talk to Bitwarden.
+All sensitive values (database passwords, OAuth client secrets, tunnel tokens, S3 keys, restic encryption keys, etc.) live in **Bitwarden Secrets Manager** (cloud). [External Secrets Operator](https://external-secrets.io) + a `bitwarden-sdk-server` sidecar sync values into Kubernetes Secrets via `ExternalSecret` resources. BW keys follow the convention `<namespace>/<secret-name>/<field>`. The only K8s Secret applied out-of-band is the BWS access token ESO itself uses to talk to Bitwarden.
+
+### TLS certificates
+
+**cert-manager** issues a wildcard `*.local.gabro.ovh` Let's Encrypt certificate via the Cloudflare DNS-01 challenge. The certificate Secret lives in `kube-system` and is mirrored into every app namespace by **Reflector**, so local Ingresses just reference `wildcard-local-tls`. Public services terminate TLS at the Cloudflare edge instead.
 
 ### Authentik forward-auth (SSO)
 
-Authentik runs in its own namespace with an outpost reachable at `authentik-server.authentik.svc.cluster.local`. A Traefik `Middleware` of kind `forwardAuth` is defined in:
-
-- `authentik` namespace (the canonical one)
-- `jellyfin` namespace (protects Jellyfin)
-- `music` namespace (protects Navidrome)
-
-Public services that need SSO simply reference the namespace-local middleware in their `IngressRoute` annotations, so the auth check happens before requests hit the app.
+Authentik runs in its own namespace with an outpost reachable at `authentik-server.authentik.svc.cluster.local`. A Traefik `Middleware` of kind `forwardAuth` is defined in the `authentik` namespace (canonical) and mirrored into the `jellyfin` and `music` namespaces to protect Jellyfin and Navidrome. Protected services reference the namespace-local middleware in their `IngressRoute` annotations, so the auth check happens before requests hit the app.
 
 ---
 
@@ -206,14 +239,14 @@ Public services that need SSO simply reference the namespace-local middleware in
 
 ### Longhorn
 
-[Longhorn](https://longhorn.io) manages distributed persistent volumes across the cluster and provides the default `StorageClass` used by most workloads. Immich PVCs use Longhorn disk selectors to target specific drives.
+[Longhorn](https://longhorn.io) manages distributed persistent volumes and provides the default `StorageClass` used by most workloads. Immich PVCs use Longhorn disk selectors to target specific drives (NVMe for uploads/thumbnails, HDD for originals). A single-replica `longhorn-single` StorageClass is used for VolSync mover cache volumes.
 
-| Drive               | Mount          | Used for                         |
-| ------------------- | -------------- | -------------------------------- |
-| 1 TB Sabrent NVMe   | `/`            | OS + fast PVCs                   |
-| 500 GB Samsung NVMe | `/mnt/nvme500` | Additional fast PVCs             |
-| 4 TB HDD            | `/mnt/media`   | Jellyfin media library           |
-| 2 TB HDD            | `/mnt/backups` | Backup target for all CronJobs   |
+| Drive               | Mount                 | Used for                              |
+| ------------------- | --------------------- | ------------------------------------- |
+| 1 TB Sabrent NVMe   | `/`                   | OS + fast PVCs                        |
+| 500 GB Samsung NVMe | `/mnt/nvme500`        | Additional fast PVCs                  |
+| 4 TB HDD            | `/media/gabro/Volume` | Jellyfin / servarr media library      |
+| 2 TB HDD            | `/mnt/backups`        | restic repositories (backup target)   |
 
 ### MinIO
 
@@ -225,25 +258,19 @@ Public services that need SSO simply reference the namespace-local middleware in
 
 ### Horizontal Pod Autoscalers (HPA)
 
-| Target              | Min | Max | Metric                 |
-| ------------------- | --- | --- | ---------------------- |
-| Cloudflared tunnels | 1   | 10  | 50% CPU                |
-| Nextcloud           | 1   | 3   | 60% CPU                |
-| Immich Server       | 1   | 3   | 70% CPU / 90% memory   |
-| Jellyfin            | 1   | 4   | 80% CPU                |
+| Target              | Min | Max | Metric    |
+| ------------------- | --- | --- | --------- |
+| Cloudflared tunnels | 1   | 10  | 50% CPU   |
+| Nextcloud           | 1   | 3   | 60% CPU   |
+| Immich Server       | 1   | 3   | 70% CPU   |
+
+> The Immich HPA is **CPU-only by design**: pairing a memory-target HPA with a memory-managing VPA pins replicas at max (the VPA shrinks the request, which inflates the HPA's utilization ratio). Jellyfin is intentionally **not** autoscaled — it owns a single SQLite DB on an RWO volume, so it pins to one replica with `strategy: Recreate`.
 
 ### Vertical Pod Autoscalers (VPA)
 
-VPAs are deployed in recommendation-only mode (`updateMode: "Off"`) — they suggest right-sized requests/limits without restarting pods. Targets include:
+Most VPAs run in **active mode** (`updateMode: InPlaceOrRecreate`) — they auto-apply right-sized requests/limits, in place where the kernel supports it, otherwise by recreating the pod. A few are pinned to recommendation-only (`updateMode: Off`) where active mutation caused churn or fought tightly-tuned manual values — currently Grafana, Loki, MinIO, qBittorrent, and Seerr.
 
-- Servarr stack (Radarr, Sonarr, Lidarr, qBittorrent, Prowlarr, Seerr)
-- Authentik server & worker
-- Nextcloud PostgreSQL
-- AdGuardHome
-- Immich
-- Navidrome
-- MinIO
-- Selected monitoring components
+Targets include the servarr stack (Radarr, Sonarr, Prowlarr, qBittorrent, Seerr), Lidarr, Authentik (server / worker / PostgreSQL), Nextcloud (app / PostgreSQL), Immich (server / PostgreSQL), AdGuardHome, Navidrome, MinIO, Jellyfin, Grafana, and Loki.
 
 ---
 
@@ -254,10 +281,9 @@ VPAs are deployed in recommendation-only mode (`updateMode: "Off"`) — they sug
 Deployed via the `kube-prometheus-stack` Helm chart:
 
 - **Prometheus** with 10-day / 15 GB retention and 20 Gi persistent storage.
-- **Grafana** with persistent dashboards (5 Gi), admin credentials from secrets.
+- **Grafana** with persistent dashboards (5 Gi) and admin credentials from secrets. Grafana ships as a subchart of `kube-prometheus-stack`; custom dashboards and datasources are managed separately in `apps/grafana/`.
 - **Alertmanager**, **kube-state-metrics**, **node-exporter**, and the **Prometheus Operator** — all with resource requests/limits configured.
-- **Traefik ServiceMonitor** scrapes Traefik's `/metrics` endpoint on port 9100.
-- **Headlamp** — Kubernetes web UI accessible locally at `headlamp.homelab.arpa`.
+- `ServiceMonitor`s scrape Traefik, Longhorn, the NUT exporter (UPS metrics), the restic REST server / restic-exporter, and VolSync.
 
 ### Logs
 
@@ -267,29 +293,40 @@ Deployed via the `kube-prometheus-stack` Helm chart:
 
 ### Alerts (PrometheusRule)
 
-| Rule group   | Alerts                                                |
-| ------------ | ----------------------------------------------------- |
-| `backup.rules` | `BackupJobFailed`, `BackupCronJobStale` (>4 days)   |
-| `loki.rules`   | `LokiDown`, `LokiNoNewLogs` (15-min ingest at zero) |
+| Rule group     | Alerts                                                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `backup.rules` | `BackupJobFailed`, `BackupCronJobStale`, `BackupCronJobNeverSucceeded`, `CleanupCronJobStale`, `ResticRepoStale`, `ResticRepoCheckFailed`, `ResticRestServerDown`, `ResticExporterDown` |
+| `loki.rules`   | `LokiDown`, `LokiNoNewLogs`                                                                                                     |
+
+Alerts are delivered to Telegram via Alertmanager.
 
 ---
 
 ## Backups
 
-All backup jobs are `CronJob` resources that write to the 2 TB HDD mounted at `/mnt/backups`. Jobs run every 3 days and are staggered 20 minutes apart to avoid I/O contention.
+All backups are restic-based and converge on an **in-cluster restic REST server** — a Deployment in the `backup` namespace running `restic/rest-server` in `--append-only` mode, storing repositories on the 2 TB HDD at `/mnt/backups/restic`. Append-only mode means backup jobs can write but not delete; only the prune job (with separate admin credentials) can.
 
-| CronJob                  | Schedule       | Method                                                                 |
-| ------------------------ | -------------- | ---------------------------------------------------------------------- |
-| `immich-files-backup`    | `0 3 */3 * *`  | [restic](https://restic.net) — dedup + prune (keep 7 daily, 4 weekly)  |
-| `immich-db-backup`       | `20 3 */3 * *` | `pg_dump` → gzip, 7-day retention                                      |
-| `nextcloud-db-backup`    | `40 3 */3 * *` | `pg_dump` → gzip, 7-day retention                                      |
-| `nextcloud-minio-backup` | `0 4 */3 * *`  | `mc mirror` — incremental sync of the MinIO bucket                     |
+| Job                  | Type                       | Schedule          | Method                                                          |
+| -------------------- | -------------------------- | ----------------- | --------------------------------------------------------------- |
+| `immich-db-backup`   | `pg_dump` CronJob          | every 3 days      | dump → gzip → `restic backup` to the REST server                |
+| `nextcloud-db-backup`| `pg_dump` CronJob          | every 3 days      | dump → gzip → `restic backup` to the REST server                |
+| `authentik-db-backup`| `pg_dump` CronJob          | every 3 days      | dump → gzip → `restic backup` to the REST server                |
+| `immich-library`     | VolSync `ReplicationSource`| every 3 days      | `restic`, `copyMethod: Direct` (mounts the live PVC)            |
+| `minio`              | VolSync `ReplicationSource`| every 3 days      | `restic`, `copyMethod: Direct` — backs up Nextcloud's S3 data   |
+| `restic-prune`       | CronJob                    | weekly (Sun 06:00)| `forget --prune` + integrity `check` across all repositories    |
 
-All jobs have `activeDeadlineSeconds` set (1–4 hours) to prevent hung jobs, and `concurrencyPolicy: Forbid` to avoid overlapping runs. Failures and stale schedules trigger Prometheus alerts (see Monitoring).
+- The database dumps run as non-root jobs in their app's own namespace, waiting for PostgreSQL before dumping to an `emptyDir`.
+- The bulk-data PVCs (Immich photo library, MinIO object store) are handled by **VolSync** using `copyMethod: Direct` — no full-size clone PVC, the mover mounts the live volume and is pinned to the source pod's node.
+- Retention is 7 daily / 4 weekly / 12 monthly snapshots per repository.
+- A `restic-exporter` (one per repository) feeds snapshot freshness and integrity-check metrics to Prometheus; failed, stale, or corrupt repositories trigger alerts.
+- All jobs have `activeDeadlineSeconds` set to prevent hung runs and `concurrencyPolicy: Forbid` to avoid overlap.
 
 ### Weekly cluster cleanup
 
-A separate `CronJob` (`k8s-resource-cleanup`, in `kube-system`, Sundays at 05:00) sweeps up stale `Evicted`/`Failed` pods and orphaned ReplicaSets cluster-wide. It runs with a dedicated `ServiceAccount` + `ClusterRole` scoped only to listing/deleting those resources.
+Two `CronJob`s in `kube-system` run Sundays:
+
+- `k8s-resource-cleanup` — sweeps stale `Succeeded`/`Failed` pods and orphaned ReplicaSets cluster-wide, using a dedicated `ServiceAccount` + `ClusterRole` scoped only to those resources.
+- `host-cleanup` — prunes unused container images, vacuums journal logs older than 7 days, and clears the apt cache on the node.
 
 ---
 
@@ -297,11 +334,11 @@ A separate `CronJob` (`k8s-resource-cleanup`, in `kube-system`, Sundays at 05:00
 
 Nextcloud is the most complex deployment in the cluster:
 
-- **Helm chart** for the main Nextcloud pod with PostgreSQL and Redis sidecars.
+- **Helm chart** for the main Nextcloud pod with PostgreSQL and Redis.
 - **S3 primary storage** via MinIO (`objectstore.config.php` configured in Helm values).
 - **Dedicated CronJob** (`nextcloud-cron`) running `cron.php` every 5 minutes for background tasks.
-- **AppAPI DSP** deployment for Nextcloud AI/app integrations (Docker Socket Proxy).
 - **HSTS middleware** via Traefik (`stsSeconds: 15552000`, preload enabled).
 - **PodDisruptionBudget** ensuring at least 1 pod is always available.
 - **HPA** scaling up to 3 replicas on 60% CPU utilization.
 
+> The Nextcloud AppAPI / Docker Socket Proxy was deliberately removed: it required a privileged container with access to the host's container socket — a Nextcloud RCE could have escalated straight to root on the node. It is not reintroduced unless ExApps become genuinely necessary.
