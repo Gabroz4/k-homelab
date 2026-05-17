@@ -144,7 +144,7 @@ data:
         "failsafe_speed": 70,
         "fan_step_percent": 5,
         "hysteresis_temp": 3.0,
-        "emergency_temp": 80.0
+        "emergency_temp": 125.0
       },
       "logging": {
         "enable_file_logging": false,
@@ -196,6 +196,23 @@ spec:
             - name: config
               mountPath: /config
               readOnly: true
+        - name: enable-pwm
+          image: alpine:3.23
+          securityContext:
+            privileged: true
+          command:
+            - sh
+            - -c
+            - |
+              for h in /sys/class/hwmon/hwmon*; do
+                [ "$(cat "$h/name" 2>/dev/null)" = "nct6793" ] || continue
+                echo 1 > "$h/pwm1_enable" || true
+                echo 1 > "$h/pwm2_enable" || true
+                break
+              done
+          volumeMounts:
+            - name: sys
+              mountPath: /sys
       containers:
         - name: pankha-agent
           image: debian:stable-slim
