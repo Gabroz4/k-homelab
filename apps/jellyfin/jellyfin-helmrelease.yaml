@@ -74,3 +74,11 @@ spec:
       limits:
         cpu: "6"
         memory: "2Gi"
+
+    startupProbe:
+      httpGet:
+        path: /health
+        port: http
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      failureThreshold: 60
