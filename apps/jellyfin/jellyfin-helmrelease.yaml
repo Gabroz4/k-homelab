@@ -76,6 +76,7 @@ spec:
         memory: "2Gi"
 
     startupProbe:
+      tcpSocket: null
       httpGet:
         path: /health
         port: http
