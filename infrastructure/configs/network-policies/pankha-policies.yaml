@@ -74,8 +74,12 @@ spec:
         - ipBlock:
             cidr: 192.168.1.0/24
         - podSelector:
-            matchLabels:
-              app: pankha-agent
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - pankha-agent
+                  - pankha-agent-homelab
       ports:
         - port: 3143
           protocol: TCP
@@ -167,8 +171,12 @@ metadata:
   namespace: pankha
 spec:
   podSelector:
-    matchLabels:
-      app: pankha-agent
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - pankha-agent
+          - pankha-agent-homelab
   policyTypes:
     - Egress
   egress:
@@ -187,8 +195,12 @@ metadata:
   namespace: pankha
 spec:
   podSelector:
-    matchLabels:
-      app: pankha-agent
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - pankha-agent
+          - pankha-agent-homelab
   policyTypes:
     - Egress
   egress:
