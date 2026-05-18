@@ -29,6 +29,7 @@ spec:
     defaultRules:
       disabled:
         KubeMemoryOvercommit: true
+        KubeCPUOvercommit: true
 
     prometheus:
       prometheusSpec:
