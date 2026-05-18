@@ -78,6 +78,7 @@ spec:
             - --htpasswd-file=/auth/.htpasswd
             - --append-only
             - --prometheus
+            - --prometheus-no-auth
           ports:
             - containerPort: 8000
               name: http
