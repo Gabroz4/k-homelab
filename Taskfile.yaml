@@ -111,3 +111,117 @@ tasks:
     desc: Print the GitHub webhook URL to paste into the repo's webhook settings
     cmds:
       - 'echo "https://flux-webhook.gabro.ovh$(kubectl -n flux-system get receiver github-receiver -o jsonpath=''{.status.webhookPath}'')"'
+
+  secrets-list:
+    desc: All BWS-managed ExternalSecrets with sync status
+    cmds:
+      - kubectl get externalsecret -A
+
+  rotate-bws:
+    desc: 'Generic BWS rotation — task rotate-bws ns=X name=Y [deploy=Z]. Update BW first, then run; force-syncs the ExternalSecret and optionally rolls a Deployment.'
+    requires:
+      vars: [ns, name]
+    cmds:
+      - kubectl -n {{.ns}} annotate externalsecret {{.name}} force-sync=$(date +%s) --overwrite
+      - sleep 3
+      - |
+        if [ -n "{{.deploy}}" ]; then
+          kubectl -n {{.ns}} rollout restart deploy/{{.deploy}}
+          kubectl -n {{.ns}} rollout status deploy/{{.deploy}}
+        else
+          echo "skipped restart (no deploy= given; rely on Reloader annotation if present)"
+        fi
+
+  rotate-tunnel:
+    desc: 'Rotate a Cloudflare tunnel token — task rotate-tunnel svc=jellyfin. Generate new token in CF dash for the SAME tunnel, update BW under cloudflared/<svc>-tunnel-token/token, then run.'
+    requires:
+      vars: [svc]
+    cmds:
+      - kubectl -n cloudflared annotate externalsecret {{.svc}}-tunnel-token force-sync=$(date +%s) --overwrite
+      - sleep 3
+      - kubectl -n cloudflared rollout restart deploy/cloudflared-{{.svc}}
+      - kubectl -n cloudflared rollout status deploy/cloudflared-{{.svc}}
+
+  rotate-cloudflare-api:
+    desc: 'Rotate the Cloudflare API token used by cert-manager. Generate new token in CF dash (Zone:DNS:Edit for the zone), update BW under cert-manager/cloudflare-api-token/api-token, then run.'
+    cmds:
+      - kubectl -n cert-manager annotate externalsecret cloudflare-api-token force-sync=$(date +%s) --overwrite
+      - echo "Token rotated. Cert-manager picks it up on next reconciliation; no restart needed."
+
+  rotate-webhook-hmac:
+    desc: 'Rotate the Flux GitHub webhook HMAC. Generate new in GitHub repo Settings → Webhooks, update BW under flux-system/github-webhook-token/token, then run.'
+    cmds:
+      - kubectl -n flux-system annotate externalsecret github-webhook-token force-sync=$(date +%s) --overwrite
+      - sleep 3
+      - kubectl -n flux-system rollout restart deploy/notification-controller
+      - kubectl -n flux-system rollout status deploy/notification-controller
+
+  rotate-grafana-admin:
+    desc: 'Rotate the Grafana admin password. Update BW under monitoring/grafana-admin-credentials/admin-password, then run. Existing browser sessions persist until cookie expiry.'
+    cmds:
+      - kubectl -n monitoring annotate externalsecret grafana-admin-credentials force-sync=$(date +%s) --overwrite
+      - sleep 3
+      - kubectl -n monitoring rollout restart deploy/monitoring-grafana
+      - kubectl -n monitoring rollout status deploy/monitoring-grafana
+
+  rotate-postgres:
+    desc: 'Rotate a Postgres password — task rotate-postgres app=nextcloud (one of nextcloud, authentik, immich, pankha). Update BW with new password first, then run; the task ALTERs the user with the new password and rolls consumers.'
+    requires:
+      vars: [app]
+    vars:
+      PG_POD:
+        sh: |
+          case "{{.app}}" in
+            nextcloud) echo "nextcloud-postgresql-0" ;;
+            authentik) echo "authentik-postgresql-0" ;;
+            immich)    echo "immich-postgresql-0" ;;
+            pankha)    kubectl -n pankha get pod -l app=pankha-postgres -o jsonpath='{.items[0].metadata.name}' ;;
+            *) echo "ERR_UNKNOWN_APP" ;;
+          esac
+      PG_USER:
+        sh: echo "{{.app}}"
+      PG_DB:
+        sh: echo "{{.app}}"
+      ES_NAME:
+        sh: |
+          case "{{.app}}" in
+            nextcloud) echo "nextcloud-db" ;;
+            authentik) echo "authentik-credentials" ;;
+            immich)    echo "immich-secrets" ;;
+            pankha)    echo "pankha-secrets" ;;
+          esac
+      PW_KEY:
+        sh: |
+          case "{{.app}}" in
+            nextcloud) echo "db-password" ;;
+            authentik) echo "postgresql-password" ;;
+            immich)    echo "POSTGRES_PASSWORD" ;;
+            pankha)    echo "POSTGRES_PASSWORD" ;;
+          esac
+      CONSUMERS:
+        sh: |
+          case "{{.app}}" in
+            nextcloud) echo "deploy/nextcloud" ;;
+            authentik) echo "deploy/authentik-server deploy/authentik-worker" ;;
+            immich)    echo "deploy/immich-server deploy/immich-machine-learning" ;;
+            pankha)    echo "deploy/pankha-app" ;;
+          esac
+    cmds:
+      - |
+        set -eu
+        [ "{{.PG_POD}}" = "ERR_UNKNOWN_APP" ] && { echo "Unknown app '{{.app}}'. Valid: nextcloud, authentik, immich, pankha"; exit 1; }
+        OLD_PW=$(kubectl -n {{.app}} get secret {{.ES_NAME}} -o jsonpath="{.data['{{.PW_KEY}}']}" | base64 -d)
+        kubectl -n {{.app}} annotate externalsecret {{.ES_NAME}} force-sync=$(date +%s) --overwrite
+        sleep 5
+        NEW_PW=$(kubectl -n {{.app}} get secret {{.ES_NAME}} -o jsonpath="{.data['{{.PW_KEY}}']}" | base64 -d)
+        if [ "$OLD_PW" = "$NEW_PW" ]; then
+          echo "ERROR: Secret value did not change after force-sync. Update Bitwarden first."
+          exit 1
+        fi
+        echo "Changing Postgres user '{{.PG_USER}}' password in {{.PG_POD}}..."
+        kubectl -n {{.app}} exec -i {{.PG_POD}} -- env PGPASSWORD="$OLD_PW" psql -h localhost -U {{.PG_USER}} -d {{.PG_DB}} -v ON_ERROR_STOP=1 <<SQL
+        ALTER USER "{{.PG_USER}}" WITH PASSWORD '$NEW_PW';
+        SQL
+        echo "Rolling consumers: {{.CONSUMERS}}"
+        kubectl -n {{.app}} rollout restart {{.CONSUMERS}}
+        kubectl -n {{.app}} rollout status {{.CONSUMERS}} --timeout=180s
