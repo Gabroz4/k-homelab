@@ -225,3 +225,125 @@ tasks:
         echo "Rolling consumers: {{.CONSUMERS}}"
         kubectl -n {{.app}} rollout restart {{.CONSUMERS}}
         kubectl -n {{.app}} rollout status {{.CONSUMERS}} --timeout=180s
+
+  autorotate-bws:
+    desc: 'Generate + write BW + force-sync + restart — task autorotate-bws ns=X name=Y field=Z [deploy=W]. Fully automated rotation for simple BWS-only secrets; no third-party UI involved.'
+    requires:
+      vars: [ns, name, field]
+    cmds:
+      - |
+        set -eu
+        KEY="{{.ns}}/{{.name}}/{{.field}}"
+        echo "Rotating BW key: $KEY"
+        ./scripts/bws-rotate.sh rotate "$KEY" >/dev/null
+        kubectl -n {{.ns}} annotate externalsecret {{.name}} force-sync=$(date +%s) --overwrite
+        sleep 3
+        if [ -n "{{.deploy}}" ]; then
+          kubectl -n {{.ns}} rollout restart deploy/{{.deploy}}
+          kubectl -n {{.ns}} rollout status  deploy/{{.deploy}} --timeout=180s
+        else
+          echo "skipped restart (no deploy= given; rely on Reloader annotation if present)"
+        fi
+
+  autorotate-postgres:
+    desc: 'Generate + write BW + ALTER USER + restart — task autorotate-postgres app=X (nextcloud | authentik | immich | pankha). End-to-end Postgres password rotation.'
+    requires:
+      vars: [app]
+    vars:
+      PG_POD:
+        sh: |
+          case "{{.app}}" in
+            nextcloud) echo "nextcloud-postgresql-0" ;;
+            authentik) echo "authentik-postgresql-0" ;;
+            immich)    echo "immich-postgresql-0" ;;
+            pankha)    kubectl -n pankha get pod -l app=pankha-postgres -o jsonpath='{.items[0].metadata.name}' ;;
+            *) echo "ERR_UNKNOWN_APP" ;;
+          esac
+      ES_NAME:
+        sh: |
+          case "{{.app}}" in
+            nextcloud) echo "nextcloud-db" ;;
+            authentik) echo "authentik-credentials" ;;
+            immich)    echo "immich-secrets" ;;
+            pankha)    echo "pankha-secrets" ;;
+          esac
+      PW_KEY:
+        sh: |
+          case "{{.app}}" in
+            nextcloud) echo "db-password" ;;
+            authentik) echo "postgresql-password" ;;
+            immich)    echo "POSTGRES_PASSWORD" ;;
+            pankha)    echo "POSTGRES_PASSWORD" ;;
+          esac
+      BW_KEYS:
+        sh: |
+          case "{{.app}}" in
+            nextcloud) echo "nextcloud/nextcloud-db/db-password" ;;
+            authentik) echo "authentik/authentik-credentials/postgresql-password" ;;
+            immich)    echo "immich/immich-secrets/POSTGRES_PASSWORD immich/immich-secrets/DB_PASSWORD" ;;
+            pankha)    echo "pankha/pankha-secrets/POSTGRES_PASSWORD" ;;
+          esac
+      CONSUMERS:
+        sh: |
+          case "{{.app}}" in
+            nextcloud) echo "deploy/nextcloud" ;;
+            authentik) echo "deploy/authentik-server deploy/authentik-worker" ;;
+            immich)    echo "deploy/immich-server deploy/immich-machine-learning" ;;
+            pankha)    echo "deploy/pankha-app" ;;
+          esac
+    cmds:
+      - |
+        set -eu
+        [ "{{.PG_POD}}" = "ERR_UNKNOWN_APP" ] && { echo "Unknown app '{{.app}}'. Valid: nextcloud, authentik, immich, pankha"; exit 1; }
+        OLD_PW=$(kubectl -n {{.app}} get secret {{.ES_NAME}} -o jsonpath="{.data['{{.PW_KEY}}']}" | base64 -d)
+        NEW_PW=$(./scripts/bws-rotate.sh gen)
+        echo "Writing new password to BW: {{.BW_KEYS}}"
+        for k in {{.BW_KEYS}}; do
+          ./scripts/bws-rotate.sh set "$k" "$NEW_PW"
+        done
+        kubectl -n {{.app}} annotate externalsecret {{.ES_NAME}} force-sync=$(date +%s) --overwrite
+        sleep 5
+        SYNCED=$(kubectl -n {{.app}} get secret {{.ES_NAME}} -o jsonpath="{.data['{{.PW_KEY}}']}" | base64 -d)
+        if [ "$SYNCED" != "$NEW_PW" ]; then
+          echo "ERROR: k8s Secret did not pick up the new BW value (still old). Force-sync the ES and re-run."
+          exit 1
+        fi
+        echo "ALTER USER {{.PG_USER}} in {{.PG_POD}}..."
+        kubectl -n {{.app}} exec -i {{.PG_POD}} -- env PGPASSWORD="$OLD_PW" psql -h localhost -U {{.PG_USER}} -d {{.PG_DB}} -v ON_ERROR_STOP=1 <<SQL
+        ALTER USER "{{.PG_USER}}" WITH PASSWORD '$NEW_PW';
+        SQL
+        echo "Rolling consumers: {{.CONSUMERS}}"
+        kubectl -n {{.app}} rollout restart {{.CONSUMERS}}
+        kubectl -n {{.app}} rollout status {{.CONSUMERS}} --timeout=180s
+
+  autorotate-minio-root:
+    desc: 'Generate + write BW + restart MinIO. Rotates only the rootPassword (rootUser stays).'
+    cmds:
+      - |
+        set -eu
+        echo "Rotating BW key: minio/minio-root-credentials/rootPassword"
+        ./scripts/bws-rotate.sh rotate "minio/minio-root-credentials/rootPassword" >/dev/null
+        kubectl -n minio annotate externalsecret minio-root-credentials force-sync=$(date +%s) --overwrite
+        sleep 3
+        kubectl -n minio rollout restart deploy/minio
+        kubectl -n minio rollout status deploy/minio --timeout=180s
+
+  autorotate-minio-nc-user:
+    desc: 'Generate + mc admin user add (overwrite) + write BW + restart Nextcloud. Rotates the non-root nextcloud-access-key user shared by MinIO and Nextcloud.'
+    cmds:
+      - |
+        set -eu
+        NEW_PW=$(./scripts/bws-rotate.sh gen)
+        ROOT_USER=$(kubectl -n minio get secret minio-root-credentials -o jsonpath='{.data.rootUser}' | base64 -d)
+        ROOT_PW=$(kubectl -n minio get secret minio-root-credentials -o jsonpath='{.data.rootPassword}' | base64 -d)
+        echo "Authenticating mc with root..."
+        kubectl -n minio exec deploy/minio -- mc alias set local http://localhost:9000 "$ROOT_USER" "$ROOT_PW" >/dev/null
+        echo "Setting new password for MinIO user 'nextcloud-access-key'..."
+        kubectl -n minio exec deploy/minio -- mc admin user add local nextcloud-access-key "$NEW_PW" >/dev/null
+        echo "Writing BW key: nextcloud/nextcloud-s3/S3_SECRET_KEY (shared by minio-nextcloud-user and nextcloud-s3 ESs)"
+        ./scripts/bws-rotate.sh set "nextcloud/nextcloud-s3/S3_SECRET_KEY" "$NEW_PW"
+        kubectl -n minio     annotate externalsecret minio-nextcloud-user force-sync=$(date +%s) --overwrite
+        kubectl -n nextcloud annotate externalsecret nextcloud-s3         force-sync=$(date +%s) --overwrite
+        sleep 3
+        kubectl -n nextcloud rollout restart deploy/nextcloud
+        kubectl -n nextcloud rollout status deploy/nextcloud --timeout=180s

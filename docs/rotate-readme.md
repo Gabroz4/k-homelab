@@ -6,22 +6,30 @@ How to rotate every secret in this cluster. Read this before doing a rotation pa
 
 ## 0. The two-line summary
 
-- For most secrets: **update the value in Bitwarden first**, then run the matching `task rotate-*` command. The task force-syncs the ExternalSecret and rolls consumer Deployments.
-- The exceptions (Postgres, MinIO root, restic repo passwords, the BWS access token itself) need a specific *runtime-side* change before or after the BW update. Each is documented below.
+- Secrets whose value is purely internal (passwords, signing keys) can rotate **end-to-end with one command** via the `autorotate-*` tasks — they generate a fresh value, write it to Bitwarden via `bws`, force-sync the ExternalSecret, and roll consumers. No BW UI step.
+- Secrets whose value comes from a third party (Cloudflare, GitHub, Telegram, Authentik UI) still need the manual `rotate-*` flow: **update the value in Bitwarden first**, then run the matching task.
 
 ## 1. Tasks at a glance
 
 ```
 task secrets-list                                     # status of every ExternalSecret
+
+# fully automated — generate + write BW + apply
+task autorotate-bws ns=X name=Y field=Z [deploy=W]    # generic auto-rotate for any simple BWS-only secret
+task autorotate-postgres app=nextcloud                # one of nextcloud, authentik, immich, pankha
+task autorotate-minio-root                            # MinIO root password
+task autorotate-minio-nc-user                         # MinIO nextcloud-access-key user
+
+# manual BW step required first (value comes from third party)
 task rotate-bws ns=X name=Y [deploy=Z]                # generic: force-sync + optional restart
 task rotate-tunnel svc=jellyfin                       # any of 7 Cloudflare tunnels
 task rotate-cloudflare-api                            # cert-manager's CF API token
 task rotate-webhook-hmac                              # Flux GitHub webhook HMAC
-task rotate-grafana-admin                             # Grafana admin password
-task rotate-postgres app=nextcloud                    # one of nextcloud, authentik, immich, pankha
+task rotate-grafana-admin                             # Grafana admin password (manual BW; UI alternative)
+task rotate-postgres app=nextcloud                    # legacy: expects BW updated manually
 ```
 
-What each task does internally is in `Taskfile.yaml`. They all expect BW to already hold the new value when invoked.
+The `autorotate-*` family uses `scripts/bws-rotate.sh`, which talks to BWS with the same access token ESO uses (read from `external-secrets/bitwarden-access-token`). To rotate from a different host, export `BWS_ACCESS_TOKEN` first.
 
 ---
 
@@ -29,9 +37,9 @@ What each task does internally is in `Taskfile.yaml`. They all expect BW to alre
 
 Every secret in the cluster, by rotation category. The "BW path" column is the key path used in Bitwarden Secrets Manager — convention is `<namespace>/<secret-name>/<field>`.
 
-### 2.1 Simple BWS-only (use `task rotate-bws` or the dedicated task)
+### 2.1 Simple BWS-only (use `task autorotate-bws` or the dedicated task)
 
-These live entirely in Bitwarden. Procedure: rotate in BW UI → run task → app picks up the new value on restart.
+These live entirely in Bitwarden. Recommended path: `task autorotate-bws ns=<ns> name=<es-name> field=<bw-field> deploy=<deploy>` — generates a new value, writes it to BW, force-syncs the ExternalSecret, and rolls the Deployment. The legacy `rotate-bws` path (update BW UI → run task) still works if you want to set a specific value.
 
 | Secret | BW path | Rotation task | Notes |
 |---|---|---|---|
@@ -73,23 +81,23 @@ Reminder: `flux-webhook.gabro.ovh` and `authentik.gabro.ovh` ride on the **same*
 | Cloudflare API token (cert-manager DNS-01) | CF dash → "My Profile" → API Tokens. Permissions: Zone:DNS:Edit on `gabro.ovh`. | `cert-manager/cloudflare-api-token/api-token` | `rotate-cloudflare-api` |
 | GitHub webhook HMAC | GitHub repo → Settings → Webhooks → edit `flux-webhook.gabro.ovh` → regenerate secret. | `flux-system/github-webhook-token/token` | `rotate-webhook-hmac` |
 
-### 2.4 Postgres passwords (`task rotate-postgres app=<name>`)
+### 2.4 Postgres passwords (`task autorotate-postgres app=<name>`)
 
-Four Postgres-backed apps. The task handles the order-of-operations automatically: reads old password, force-syncs ES, ALTER USERs with the new value, rolls consumers.
+Four Postgres-backed apps. `autorotate-postgres` generates a new password, writes it to BW (for `immich`, both `POSTGRES_PASSWORD` and `DB_PASSWORD` keys are kept in lockstep), force-syncs the ES, `ALTER USER`s the runtime with the new password, and rolls consumers.
 
-| App | BW path | Postgres pod | Consumer Deployments |
+| App | BW key(s) | Postgres pod | Consumer Deployments |
 |---|---|---|---|
 | nextcloud | `nextcloud/nextcloud-db/db-password` | `nextcloud-postgresql-0` | `nextcloud` |
 | authentik | `authentik/authentik-credentials/postgresql-password` | `authentik-postgresql-0` | `authentik-server`, `authentik-worker` |
-| immich | `immich/immich-secrets/POSTGRES_PASSWORD` (also `DB_PASSWORD` — keep both equal) | `immich-postgresql-0` | `immich-server`, `immich-machine-learning` |
+| immich | `immich/immich-secrets/POSTGRES_PASSWORD` + `.../DB_PASSWORD` (both updated by the task) | `immich-postgresql-0` | `immich-server`, `immich-machine-learning` |
 | pankha | `pankha/pankha-secrets/POSTGRES_PASSWORD` | (pankha-postgres deploy) | `pankha-app` |
 
 Run:
 ```
-task rotate-postgres app=nextcloud
+task autorotate-postgres app=nextcloud
 ```
 
-If the task errors with "Secret value did not change after force-sync," you forgot to update BW — fix that, then re-run.
+The legacy `rotate-postgres` task still exists for cases where you need to set a specific password (e.g. recovering from a mismatch) — update BW in the UI first, then run.
 
 ### 2.5 Nextcloud Redis password
 
@@ -106,53 +114,31 @@ Same shape as Postgres but no ALTER USER — Redis takes the password from env. 
 
 ### 3.1 MinIO root credentials
 
-Used by Nextcloud as primary S3 storage, and by VolSync to back up the MinIO PVC. Rotating root means re-coordinating MinIO + Nextcloud + the volsync minio replicationsource.
+Used by MinIO itself as the admin login and by VolSync to back up the MinIO PVC. Rotating root only touches MinIO — Nextcloud's S3 client uses the separate `nextcloud-access-key` user (§3.2), not root.
 
-```bash
-# 1. Generate a new MinIO root user/password locally — pick any strong value.
-NEW_USER=admin
-NEW_PW=$(openssl rand -base64 32)
-
-# 2. Update BW: minio/minio-root-credentials/root-user, .../root-password
-
-# 3. Force-sync; this updates the in-cluster Secret BUT NOT the running MinIO.
-task sync-es ns=minio name=minio-root-credentials
-
-# 4. Restart MinIO to read the new env vars on next start.
-#    Bitnami MinIO chart reads MINIO_ROOT_USER/MINIO_ROOT_PASSWORD only at boot.
-kubectl -n minio rollout restart deploy/minio
-kubectl -n minio rollout status deploy/minio
-
-# 5. Nextcloud uses the MinIO root creds for primary S3 — verify Nextcloud
-#    still mounts the bucket:
-kubectl -n nextcloud exec deploy/nextcloud -c nextcloud -- \
-  php /var/www/html/occ files:scan --all 2>&1 | head -5
+```
+task autorotate-minio-root
 ```
 
-If MinIO refuses to start with the new password (rare), check the chart's `auth.rootUser`/`auth.rootPassword` settings — they reference the Secret via `existingSecret`. Roll back by restoring the old value to BW and re-syncing.
+The task generates a new value, writes BW key `minio/minio-root-credentials/rootPassword`, force-syncs the `minio-root-credentials` ES, then rolls `deploy/minio`. The Bitnami MinIO chart reads `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` only at boot, so the rollout is required.
+
+Manual fallback (set a specific password): update BW UI under `minio/minio-root-credentials/rootPassword`, then `task sync-es ns=minio name=minio-root-credentials && kubectl -n minio rollout restart deploy/minio`. The `rootUser` field stays as `admin`.
 
 ### 3.2 MinIO Nextcloud user
 
-A separate non-root MinIO user used by Nextcloud's primary S3 backend (the `existingSecret: nextcloud-s3` reference in `nextcloud-helmrelease.yaml`).
+A non-root MinIO user (`nextcloud-access-key`) used by Nextcloud's S3 primary storage. The MinIO server-side Secret (`minio/minio-nextcloud-user`) and the Nextcloud client Secret (`nextcloud/nextcloud-s3`) both pull from the **same** BW key — `nextcloud/nextcloud-s3/S3_SECRET_KEY` — so there is only one value to rotate.
 
-```bash
-# 1. Pick a new password.
-NEW_PW=$(openssl rand -base64 32)
-
-# 2. As root, change the user's password inside MinIO:
-kubectl -n minio exec deploy/minio -- \
-  mc admin user enable local nextcloud-user
-kubectl -n minio exec deploy/minio -- \
-  mc admin user add local nextcloud-user "$NEW_PW"  # overwrites password
-
-# 3. Update BW: minio/minio-nextcloud-user/access-key (unchanged), .../secret-key (= NEW_PW)
-#    AND nextcloud/nextcloud-s3/secret-key to the SAME value.
-
-# 4. Force-sync both, restart nextcloud:
-task sync-es ns=minio name=minio-nextcloud-user
-task sync-es ns=nextcloud name=nextcloud-s3
-kubectl -n nextcloud rollout restart deploy/nextcloud
 ```
+task autorotate-minio-nc-user
+```
+
+What the task does:
+1. Generate a new password.
+2. Read root creds from `minio-root-credentials` Secret, point `mc alias local` at MinIO.
+3. `mc admin user add local nextcloud-access-key <new>` (upsert — overwrites the existing user's password).
+4. Write the new value to BW (`nextcloud/nextcloud-s3/S3_SECRET_KEY`).
+5. Force-sync both ESs (`minio/minio-nextcloud-user`, `nextcloud/nextcloud-s3`).
+6. Roll `deploy/nextcloud` so it reconnects with the new key.
 
 ### 3.3 restic repository passwords
 
@@ -276,10 +262,10 @@ Suggested order (least to most disruptive). Each step is independent; you can do
 1. **Tunnel tokens** (7×) — `task rotate-tunnel svc=<name>` for each. Quick.
 2. **External-provider tokens** — `task rotate-cloudflare-api`, `task rotate-webhook-hmac`. Quick.
 3. **App admin credentials** — `task rotate-grafana-admin`. Quick.
-4. **Postgres passwords** (4×) — `task rotate-postgres app=<name>` for each. ~30s app downtime each.
+4. **Postgres passwords** (4×) — `task autorotate-postgres app=<name>` for each. ~30s app downtime each.
 5. **Redis password** — manual procedure (§2.5). ~30s outage.
-6. **MinIO root** + **MinIO nextcloud-user** — §3.1, §3.2. ~1m Nextcloud outage.
-7. **App signing keys** — Authentik secret-key, Immich JWT, Nextcloud secret, Pankha JWT/session. Each forces a re-login on every device for that app. Do these last.
+6. **MinIO root** + **MinIO nextcloud-user** — `task autorotate-minio-root` then `task autorotate-minio-nc-user`. ~1m Nextcloud outage.
+7. **App signing keys** — Authentik secret-key, Immich JWT, Nextcloud secret, Pankha JWT/session via `task autorotate-bws ns=… name=… field=… deploy=…`. Each forces a re-login on every device for that app. Do these last.
 8. **restic REST server htpasswd** — §3.4. Lockstep update across 5 consumer namespaces. Test a backup before moving on.
 9. **restic repo passwords** (5×) — §3.3. The riskiest; verify each one works before removing the old key.
 10. **BWS access token** — §4. Do this only after everything above is healthy and you've confirmed ESO is syncing all ExternalSecrets.
