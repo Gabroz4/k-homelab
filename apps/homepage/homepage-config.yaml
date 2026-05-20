@@ -43,6 +43,7 @@ data:
             icon: immich.png
             namespace: immich
             app: immich
+            podSelector: app=immich-server
         - Jellyfin:
             href: https://jellyfin.${PUBLIC_DOMAIN}
             description: Movies and TV
@@ -55,6 +56,7 @@ data:
             icon: navidrome.png
             namespace: music
             app: navidrome
+            podSelector: app=navidrome
         - Grafana:
             href: https://grafana.${PUBLIC_DOMAIN}
             description: Dashboards
@@ -67,6 +69,7 @@ data:
             icon: adguard-home.png
             namespace: adguard
             app: adguardhome
+            podSelector: app=adguardhome
         - Authentik:
             href: https://authentik.${PUBLIC_DOMAIN}
             description: SSO / identity provider
@@ -87,42 +90,49 @@ data:
             icon: navidrome.png
             namespace: music
             app: navidrome
+            podSelector: app=navidrome
         - Sonarr:
             href: https://sonarr.${LOCAL_DOMAIN}
             description: TV series management
             icon: sonarr.png
             namespace: jellyfin
             app: sonarr
+            podSelector: app=sonarr
         - Radarr:
             href: https://radarr.${LOCAL_DOMAIN}
             description: Movie management
             icon: radarr.png
             namespace: jellyfin
             app: radarr
+            podSelector: app=radarr
         - Lidarr:
             href: https://lidarr.${LOCAL_DOMAIN}
             description: Music management
             icon: lidarr.png
             namespace: music
             app: lidarr
+            podSelector: app=lidarr
         - Prowlarr:
             href: https://prowlarr.${LOCAL_DOMAIN}
             description: Indexer manager
             icon: prowlarr.png
             namespace: jellyfin
             app: prowlarr
+            podSelector: app=prowlarr
         - Seerr:
             href: https://seerr.${LOCAL_DOMAIN}
             description: Media request portal
             icon: jellyseerr.png
             namespace: jellyfin
             app: seerr
+            podSelector: app=seerr
         - qBittorrent:
             href: https://qbittorrent.${LOCAL_DOMAIN}
             description: Torrent client
             icon: qbittorrent.png
             namespace: jellyfin
             app: qbittorrent
+            podSelector: app=qbittorrent
 
     - Local:
         - Grafana:
@@ -137,6 +147,7 @@ data:
             icon: adguard-home.png
             namespace: adguard
             app: adguardhome
+            podSelector: app=adguardhome
         - Prometheus:
             href: https://prometheus.${LOCAL_DOMAIN}
             description: Metrics database
@@ -149,24 +160,28 @@ data:
             icon: mdi-kubernetes
             namespace: kube-system
             app: headlamp
+            podSelector: k8s-app=headlamp
         - MinIO:
             href: https://minio.${LOCAL_DOMAIN}
             description: S3-compatible object storage
             icon: minio.png
             namespace: minio
             app: minio
+            podSelector: app=minio
         - Longhorn:
             href: http://192.168.1.50:32286
             description: Distributed block storage
             icon: longhorn.png
             namespace: longhorn-system
             app: longhorn-frontend
+            podSelector: app=longhorn-ui
         - Pankha:
             href: https://pankha.${LOCAL_DOMAIN}
             description: Fan control and hardware monitoring
             icon: mdi-fan
             namespace: pankha
             app: pankha-app
+            podSelector: app=pankha-app
 
   bookmarks.yaml: |
     - External:
