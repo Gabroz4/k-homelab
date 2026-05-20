@@ -278,7 +278,7 @@ tasks:
       BW_KEYS:
         sh: |
           case "{{.app}}" in
-            nextcloud) echo "nextcloud/nextcloud-db/db-password" ;;
+            nextcloud) echo "nextcloud/nextcloud-db/db-password nextcloud/nextcloud-secrets/POSTGRES_PASSWORD" ;;
             authentik) echo "authentik/authentik-credentials/postgresql-password" ;;
             immich)    echo "immich/immich-secrets/POSTGRES_PASSWORD immich/immich-secrets/DB_PASSWORD" ;;
             pankha)    echo "pankha/pankha-secrets/POSTGRES_PASSWORD" ;;

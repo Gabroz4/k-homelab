@@ -87,7 +87,7 @@ Four Postgres-backed apps. `autorotate-postgres` generates a new password, write
 
 | App | BW key(s) | Postgres pod | Consumer Deployments |
 |---|---|---|---|
-| nextcloud | `nextcloud/nextcloud-db/db-password` | `nextcloud-postgresql-0` | `nextcloud` |
+| nextcloud | `nextcloud/nextcloud-db/db-password` + `nextcloud/nextcloud-secrets/POSTGRES_PASSWORD` (both updated by the task — first is the nextcloud app's env, second is the postgres pod's init env; must stay in lockstep) | `nextcloud-postgresql-0` | `nextcloud` |
 | authentik | `authentik/authentik-credentials/postgresql-password` | `authentik-postgresql-0` | `authentik-server`, `authentik-worker` |
 | immich | `immich/immich-secrets/POSTGRES_PASSWORD` + `.../DB_PASSWORD` (both updated by the task) | `immich-postgresql-0` | `immich-server`, `immich-machine-learning` |
 | pankha | `pankha/pankha-secrets/POSTGRES_PASSWORD` | (pankha-postgres deploy) | `pankha-app` |
