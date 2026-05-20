@@ -234,6 +234,31 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
+  name: allow-apiserver
+  namespace: authentik
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: authentik
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 10.43.0.1/32
+      ports:
+        - port: 443
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 192.168.1.50/32
+      ports:
+        - port: 6443
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
   name: allow-authentik-internet
   namespace: authentik
 spec:
