@@ -39,29 +39,6 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-ingress-from-cloudflared-navidrome
-  namespace: music
-spec:
-  podSelector:
-    matchLabels:
-      app: navidrome
-  policyTypes:
-    - Ingress
-  ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: cloudflared
-          podSelector:
-            matchLabels:
-              app: cloudflared-navidrome
-      ports:
-        - port: 4533
-          protocol: TCP
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
   name: allow-prometheus-scrape
   namespace: music
 spec:

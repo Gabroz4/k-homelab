@@ -40,12 +40,6 @@ spec:
               kubernetes.io/metadata.name: kube-system
         - namespaceSelector:
             matchLabels:
-              kubernetes.io/metadata.name: cloudflared
-          podSelector:
-            matchLabels:
-              app: cloudflared-authentik
-        - namespaceSelector:
-            matchLabels:
               kubernetes.io/metadata.name: monitoring
         - namespaceSelector:
             matchLabels:
