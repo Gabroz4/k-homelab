@@ -44,7 +44,7 @@ spec:
             matchLabels:
               app: cloudflared-nextcloud
       ports:
-        - port: 8080
+        - port: 80
           protocol: TCP
 ---
 apiVersion: networking.k8s.io/v1
