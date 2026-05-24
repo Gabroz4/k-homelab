@@ -135,6 +135,25 @@ data:
             podSelector: app=qbittorrent
 
     - Local:
+        - Nextcloud:
+            href: https://nextcloud.${LOCAL_DOMAIN}
+            description: Files, calendar, contacts (LAN)
+            icon: nextcloud.png
+            namespace: nextcloud
+            app: nextcloud
+        - Immich:
+            href: https://immich.${LOCAL_DOMAIN}
+            description: Photo and video library (LAN)
+            icon: immich.png
+            namespace: immich
+            app: immich
+            podSelector: app=immich-server
+        - Authentik:
+            href: https://authentik.${LOCAL_DOMAIN}
+            description: SSO / identity provider (LAN)
+            icon: authentik.png
+            namespace: authentik
+            app: authentik
         - Grafana:
             href: https://grafana.${LOCAL_DOMAIN}
             description: Dashboards (LAN)
