@@ -42,7 +42,7 @@ spec:
     spec:
       containers:
         - name: adguardhome
-          image: adguard/adguardhome:v0.107.75
+          image: adguard/adguardhome:v0.107.76
           securityContext:
             privileged: false
             allowPrivilegeEscalation: false
