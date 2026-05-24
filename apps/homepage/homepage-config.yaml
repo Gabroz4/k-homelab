@@ -76,6 +76,10 @@ data:
             icon: authentik.png
             namespace: authentik
             app: authentik
+        - Cruscotto:
+            href: https://cruscotto.${PUBLIC_DOMAIN}
+            description: Smart home dashboard
+            icon: mdi-home-automation
 
     - Media:
         - Jellyfin:
