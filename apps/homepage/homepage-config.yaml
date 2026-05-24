@@ -215,9 +215,9 @@ data:
         - Kubernetes Docs:
             - abbr: K8
               href: https://kubernetes.io/docs/
-        - gethomepage Docs:
-            - abbr: HP
-              href: https://gethomepage.dev/
+        - Personal Website:
+            - abbr: GB
+              href: https://website.${PUBLIC_DOMAIN}
 
   widgets.yaml: |
     - resources:
