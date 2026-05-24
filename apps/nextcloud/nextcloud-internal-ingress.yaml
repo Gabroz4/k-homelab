@@ -4,7 +4,7 @@ metadata:
   name: nextcloud-internal
   namespace: nextcloud
   annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: nextcloud-authentik-forward-auth@kubernetescrd,nextcloud-hsts@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: nextcloud-hsts@kubernetescrd
 spec:
   ingressClassName: traefik
   tls:
