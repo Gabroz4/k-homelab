@@ -19,3 +19,26 @@ spec:
                 name: authentik-server
                 port:
                   number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: authentik-internal
+  namespace: authentik
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - authentik.${LOCAL_DOMAIN}
+      secretName: wildcard-local-tls
+  rules:
+    - host: authentik.${LOCAL_DOMAIN}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: authentik-server
+                port:
+                  number: 80

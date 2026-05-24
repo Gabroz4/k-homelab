@@ -34,16 +34,13 @@ spec:
         passwordKey: NEXTCLOUD_ADMIN_PASSWORD
       trustedDomains:
         - nextcloud.${PUBLIC_DOMAIN}
+        - nextcloud.${LOCAL_DOMAIN}
         - localhost
       extraEnv:
-        - name: OVERWRITEHOST
-          value: nextcloud.${PUBLIC_DOMAIN}
         - name: OVERWRITEPROTOCOL
           value: https
         - name: TRUSTED_PROXIES
           value: "10.42.0.0/16 10.43.0.0/16"
-        - name: APACHE_SERVER_NAME
-          value: nextcloud.${PUBLIC_DOMAIN}
         - name: PHP_MEMORY_LIMIT
           value: "1024M"
         - name: PHP_UPLOAD_LIMIT

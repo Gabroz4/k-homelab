@@ -18,3 +18,28 @@ spec:
                 name: immich-server
                 port:
                   number: 2283
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: immich-internal
+  namespace: immich
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: immich-authentik-forward-auth@kubernetescrd,immich-increase-buffer@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - immich.${LOCAL_DOMAIN}
+      secretName: wildcard-local-tls
+  rules:
+    - host: immich.${LOCAL_DOMAIN}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: immich-server
+                port:
+                  number: 2283

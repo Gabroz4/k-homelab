@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nextcloud-internal
+  namespace: nextcloud
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: nextcloud-authentik-forward-auth@kubernetescrd,nextcloud-hsts@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - nextcloud.${LOCAL_DOMAIN}
+      secretName: wildcard-local-tls
+  rules:
+    - host: nextcloud.${LOCAL_DOMAIN}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nextcloud
+                port:
+                  number: 8080
