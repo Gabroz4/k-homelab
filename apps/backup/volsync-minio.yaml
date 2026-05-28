@@ -39,7 +39,7 @@ spec:
   restic:
     repository: volsync-restic-minio
     copyMethod: Direct
-    cacheCapacity: 2Gi
+    cacheCapacity: 10Gi
     cacheStorageClassName: longhorn-single
     pruneIntervalDays: 7
     retain:
