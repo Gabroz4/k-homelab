@@ -25,7 +25,8 @@ spec:
             (
               time() - kube_cronjob_status_last_successful_time{
                 job="kube-state-metrics",
-                namespace!="kube-system"
+                namespace!="kube-system",
+                cronjob!="restic-prune"
               }
             ) > (4 * 86400)
           for: 10m
@@ -55,6 +56,24 @@ spec:
               Weekly cleanup CronJob {{ $labels.namespace }}/{{ $labels.cronjob }}
               last succeeded {{ $value | humanizeDuration }} ago. Check recent
               Job history with `kubectl get jobs -n {{ $labels.namespace }}`.
+        - alert: ResticPruneStale
+          expr: >
+            (
+              time() - kube_cronjob_status_last_successful_time{
+                job="kube-state-metrics",
+                namespace="backup",
+                cronjob="restic-prune"
+              }
+            ) > (8 * 86400)
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "restic-prune has not succeeded in >8 days"
+            description: >
+              Weekly restic-prune CronJob last succeeded
+              {{ $value | humanizeDuration }} ago. Check recent Job history with
+              `kubectl get jobs -n backup`.
         - alert: BackupCronJobNeverSucceeded
           expr: >
             kube_cronjob_status_last_successful_time{
