@@ -32,8 +32,6 @@
 
 ## Highlights
 
-What makes this more than a pile of `kubectl apply`:
-
 - **Pure GitOps.** Flux reconciles the entire cluster from this repo. Nothing is applied by hand; `main` *is* the cluster state. A GitHub webhook triggers instant reconciliation.
 - **Secrets never live in Git.** Every credential is pulled at runtime from **Bitwarden Secrets Manager** via External Secrets. The repo only ever references secret *keys*.
 - **One-command secret rotation.** A full rotation runbook lives in the `Taskfile` — tunnel tokens, the Cloudflare API token, Postgres passwords (with live `ALTER USER`), MinIO credentials, Grafana admin, and the Flux webhook HMAC.
