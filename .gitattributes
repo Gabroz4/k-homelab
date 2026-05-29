@@ -1,0 +1,17 @@
+*.yaml linguist-detectable=true
+*.yml  linguist-detectable=true
+
+*.yaml linguist-language=YAML
+*.yml  linguist-language=YAML
+
+*.md   linguist-documentation=true
+*.rst  linguist-documentation=true
+
+**/charts/**        linguist-vendored=true
+**/crds/**          linguist-generated=true
+**/.github/**       linguist-documentation=true
+
+*.sh   linguist-detectable=true
+*.py   linguist-detectable=true
+
+Dockerfile*        linguist-detectable=true
