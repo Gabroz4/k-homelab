@@ -46,6 +46,12 @@ spec:
       daily: 7
       weekly: 4
       monthly: 12
+    moverResources:
+      requests:
+        cpu: 200m
+        memory: 1Gi
+      limits:
+        memory: 2Gi
     moverAffinity:
       podAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
