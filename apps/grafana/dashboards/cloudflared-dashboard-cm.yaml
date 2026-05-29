@@ -1,0 +1,148 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-cloudflared
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "cloudflared"
+data:
+  cloudflared.json: |
+    {
+      "annotations": {"list": []},
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "tags": ["cloudflared", "networking"],
+      "templating": {
+        "list": [
+          {
+            "name": "tunnel",
+            "label": "Tunnel",
+            "type": "query",
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "query": {"query": "label_values(cloudflared_tunnel_ha_connections, tunnel)", "refId": "StandardVariableQuery"},
+            "refresh": 2,
+            "multi": true,
+            "includeAll": true,
+            "allValue": ".*",
+            "options": [],
+            "current": {"selected": false, "text": "All", "value": "$__all"},
+            "sort": 1
+          }
+        ]
+      },
+      "time": {"from": "now-1h", "to": "now"},
+      "timepicker": {},
+      "timezone": "",
+      "title": "Cloudflared Tunnels",
+      "uid": "cloudflared",
+      "panels": [
+        {
+          "type": "stat",
+          "title": "Tunnel pods ready",
+          "gridPos": {"h": 4, "w": 8, "x": 0, "y": 0},
+          "id": 1,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "count(up{namespace=\"cloudflared\",container=\"cloudflared\"} == 1)", "instant": true, "refId": "A"}
+          ],
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value", "colorMode": "background", "graphMode": "none", "justifyMode": "center"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 7}, {"color": "green", "value": 14}]}}}
+        },
+        {
+          "type": "stat",
+          "title": "Total CF edge connections",
+          "gridPos": {"h": 4, "w": 8, "x": 8, "y": 0},
+          "id": 2,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "sum(cloudflared_tunnel_ha_connections)", "instant": true, "refId": "A"}
+          ],
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value", "colorMode": "background", "graphMode": "none", "justifyMode": "center"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 28}, {"color": "green", "value": 56}]}}}
+        },
+        {
+          "type": "stat",
+          "title": "Errors/sec (all tunnels)",
+          "gridPos": {"h": 4, "w": 8, "x": 16, "y": 0},
+          "id": 3,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "sum(rate(cloudflared_tunnel_request_errors[5m]))", "instant": true, "refId": "A"}
+          ],
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value", "colorMode": "background", "graphMode": "none", "justifyMode": "center"},
+          "fieldConfig": {"defaults": {"unit": "reqps", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1}, {"color": "red", "value": 10}]}}}
+        },
+        {
+          "type": "timeseries",
+          "title": "CF edge connections per pod",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+          "id": 4,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "cloudflared_tunnel_ha_connections{tunnel=~\"$tunnel\"}", "legendFormat": "{{tunnel}} / {{pod}}", "refId": "A"}
+          ],
+          "fieldConfig": {"defaults": {"unit": "none", "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never"}}}
+        },
+        {
+          "type": "timeseries",
+          "title": "Requests/sec by tunnel",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+          "id": 5,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "sum by (tunnel) (rate(cloudflared_tunnel_total_requests{tunnel=~\"$tunnel\"}[5m]))", "legendFormat": "{{tunnel}}", "refId": "A"}
+          ],
+          "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never"}}}
+        },
+        {
+          "type": "timeseries",
+          "title": "Errors/sec by tunnel",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+          "id": 6,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "sum by (tunnel) (rate(cloudflared_tunnel_request_errors{tunnel=~\"$tunnel\"}[5m]))", "legendFormat": "{{tunnel}}", "refId": "A"}
+          ],
+          "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never"}}}
+        },
+        {
+          "type": "timeseries",
+          "title": "Active streams by tunnel",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+          "id": 7,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "sum by (tunnel) (cloudflared_tunnel_active_streams{tunnel=~\"$tunnel\"})", "legendFormat": "{{tunnel}}", "refId": "A"}
+          ],
+          "fieldConfig": {"defaults": {"unit": "none", "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never"}}}
+        },
+        {
+          "type": "timeseries",
+          "title": "CPU per pod",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20},
+          "id": 8,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"cloudflared\",container=\"cloudflared\"}[5m]))", "legendFormat": "{{pod}}", "refId": "A"}
+          ],
+          "fieldConfig": {"defaults": {"unit": "none", "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never"}}}
+        },
+        {
+          "type": "timeseries",
+          "title": "Memory per pod",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20},
+          "id": 9,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"cloudflared\",container=\"cloudflared\"})", "legendFormat": "{{pod}}", "refId": "A"}
+          ],
+          "fieldConfig": {"defaults": {"unit": "bytes", "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never"}}}
+        }
+      ]
+    }
