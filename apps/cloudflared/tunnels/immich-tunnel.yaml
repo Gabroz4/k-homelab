@@ -12,6 +12,7 @@ spec:
     metadata:
       labels:
         app: cloudflared-immich
+        app.kubernetes.io/component: tunnel
     spec:
       topologySpreadConstraints:
         - maxSkew: 1

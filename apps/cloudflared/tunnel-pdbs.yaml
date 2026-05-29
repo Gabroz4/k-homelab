@@ -1,6 +1,39 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
+  name: cloudflared-adguard-pdb
+  namespace: cloudflared
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: cloudflared-adguard
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cloudflared-authentik-pdb
+  namespace: cloudflared
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: cloudflared-authentik
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cloudflared-immich-pdb
+  namespace: cloudflared
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: cloudflared-immich
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
   name: cloudflared-nextcloud-pdb
   namespace: cloudflared
 spec:
