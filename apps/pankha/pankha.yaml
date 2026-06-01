@@ -174,7 +174,7 @@ spec:
         kubernetes.io/hostname: homelab
       containers:
         - name: pankha-app
-          image: anexgohan/pankha:v0.5.2
+          image: anexgohan/pankha:v0.5.3
           ports:
             - containerPort: 3143
               name: http
