@@ -12,6 +12,7 @@ spec:
         - radarr.${LOCAL_DOMAIN}
         - seerr.${LOCAL_DOMAIN}
         - qbittorrent.${LOCAL_DOMAIN}
+        - dispatcharr.${LOCAL_DOMAIN}
       secretName: wildcard-local-tls
   rules:
   - host: prowlarr.${LOCAL_DOMAIN}
@@ -68,3 +69,14 @@ spec:
             name: qbittorrent
             port:
               number: 8080
+
+  - host: dispatcharr.${LOCAL_DOMAIN}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: dispatcharr
+            port:
+              number: 9191
