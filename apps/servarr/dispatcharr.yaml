@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dispatcharr
+  namespace: jellyfin
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: dispatcharr
+  template:
+    metadata:
+      labels:
+        app: dispatcharr
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: homelab
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: dispatcharr
+          image: ghcr.io/dispatcharr/dispatcharr:latest
+          ports:
+            - containerPort: 9191
+          env:
+            - name: DISPATCHARR_ENV
+              value: "aio"
+            - name: REDIS_HOST
+              value: "localhost"
+            - name: CELERY_BROKER_URL
+              value: "redis://localhost:6379/0"
+            - name: DISPATCHARR_LOG_LEVEL
+              value: "info"
+            - name: TZ
+              value: "${TIMEZONE}"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          volumeMounts:
+            - name: config
+              mountPath: /data
+            - name: recordings
+              mountPath: /data/recordings
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 9191
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9191
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /
+              port: 9191
+            failureThreshold: 60
+            periodSeconds: 10
+      volumes:
+        - name: config
+          hostPath:
+            path: /var/lib/dispatcharr
+            type: DirectoryOrCreate
+        - name: recordings
+          hostPath:
+            path: ${MEDIA_PATH}/recordings
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dispatcharr
+  namespace: jellyfin
+spec:
+  selector:
+    app: dispatcharr
+  ports:
+    - port: 9191
+      targetPort: 9191
