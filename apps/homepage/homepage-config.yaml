@@ -137,6 +137,13 @@ data:
             namespace: jellyfin
             app: qbittorrent
             podSelector: app=qbittorrent
+        - Dispatcharr:
+            href: https://dispatcharr.${LOCAL_DOMAIN}
+            description: IPTV M3U/EPG manager and DVR
+            icon: mdi-television-classic
+            namespace: jellyfin
+            app: dispatcharr
+            podSelector: app=dispatcharr
 
     - Local:
         - Nextcloud:
