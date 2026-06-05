@@ -91,7 +91,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: dispatcharr.${PUBLIC_DOMAIN}
+    - host: tv.${PUBLIC_DOMAIN}
       http:
         paths:
           - path: /
