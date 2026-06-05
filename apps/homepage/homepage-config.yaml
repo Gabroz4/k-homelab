@@ -76,6 +76,13 @@ data:
             icon: authentik.png
             namespace: authentik
             app: authentik
+        - Dispatcharr:
+            href: https://tv.${PUBLIC_DOMAIN}
+            description: IPTV M3U/EPG manager and DVR
+            icon: mdi-television-classic
+            namespace: jellyfin
+            app: dispatcharr
+            podSelector: app=dispatcharr
         - Cruscotto:
             href: https://cruscotto.${PUBLIC_DOMAIN}
             description: Smart home dashboard
