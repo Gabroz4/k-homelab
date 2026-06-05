@@ -74,5 +74,16 @@ spec:
   selector:
     matchLabels:
       app: cloudflared-monitoring
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cloudflared-dispatcharr-pdb
+  namespace: cloudflared
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: cloudflared-dispatcharr
 
 

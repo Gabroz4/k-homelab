@@ -80,3 +80,24 @@ spec:
             name: dispatcharr
             port:
               number: 9191
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dispatcharr-external
+  namespace: jellyfin
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: jellyfin-authentik-forward-auth@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: dispatcharr.${PUBLIC_DOMAIN}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dispatcharr
+                port:
+                  number: 9191
