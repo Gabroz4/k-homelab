@@ -10,6 +10,14 @@ on:
       - infrastructure/**
       - clusters/**
       - .github/workflows/kubeconform.yaml
+  push:
+    branches:
+      - main
+    paths:
+      - apps/**
+      - infrastructure/**
+      - clusters/**
+      - .github/workflows/kubeconform.yaml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
