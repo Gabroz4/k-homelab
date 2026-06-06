@@ -26,23 +26,23 @@ The whole thing is self-hosted. The only door to the outside world is a set of C
 
 ## Hardware
 
-Two machines, both salvaged or bought on a student budget — nothing here is enterprise kit.
+Two nodes: a main homelab node built from upgraded gaming pc parts or bought cheap on a student budget, and a raspberry pi5
 
 | Node | Arch | Role | Notes |
 | --- | --- | --- | --- |
-| `homelab` | x86_64 | control-plane + storage | micro-ATX build from recycled / cheapest-available parts (AMD Ryzen 5 2600X); carries every stateful workload and all persistent disks |
+| `homelab` | x86_64 | control-plane + storage | Ryzen 2600x 16GB ram, microATX, carries every stateful workload and all persistent disks |
 | `pi-node` | arm64 | worker (stateless) | Raspberry Pi 5 (8 GB), tainted `workload=stateless` — runs only lightweight, no-state pods like the Cloudflare tunnels |
 
 All storage hangs off `homelab`:
 
 - **[Longhorn](https://longhorn.io)** manages two NVMe drives (1 TB + 500 GB); Immich's volumes are pinned to a specific drive through a `longhorn.io/disk-selector`.
-- A separate **2 TB HDD** at `/mnt/backups` holds the append-only restic repository, kept off the Longhorn pool so backups survive a storage-layer problem.
+- A separate **2 TB HDD** at `/mnt/backups` holds the append-only restic repository, kept off the Longhorn pool.
 - Bulk media and music sit on their own host-path disks, mounted straight into Jellyfin and the \*arr stack.
 
 Power & thermals:
 
 - The box runs behind a **UPS**, exposed on the LAN through [NUT](https://networkupstools.org); `nut-exporter` scrapes battery charge, runtime, load and line voltage into Prometheus so I'm alerted on a power event or a tired battery.
-- Fan curves are driven by **Pankha**, reading the motherboard's `nct6793` sensors with an emergency ramp if a reading goes haywire.
+- Fan curves are driven by **Pankha**, reading the motherboard's `nct6793` sensors with an emergency ramp if a reading goes out of control.
 
 ## Cluster
 
