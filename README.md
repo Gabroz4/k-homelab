@@ -24,6 +24,26 @@ It started as a way to learn Kubernetes properly and grew into the thing that ru
 
 The whole thing is self-hosted. The only door to the outside world is a set of Cloudflare Tunnels — there are no ports forwarded on my router.
 
+## Hardware
+
+Two machines, both salvaged or bought on a student budget — nothing here is enterprise kit.
+
+| Node | Arch | Role | Notes |
+| --- | --- | --- | --- |
+| `homelab` | x86_64 | control-plane + storage | micro-ATX build from recycled / cheapest-available parts (AMD Ryzen 5 2600X); carries every stateful workload and all persistent disks |
+| `pi-node` | arm64 | worker (stateless) | Raspberry Pi 5 (8 GB), tainted `workload=stateless` — runs only lightweight, no-state pods like the Cloudflare tunnels |
+
+All storage hangs off `homelab`:
+
+- **[Longhorn](https://longhorn.io)** manages two NVMe drives (1 TB + 500 GB); Immich's volumes are pinned to a specific drive through a `longhorn.io/disk-selector`.
+- A separate **2 TB HDD** at `/mnt/backups` holds the append-only restic repository, kept off the Longhorn pool so backups survive a storage-layer problem.
+- Bulk media and music sit on their own host-path disks, mounted straight into Jellyfin and the \*arr stack.
+
+Power & thermals:
+
+- The box runs behind a **UPS**, exposed on the LAN through [NUT](https://networkupstools.org); `nut-exporter` scrapes battery charge, runtime, load and line voltage into Prometheus so I'm alerted on a power event or a tired battery.
+- Fan curves are driven by **Pankha**, reading the motherboard's `nct6793` sensors with an emergency ramp if a reading goes haywire.
+
 ## Cluster
 
 [k3s](https://k3s.io) across two nodes, split by responsibility. The x86 box is the control-plane and holds all persistent storage and stateful workloads; a Raspberry Pi sits alongside it, tainted `workload=stateless`, and runs lightweight pods (like the tunnels) pinned there through node affinity and tolerations.
