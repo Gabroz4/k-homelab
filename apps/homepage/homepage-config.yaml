@@ -83,8 +83,8 @@ data:
             namespace: jellyfin
             app: dispatcharr
             podSelector: app=dispatcharr
-        - Cruscotto:
-            href: https://cruscotto.${PUBLIC_DOMAIN}
+        - Centralino:
+            href: https://centralino.${PUBLIC_DOMAIN}
             description: Smart home dashboard
             icon: mdi-home-automation
 
