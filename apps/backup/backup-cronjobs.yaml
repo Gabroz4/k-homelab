@@ -54,7 +54,7 @@ spec:
                   mountPath: /dump
           containers:
             - name: backup
-              image: restic/restic:0.18.1
+              image: restic/restic:0.19.0
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
@@ -154,7 +154,7 @@ spec:
                   mountPath: /dump
           containers:
             - name: backup
-              image: restic/restic:0.18.1
+              image: restic/restic:0.19.0
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
@@ -254,7 +254,7 @@ spec:
                   mountPath: /dump
           containers:
             - name: backup
-              image: restic/restic:0.18.1
+              image: restic/restic:0.19.0
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
