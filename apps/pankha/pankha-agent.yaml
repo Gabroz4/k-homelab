@@ -65,7 +65,7 @@ spec:
         runAsGroup: 0
       initContainers:
         - name: download-agent
-          image: alpine:3.23
+          image: alpine:3.24
           command:
             - sh
             - -c
@@ -180,7 +180,7 @@ spec:
         runAsGroup: 0
       initContainers:
         - name: download-agent
-          image: alpine:3.23
+          image: alpine:3.24
           command:
             - sh
             - -c
@@ -197,7 +197,7 @@ spec:
               mountPath: /config
               readOnly: true
         - name: enable-pwm
-          image: alpine:3.23
+          image: alpine:3.24
           securityContext:
             privileged: true
           command:
