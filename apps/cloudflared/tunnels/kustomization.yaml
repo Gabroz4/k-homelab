@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - adguard-tunnel.yaml
   - authentik-tunnel.yaml
+  - centralino-tunnel.yaml
   - dispatcharr-tunnel.yaml
   - immich-tunnel.yaml
   - jellyfin-tunnel.yaml

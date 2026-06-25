@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Centralino Domotica</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;}
+:root{
+  --bg:#08101f;--bg2:#0f1c30;--bg3:#162338;--bg4:#1d2d45;
+  --acc:#4d9fff;--green:#2ecc71;--red:#ff4d4d;--orange:#f97316;
+  --txt:#f0f4ff;--txt2:#a8bdd8;--txt3:#6a88aa;--brd:#2a3f5f;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
+  font-family:'Segoe UI',system-ui,sans-serif;color:var(--txt);}
+.phone{width:100%;height:100dvh;position:relative;overflow:hidden;}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden;}
+.screen.active{display:flex;}
+.scrollbody{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.scrollbody::-webkit-scrollbar{display:none;}
+
+/* Header */
+.hdr{flex-shrink:0;padding:8px 16px;border-bottom:1px solid var(--brd);background:var(--bg2);text-align:center;}
+.hdr-lbl{font-size:10px;color:var(--txt2);text-transform:uppercase;letter-spacing:1px;}
+.hdr-ttl{font-size:17px;font-weight:600;color:var(--txt);}
+
+/* Nav dots */
+.ndots{display:flex;gap:5px;justify-content:center;padding:6px 0 4px;flex-shrink:0;}
+.nd{width:5px;height:5px;border-radius:50%;background:var(--bg4);}
+.nd.on{width:16px;border-radius:3px;}
+
+/* Nav buttons */
+.bnav{display:flex;justify-content:space-between;padding:2px 14px 10px;flex-shrink:0;}
+.bsm{background:var(--bg3)!important;border:2px solid #5a80aa!important;color:var(--txt)!important;
+  font-size:12px;padding:7px 16px;border-radius:20px;cursor:pointer;font-weight:600;font-family:inherit;}
+.bsm:active{transform:scale(.96);}
+
+/* Card */
+.card{background:var(--bg2);border-radius:14px;border:1.5px solid var(--brd);padding:12px 14px;margin-bottom:10px;}
+.card-lbl{font-size:9px;color:var(--txt2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;}
+
+/* Status bar */
+.sbar{display:flex;gap:10px;padding:5px 14px 6px;background:rgba(0,0,0,.45);flex-shrink:0;}
+.sconn{display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,.5);}
+.sdot{width:6px;height:6px;border-radius:50%;}
+.dg{background:var(--green);}.do{background:var(--orange);}.dr{background:var(--red);}
+
+/* Commutatore Piano */
+.plan-switch{display:flex;background:rgba(0,0,0,.3);border-radius:12px;padding:3px;margin:8px 16px 0;flex-shrink:0;}
+.plan-btn{flex:1;padding:8px 4px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;
+  text-align:center;border:none;font-family:inherit;color:rgba(255,255,255,.5);background:transparent;transition:.2s;}
+.plan-btn.active-p1{background:#1a3a6a;color:#90c8ff;border:1.5px solid var(--acc);}
+.plan-btn.active-pt{background:#5a2a00;color:#ffb870;border:1.5px solid var(--orange);}
+
+/* Slider */
+.slrow{display:flex;align-items:center;gap:8px;}
+.slrow span{font-size:11px;color:var(--txt2);font-weight:500;min-width:22px;}
+input[type=range]{flex:1;cursor:pointer;-webkit-appearance:none;appearance:none;
+  height:6px;background:#4a6a90;border-radius:3px;outline:none;vertical-align:middle;margin:0;padding:0;}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:#4a6a90;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+  width:22px;height:22px;border-radius:50%;border:3px solid #fff;cursor:pointer;margin-top:-8px;}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;border:3px solid #fff;cursor:pointer;}
+
+/* LED */
+.ledrow{display:flex;align-items:center;gap:12px;}
+.ledball{width:22px;height:22px;border-radius:50%;background:#1e2f47;border:2px solid var(--brd);transition:.4s;flex-shrink:0;}
+.ledball.on{background:var(--red);border-color:#ff8888;box-shadow:0 0 14px rgba(255,77,77,.7);}
+.ledlbl{font-size:15px;color:var(--txt);font-weight:600;}
+.ledst{margin-left:auto;font-size:14px;font-weight:700;color:var(--txt3);}
+.ledst.on{color:var(--red);}
+
+/* Mode buttons */
+.modestate{font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;display:inline-block;margin-bottom:8px;}
+.moff{background:#263a57;color:#c0d4ea;border:2px solid #5a7a9a;}
+.mman{background:#1a3a6a;color:#7dc4ff;border:2px solid var(--acc);}
+.mauto{background:#0f3a1f;color:#5ddf94;border:2px solid var(--green);}
+.modebtnrow{display:flex;gap:6px;}
+button.mbtn{flex:1;padding:10px 4px;border-radius:11px;font-size:13px;font-weight:700;
+  cursor:pointer;display:block;text-align:center;font-family:inherit;}
+button.mbtn-off {background:#253850!important;border:2px solid #6a8aaa!important;color:#d0e4f8!important;}
+button.mbtn-man {background:#1a3a6a!important;border:2px solid #4d9fff!important;color:#90c8ff!important;}
+button.mbtn-auto{background:#0f3a1f!important;border:2px solid var(--green)!important;color:#5ddf94!important;}
+button.mbtn-sel-off {background:#4a6a8a!important;border:2px solid #a0c0e0!important;color:#fff!important;}
+button.mbtn-sel-man {background:#2a5aaa!important;border:2px solid #90c8ff!important;color:#fff!important;}
+button.mbtn-sel-auto{background:#1a6a34!important;border:2px solid #5ddf94!important;color:#fff!important;}
+button.progbtn{background:#1a3050!important;border:2px solid #5a80aa!important;color:#d0e8ff!important;
+  font-size:13px;font-weight:700;padding:11px;border-radius:13px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;width:100%;font-family:inherit;}
+
+/* Zone cards */
+.zcard{background:var(--bg2);border-radius:14px;border:1.5px solid var(--brd);padding:16px 16px;margin-bottom:12px;}
+.zcard.offline{opacity:.45;}
+.zch{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.zcnm{font-size:17px;font-weight:600;color:var(--txt);}
+.zcts{margin-left:auto;font-size:10px;color:var(--txt3);}
+.zcv{display:flex;align-items:baseline;gap:12px;}
+.zct{font-size:42px;font-weight:300;color:var(--txt);}
+.zch2{font-size:18px;color:var(--txt2);font-weight:500;}
+.zcex{margin-top:8px;padding-top:8px;border-top:1px solid var(--brd);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.zcled{width:12px;height:12px;border-radius:50%;}
+.zcbdg{font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;}
+
+/* Valori estremi */
+.ve-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;}
+.ve-cell{background:#0f1e33;border-radius:9px;padding:7px 9px;border:1px solid var(--brd);}
+.ve-cell-lbl{font-size:8px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;font-weight:700;}
+.ve-cell-val{font-size:16px;font-weight:600;font-family:monospace;}
+.ve-cell-dt{font-size:8px;color:var(--txt3);margin-top:2px;font-family:monospace;}
+.tmax .ve-cell-lbl{color:#ff7c7c;}.tmax .ve-cell-val{color:#ff9999;}
+.tmin .ve-cell-lbl{color:#7cb8ff;}.tmin .ve-cell-val{color:#90c8ff;}
+.hmax .ve-cell-lbl{color:#7cdfaa;}.hmax .ve-cell-val{color:#90efb8;}
+.hmin .ve-cell-lbl{color:#f5c842;}.hmin .ve-cell-val{color:#ffe066;}
+.ve-reset{position:relative;overflow:hidden;background:#1e3050!important;border:1.5px solid #5a7a9a!important;
+  color:var(--txt2)!important;font-size:10px;font-weight:700;padding:7px 14px;border-radius:8px;
+  cursor:pointer;white-space:nowrap;font-family:inherit;}
+.ve-reset .rp{position:absolute;inset:0;background:rgba(239,68,68,.35);width:0%;transition:none;pointer-events:none;}
+.ve-reset.holding .rp{width:100%;transition:width 2s linear;}
+
+/* Programmazione */
+.drow{display:flex;gap:3px;justify-content:space-between;padding-bottom:8px;flex-shrink:0;}
+button.dbtn{width:40px;height:40px;border-radius:50%;font-size:10px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-family:inherit;
+  background:#1e3050!important;border:2px solid #5a7a9a!important;color:#c0d4ea!important;}
+button.dbtn-today{background:#2a5090!important;border:2px solid #7aaad0!important;color:#fff!important;}
+button.dbtn-sel{background:#fff!important;border:2px solid #fff!important;color:#0b1120!important;}
+.barwrap{position:relative;padding-top:24px;margin-bottom:14px;width:100%;}
+.bar24{height:34px;border-radius:7px;display:flex;flex-wrap:nowrap;width:100%;overflow:visible;}
+.bseg{height:100%;position:relative;flex-shrink:0;border-right:1px solid rgba(0,0,0,.3);}
+.bseg:last-child{border-right:none;}
+.blbl{position:absolute;top:-20px;left:0;font-size:10px;color:#d0e4ff;
+  white-space:nowrap;font-family:monospace;font-weight:700;background:rgba(0,0,0,.4);
+  padding:1px 4px;border-radius:3px;}
+.flist{display:flex;flex-direction:column;gap:8px;}
+.frow{background:var(--bg2);border-radius:11px;border:1.5px solid var(--brd);padding:14px 14px;
+  cursor:pointer;display:flex;align-items:center;gap:9px;}
+.frow:active{background:var(--bg3);}
+.fcirc{width:16px;height:16px;border-radius:50%;flex-shrink:0;border:2px solid rgba(255,255,255,.2);}
+.ftim{font-size:17px;font-weight:600;color:var(--txt);font-family:monospace;min-width:54px;}
+.ftemp{font-size:16px;font-weight:600;}
+.farr{font-size:20px;color:#d0e4ff;margin-left:auto;font-weight:900;}
+.s4actions{display:flex;gap:5px;padding:8px 14px;flex-shrink:0;}
+button.s4act{flex:1;padding:9px 3px;border-radius:11px;font-size:11px;font-weight:700;
+  cursor:pointer;text-align:center;line-height:1.3;font-family:inherit;}
+button.s4act-exit{background:#1e3050!important;border:2px solid #5a7a9a!important;color:#d0e4ff!important;}
+button.s4act-save{background:#1a5a2a!important;border:2px solid var(--green)!important;color:#a0ffb8!important;}
+button.s4act-copy{background:#1a3a6a!important;border:2px solid var(--acc)!important;color:#90c8ff!important;}
+
+/* Roller */
+.rov{position:absolute;inset:0;background:rgba(0,0,0,.85);display:none;align-items:flex-end;z-index:30;}
+.rpanel{background:var(--bg2);border-radius:20px 20px 0 0;border:2px solid #3a5a7a;
+  border-bottom:none;padding:16px 14px 20px;width:100%;}
+.rptit{font-size:14px;font-weight:700;color:var(--txt);text-align:center;margin-bottom:12px;}
+.rpcols{display:flex;gap:6px;justify-content:center;}
+.rpcol{display:flex;flex-direction:column;align-items:center;}
+.rplbl{font-size:10px;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;font-weight:700;}
+.drum{width:70px;height:114px;overflow:hidden;position:relative;border-radius:10px;
+  background:var(--bg3);border:2px solid #4a6a90;}
+.drum::before,.drum::after{content:'';position:absolute;left:0;right:0;height:36px;z-index:2;pointer-events:none;}
+.drum::before{top:0;background:linear-gradient(to bottom,var(--bg3) 30%,transparent);}
+.drum::after{bottom:0;background:linear-gradient(to top,var(--bg3) 30%,transparent);}
+.dsel{position:absolute;top:38px;left:0;right:0;height:38px;
+  background:rgba(77,159,255,.2);border-top:2px solid rgba(77,159,255,.7);
+  border-bottom:2px solid rgba(77,159,255,.7);pointer-events:none;z-index:1;}
+.ditems{display:flex;flex-direction:column;touch-action:none;}
+.ditem{height:38px;display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-family:monospace;font-weight:500;color:var(--txt3);cursor:ns-resize;}
+.ditem.act{color:var(--txt);font-size:20px;font-weight:700;}
+.rdiv{font-size:20px;color:var(--txt2);align-self:center;margin-top:38px;padding:0 2px;font-weight:600;}
+.rperr{font-size:11px;color:var(--red);text-align:center;min-height:14px;margin:6px 0 3px;font-weight:600;}
+.rpbtns{display:flex;gap:8px;}
+button.rpcanc{flex:1;background:#1e3050!important;border:2px solid #5a7a9a!important;color:#d0e4ff!important;
+  padding:11px;border-radius:11px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;}
+button.rpsave{flex:1;background:#2a5aaa!important;border:2px solid var(--acc)!important;color:#fff!important;
+  padding:11px;border-radius:11px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;}
+
+/* Toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a5a2a;
+  border:2px solid var(--green);color:#a0ffb8;font-size:12px;font-weight:700;padding:8px 18px;
+  border-radius:11px;white-space:nowrap;z-index:50;opacity:0;transition:opacity .3s;pointer-events:none;}
+.toast.show{opacity:1;}
+
+/* Home meteo */
+.s1wrap{display:flex;flex-direction:column;height:100%;}
+.s1top{flex-shrink:0;padding:6px 16px 0;}
+.s1clockrow{text-align:center;margin-bottom:4px;}
+.s1time{font-size:48px;font-weight:300;color:#fff;font-family:monospace;line-height:1;}
+.s1date{font-size:13px;color:rgba(255,255,255,.7);font-weight:500;margin-top:1px;}
+.s1wxrow{display:flex;align-items:center;gap:8px;padding:4px 0 2px;}
+.s1icon{font-size:58px;line-height:1;flex-shrink:0;}
+.s1desc-col{flex:1;text-align:center;}
+.s1desc-txt{font-size:13px;color:rgba(255,255,255,.7);font-weight:500;}
+.s1temp-block{text-align:right;}
+.s1temp-big{font-size:50px;font-weight:300;color:#fff;line-height:1;
+  display:flex;align-items:flex-start;justify-content:flex-end;gap:3px;}
+.s1temp-big sup{font-size:17px;margin-top:7px;color:rgba(255,255,255,.8);}
+.s1hum-inline{font-size:15px;color:rgba(255,255,255,.75);font-weight:500;text-align:right;margin-top:1px;}
+.s1local{border-radius:12px;padding:8px 14px;display:flex;align-items:center;margin:4px 0 0;}
+.s1lz{font-size:10px;text-transform:uppercase;letter-spacing:.5px;}
+.s1lt{font-size:30px;font-weight:400;color:#fff;line-height:1.1;}
+.s1lh{font-size:20px;color:#fff;font-weight:600;}
+.s1lh-lbl{font-size:10px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.4px;margin-top:2px;}
+.s1grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;flex:1;grid-template-rows:repeat(4,1fr);}
+.s1cell{background:rgba(255,255,255,.09);border-radius:10px;padding:2px 3px;text-align:center;
+  border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;}
+.s1ci{font-size:26px;color:rgba(255,255,255,.85);line-height:1.1;}
+.s1cl{font-size:11px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.2px;font-weight:500;}
+.s1cv{font-size:17px;font-weight:700;color:#fff;}
+.s1cv-sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:0;}
+
+/* Impostazioni */
+.settings-icon{position:absolute;top:10px;right:16px;font-size:22px;cursor:pointer;
+  z-index:10;color:rgba(255,255,255,.7);background:rgba(0,0,0,.25);
+  width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.settings-icon:active{transform:scale(.9);}
+.sett-body{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:14px;}
+.sett-section{background:var(--bg2);border-radius:14px;border:1.5px solid var(--brd);padding:14px 15px;}
+.sett-section-title{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:600;}
+.sett-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.sett-row:last-child{margin-bottom:0;}
+.sett-lbl{font-size:12px;color:var(--txt2);font-weight:500;}
+.sett-input{background:var(--bg3);border:1.5px solid var(--brd);color:var(--txt);
+  font-size:14px;padding:9px 12px;border-radius:10px;width:100%;font-family:inherit;outline:none;}
+.sett-input:focus{border-color:var(--acc);}
+.sett-input::placeholder{color:var(--txt3);}
+.sett-piano{display:flex;gap:6px;}
+button.sett-piano-btn{flex:1;padding:10px 4px;border-radius:11px;font-size:13px;font-weight:700;
+  cursor:pointer;text-align:center;font-family:inherit;
+  background:var(--bg3)!important;border:2px solid var(--brd)!important;color:var(--txt2)!important;}
+button.sett-piano-btn.sel-p1{background:#1a3a6a!important;border-color:var(--acc)!important;color:#90c8ff!important;}
+button.sett-piano-btn.sel-pt{background:#5a2a00!important;border-color:var(--orange)!important;color:#ffb870!important;}
+button.sett-save{background:#1a5a2a!important;border:2px solid var(--green)!important;color:#a0ffb8!important;
+  font-size:14px;font-weight:700;padding:13px;border-radius:13px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;font-family:inherit;}
+button.sett-save:active{transform:scale(.97);}
+.sett-device-id{font-size:11px;color:var(--txt3);font-family:monospace;margin-top:4px;}
+.sett-warn{font-size:11px;color:var(--orange);margin-top:4px;line-height:1.5;}
+
+
+/* Long-press progress bar sui pulsanti Piano */
+.plan-btn{position:relative;overflow:hidden;}
+.plan-btn .pp{position:absolute;inset:0;background:rgba(255,255,255,.25);
+  width:0%;transition:none;pointer-events:none;border-radius:10px;}
+.plan-btn.holding .pp{width:100%;transition:width 2s linear;}
+</style>
+</head>
+<body>
+<div class="phone">
+
+<!-- ══ S1 HOME ══ -->
+<div class="screen active" id="sc1">
+  <div class="s1wrap">
+    <div class="settings-icon" onclick="openSettings()">⚙️</div>
+    <div class="s1top">
+      <div class="s1clockrow">
+        <div class="s1time" id="s1time">--:--</div>
+        <div class="s1date" id="s1date">...</div>
+      </div>
+      <div class="s1wxrow">
+        <div class="s1icon" id="wx-icon">🌡️</div>
+        <div class="s1desc-col"><div class="s1desc-txt" id="wx-desc">Caricamento...</div></div>
+        <div class="s1temp-block">
+          <div class="s1temp-big"><span id="wx-temp">--</span><sup>°C</sup></div>
+          <div class="s1hum-inline">💧 <span id="wx-hum">--</span>%</div>
+        </div>
+      </div>
+      <!-- Commutatore Piano -->
+      <div class="plan-switch">
+        <button class="plan-btn" id="btn-p1"><div class="pp"></div>🏠 Piano 1</button>
+        <button class="plan-btn" id="btn-pt"><div class="pp"></div>🏡 Piano Terra</button>
+      </div>
+      <!-- Locale dinamico -->
+      <div class="s1local" id="s1local-card">
+        <div style="flex:1;">
+          <div class="s1lz" id="s1local-lbl">-- zona locale --</div>
+          <div class="s1lt" id="local-temp">--°C</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="s1lh-lbl">Umidità</div>
+          <div class="s1lh" id="local-hum">💧 --%</div>
+          <div id="local-ts" style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px;font-weight:500;">--</div>
+        </div>
+      </div>
+    </div>
+    <div style="flex:1;padding:6px 16px 0;display:flex;flex-direction:column;">
+      <div class="s1grid">
+        <div class="s1cell"><div class="s1ci">☁️</div><div class="s1cl">Nuvolosità</div><div class="s1cv" id="wx-cloud">--%</div></div>
+        <div class="s1cell"><div class="s1ci">🌞</div><div class="s1cl">Indice UV</div><div class="s1cv" id="wx-uv">--</div></div>
+        <div class="s1cell"><div class="s1ci">⏱️</div><div class="s1cl">Pressione</div><div class="s1cv" id="wx-press">--</div></div>
+        <div class="s1cell"><div class="s1ci">💨</div><div class="s1cl">Vento</div><div class="s1cv" id="wx-wind">--</div></div>
+        <div class="s1cell"><div class="s1ci">↗</div><div class="s1cl">Direzione</div><div class="s1cv" id="wx-wdir">--</div></div>
+        <div class="s1cell"><div class="s1ci">🌧️</div><div class="s1cl">Precipit.</div><div class="s1cv" id="wx-rain">--</div></div>
+        <div class="s1cell"><div class="s1ci">☀️</div><div class="s1cl">Irragg.</div><div class="s1cv" id="wx-rad">--</div></div>
+        <div class="s1cell"><div class="s1ci">🌅</div><div class="s1cl">Alba</div><div class="s1cv" id="wx-sunrise">--:--</div></div>
+        <div class="s1cell"><div class="s1ci">🌇</div><div class="s1cl">Tramonto</div><div class="s1cv" id="wx-sunset">--:--</div></div>
+        <div class="s1cell" style="grid-column:span 2;">
+          <div class="s1ci" id="moon-icon">🌒</div>
+          <div class="s1cl">Fase lunare</div>
+          <div class="s1cv" id="moon-phase">--</div>
+          <div class="s1cv-sub" id="moon-eta">--</div>
+        </div>
+        <div class="s1cell"><div class="s1ci">🌡️</div><div class="s1cl">Percepita</div><div class="s1cv" id="wx-feels">--</div></div>
+      </div>
+    </div>
+    <div class="sbar">
+      <div class="sconn"><div class="sdot" id="dot-meteo"></div><span id="lbl-meteo">Meteo --</span></div>
+    </div>
+  </div>
+  <div class="ndots"><div class="nd on" id="nd1-1"></div><div class="nd" id="nd1-2"></div><div class="nd" id="nd1-3"></div><div class="nd" id="nd1-4"></div><div class="nd" id="nd1-5"></div><div class="nd" id="nd1-6"></div></div>
+  <div class="bnav"><div></div><button class="bsm" id="btn-to-thermo" onclick="go(1,2)" style="background:rgba(255,255,255,.12)!important;border-color:rgba(255,255,255,.3)!important;color:#fff!important;">Termostato ›</button></div>
+</div>
+
+<!-- ══ S2 TERMOSTATO ══ -->
+<div class="screen" id="sc2" style="background:var(--bg);">
+  <div style="padding:8px 16px 5px;font-size:11px;color:var(--txt2);font-family:monospace;
+    display:flex;justify-content:space-between;flex-shrink:0;">
+    <span id="s2clk">--:--</span><span id="s2-piano-lbl">--</span>
+  </div>
+  <div class="hdr"><div class="hdr-lbl">Termostato</div><div class="hdr-ttl" id="thermo-ttl">--</div></div>
+  <div class="scrollbody"><div style="padding:12px 15px;display:flex;flex-direction:column;gap:10px;">
+    <div class="card">
+      <div class="card-lbl" id="thermo-amb-lbl">Temperatura ambiente</div>
+      <div style="display:flex;align-items:baseline;gap:8px;">
+        <div style="font-size:60px;font-weight:300;color:var(--txt);line-height:1;" id="t2-temp">--</div>
+        <div style="font-size:20px;color:var(--txt2);">°C</div>
+        <div style="font-size:18px;color:var(--txt2);margin-left:4px;">💧 <span id="t2-hum">--</span>%</div>
+      </div>
+    </div>
+    <div class="card ledrow">
+      <div class="ledball" id="t2-led"></div>
+      <div class="ledlbl">Caloriferi</div>
+      <div class="ledst" id="t2-ledst">OFF</div>
+    </div>
+    <div class="card">
+      <div class="card-lbl">Set-point temperatura</div>
+      <div style="font-size:30px;font-weight:600;margin-bottom:8px;" id="t2-spval">--°C</div>
+      <div class="slrow">
+        <span>10°</span>
+        <input type="range" min="10" max="35" step="0.5" value="20.5" id="t2-slider" oninput="onSPChange(this.value)">
+        <span>35°</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-lbl" style="margin-bottom:5px;">Modalità di regolazione</div>
+      <div class="modestate mman" id="t2-modestate">● Manuale attivo</div>
+      <div class="modebtnrow">
+        <button class="mbtn mbtn-off"     id="mb0" onclick="setMode(0)">OFF</button>
+        <button class="mbtn mbtn-sel-man" id="mb1" onclick="setMode(1)">Manuale</button>
+        <button class="mbtn mbtn-auto"    id="mb2" onclick="setMode(2)">Automatico</button>
+      </div>
+    </div>
+    <button class="progbtn" onclick="go(2,5)">📅 Programmazione settimanale</button>
+  </div></div>
+  <div class="ndots"><div class="nd" id="nd2-1"></div><div class="nd on" id="nd2-2"></div><div class="nd" id="nd2-3"></div><div class="nd" id="nd2-4"></div><div class="nd" id="nd2-5"></div><div class="nd" id="nd2-6"></div></div>
+  <div class="bnav"><button class="bsm" onclick="go(2,1)">‹ Meteo</button><button class="bsm" onclick="go(2,3)">Zone ›</button></div>
+</div>
+
+<!-- ══ S3 ZONE ══ -->
+<div class="screen" id="sc3" style="background:var(--bg);">
+  <div class="hdr"><div class="hdr-lbl" id="zone-lbl">Riepilogo</div><div class="hdr-ttl">Altre zone</div></div>
+  <div class="scrollbody"><div style="padding:10px 13px;" id="zone-body"></div></div>
+  <div class="ndots"><div class="nd" id="nd3-1"></div><div class="nd" id="nd3-2"></div><div class="nd on" id="nd3-3"></div><div class="nd" id="nd3-4"></div><div class="nd" id="nd3-5"></div><div class="nd" id="nd3-6"></div></div>
+  <div class="bnav"><button class="bsm" onclick="go(3,2)">‹ Termostato</button><button class="bsm" onclick="go(3,4)">Val. Estremi ›</button></div>
+</div>
+
+<!-- ══ S4 VALORI ESTREMI ══ -->
+<div class="screen" id="sc4" style="background:var(--bg);">
+  <div class="hdr"><div class="hdr-lbl" id="ve-lbl">Storico</div><div class="hdr-ttl">Valori estremi</div></div>
+  <div class="scrollbody"><div style="padding:8px 12px;" id="ve-body"></div></div>
+  <div class="ndots"><div class="nd" id="nd4-1"></div><div class="nd" id="nd4-2"></div><div class="nd" id="nd4-3"></div><div class="nd on" id="nd4-4"></div><div class="nd" id="nd4-5"></div><div class="nd" id="nd4-6"></div></div>
+  <div class="bnav"><button class="bsm" onclick="go(4,3)">‹ Zone</button><div></div></div>
+</div>
+
+<!-- ══ S5 PROGRAMMAZIONE ══ -->
+<div class="screen" id="sc5" style="background:var(--bg);position:relative;">
+  <div class="hdr"><div class="hdr-lbl" id="prog-lbl">Programmazione</div><div class="hdr-ttl">Programmazione settimanale</div></div>
+  <div class="scrollbody"><div style="padding:8px 13px;">
+    <div class="drow" id="drow"></div>
+    <div class="barwrap"><div class="bar24" id="bar24"></div></div>
+    <div class="flist" id="flist"></div>
+  </div></div>
+  <div class="s4actions">
+    <button class="s4act s4act-exit" onclick="exitProg()">✕ Esci</button>
+    <button class="s4act s4act-save" onclick="saveProg()">✔ Salva</button>
+    <button class="s4act s4act-copy" onclick="copyAll()">⊕ Copia su tutti</button>
+  </div>
+  <div class="rov" id="rov">
+    <div class="rpanel">
+      <div class="rptit" id="rptit">Fascia 1</div>
+      <div class="rpcols">
+        <div class="rpcol"><div class="rplbl">Ora</div><div class="drum" id="dh"><div class="dsel"></div><div class="ditems" id="ih"></div></div></div>
+        <div class="rdiv">:</div>
+        <div class="rpcol"><div class="rplbl">Min</div><div class="drum" id="dm"><div class="dsel"></div><div class="ditems" id="im"></div></div></div>
+        <div class="rdiv" style="font-size:15px;margin-top:38px;">°C</div>
+        <div class="rpcol"><div class="rplbl">Temp</div><div class="drum" id="dt"><div class="dsel"></div><div class="ditems" id="it"></div></div></div>
+      </div>
+      <div class="rperr" id="rerr"></div>
+      <div class="rpbtns">
+        <button class="rpcanc" onclick="closeRov()">Cancella</button>
+        <button class="rpsave" onclick="saveRov()">Modifica</button>
+      </div>
+    </div>
+  </div>
+  <div class="ndots"><div class="nd" id="nd5-1"></div><div class="nd" id="nd5-2"></div><div class="nd" id="nd5-3"></div><div class="nd" id="nd5-4"></div><div class="nd on" id="nd5-5"></div><div class="nd" id="nd5-6"></div></div>
+</div>
+
+<!-- ══ S7 IMPOSTAZIONI ══ -->
+<div class="screen" id="sc7" style="background:var(--bg);">
+  <div class="hdr"><div class="hdr-lbl">Configurazione</div><div class="hdr-ttl">⚙️ Impostazioni</div></div>
+  <div class="sett-body">
+
+    <!-- Dispositivo -->
+    <div class="sett-section">
+      <div class="sett-section-title">📱 Dispositivo</div>
+      <div class="sett-row">
+        <div class="sett-lbl">Nome dispositivo</div>
+        <input class="sett-input" id="sett-name" type="text" maxlength="30"
+          placeholder="es. Telefono Cucina">
+        <div class="sett-device-id" id="sett-devid">ID: --</div>
+      </div>
+      <div class="sett-row">
+        <div class="sett-lbl">Piano predefinito all'avvio</div>
+        <div class="sett-piano">
+          <button class="sett-piano-btn" id="sett-btn-p1" onclick="settSetPiano('p1')">🏠 Piano 1</button>
+          <button class="sett-piano-btn" id="sett-btn-pt" onclick="settSetPiano('pt')">🏡 Piano Terra</button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Meteo -->
+    <div class="sett-section">
+      <div class="sett-section-title">🌤️ Meteo (Open-Meteo)</div>
+      <div class="sett-row">
+        <div class="sett-lbl">Latitudine</div>
+        <input class="sett-input" id="sett-lat" type="number" step="0.0001" placeholder="44.2833">
+      </div>
+      <div class="sett-row">
+        <div class="sett-lbl">Longitudine</div>
+        <input class="sett-input" id="sett-lon" type="number" step="0.0001" placeholder="11.6167">
+      </div>
+    </div>
+    </div>
+
+    <!-- Salva -->
+    <button class="sett-save" onclick="saveSettings()">
+      ✔ Salva e applica
+    </button>
+
+    <!-- Reset -->
+    <div style="text-align:center;">
+      <button style="background:none;border:none;color:var(--txt3);font-size:12px;cursor:pointer;font-family:inherit;padding:8px;"
+        onclick="resetDeviceId()">
+        🔄 Rigenera ID dispositivo
+      </button>
+    </div>
+
+  </div>
+  <div class="ndots"><div class="nd" id="nd6-1"></div><div class="nd" id="nd6-2"></div><div class="nd" id="nd6-3"></div><div class="nd" id="nd6-4"></div><div class="nd" id="nd6-5"></div><div class="nd on" id="nd6-6"></div></div>
+  <div class="bnav"><button class="bsm" onclick="go(7,1)">‹ Home</button><div></div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+</div><!-- /phone -->
+
+<script charset="utf-8">
+// ============================================================
+//  CONFIGURAZIONE — modifica solo questi valori
+// ============================================================
+const CFG = {
+  // Proxy zone aliases — il browser chiama /api/<alias>/... e nginx sul centralino
+  // instrada verso il corretto ESP32 in LAN. Funziona anche attraverso il tunnel Cloudflare.
+  IP_SALA_TERRAZZO: "sb",
+  IP_TAVERNA:      "tv",
+  IP_GARAGE:       "gr",
+  METEO_LAT: 44.2833,
+  METEO_LON: 11.6167,
+  POLL_SONDE_MS:   30000,
+  POLL_SHARED_MS:   5000,
+  METEO_MS:       900000,
+};
+
+// ============================================================
+//  IDENTITÀ DISPOSITIVO — univoca per browser, persiste
+// ============================================================
+let DEVICE_ID = localStorage.getItem('device_id');
+if (!DEVICE_ID) {
+  DEVICE_ID = 'dev_' + Math.random().toString(16).slice(2, 8);
+  localStorage.setItem('device_id', DEVICE_ID);
+}
+
+// Piano selezionato: 'p1' o 'pt' — persiste tra sessioni
+let piano = localStorage.getItem('piano') || 'p1';
+
+// ============================================================
+//  CONFIGURAZIONI PER PIANO
+// ============================================================
+const PIANI = {
+  p1: {
+    label:        'Piano 1',
+    zona_locale:  'Sala',
+    zona_label:   'Sala - Piano 1',
+    ip_locale:    () => CFG.IP_SALA_TERRAZZO,
+    path_data:    '/sala/data',
+    path_thermo:  '/thermostat',
+    path_reset:   '/sala/reset',
+    path_sched:   '/schedule',
+    ip_thermo:    () => CFG.IP_SALA_TERRAZZO,
+    // Zone remote da mostrare nella schermata 3
+    zone_remote: [
+      { id:'terrazzo', name:'Terrazzo', icon:'🌿', ip:()=>CFG.IP_SALA_TERRAZZO, path:'/terrazzo/data', has_thermo:false },
+      { id:'garage',  name:'Garage',  icon:'🚗', ip:()=>CFG.IP_GARAGE,       path:'/data',         has_thermo:false },
+      { id:'taverna', name:'Taverna', icon:'🍷', ip:()=>CFG.IP_TAVERNA,      path:'/data',         has_thermo:true, ip_thermo:()=>CFG.IP_TAVERNA },
+    ],
+    bg_home:   'linear-gradient(175deg,#0d2d5e 0%,#1245a0 55%,#0e2d5a 100%)',
+    acc_color: '#4d9fff',
+    local_card_bg:  'rgba(255,255,255,.1)',
+    local_card_brd: 'rgba(255,255,255,.14)',
+    local_lbl_col:  'rgba(255,255,255,.5)',
+    shared_own:     'p1',
+    shared_other:   'pt',
+  },
+  pt: {
+    label:        'Piano Terra',
+    zona_locale:  'Taverna',
+    zona_label:   'Taverna - Piano Terra',
+    ip_locale:    () => CFG.IP_TAVERNA,
+    path_data:    '/data',
+    path_thermo:  '/thermostat',
+    path_reset:   '/reset',
+    path_sched:   '/schedule',
+    ip_thermo:    () => CFG.IP_TAVERNA,
+    zone_remote: [
+      { id:'terrazzo', name:'Terrazzo', icon:'🌿', ip:()=>CFG.IP_SALA_TERRAZZO, path:'/terrazzo/data', has_thermo:false },
+      { id:'garage',  name:'Garage',  icon:'🚗', ip:()=>CFG.IP_GARAGE,       path:'/data',         has_thermo:false },
+      { id:'sala',    name:'Sala',    icon:'🛋️', ip:()=>CFG.IP_SALA_TERRAZZO, path:'/sala/data',    has_thermo:true, ip_thermo:()=>CFG.IP_SALA_TERRAZZO },
+    ],
+    bg_home:   '#5a3a00',
+    acc_color: '#f97316',
+    local_card_bg:  'rgba(255,140,0,.15)',
+    local_card_brd: 'rgba(255,140,0,.3)',
+    local_lbl_col:  'rgba(255,200,100,.7)',
+    shared_own:     'pt',
+    shared_other:   'p1',
+  }
+};
+
+// ============================================================
+//  APPLICAZIONE CONFIGURAZIONE PIANO
+// ============================================================
+function applyPianoUI() {
+  const P = PIANI[piano];
+
+  // Sfondo home e dot color
+  document.getElementById('sc1').style.background = P.bg_home;
+  document.querySelectorAll('.nd.on').forEach(el => el.style.background = P.acc_color);
+  document.documentElement.style.setProperty('--acc', P.acc_color);
+
+  // Commutatore
+  document.getElementById('btn-p1').className = 'plan-btn' + (piano==='p1' ? ' active-p1' : '');
+  document.getElementById('btn-pt').className = 'plan-btn' + (piano==='pt' ? ' active-pt' : '');
+
+  // Etichette zona locale home
+  const card = document.getElementById('s1local-card');
+  card.style.background = P.local_card_bg;
+  card.style.border = '1px solid ' + P.local_card_brd;
+  document.getElementById('s1local-lbl').style.color = P.local_lbl_col;
+  document.getElementById('s1local-lbl').textContent = P.zona_label;
+
+  // Slider accent color
+  const slider = document.getElementById('t2-slider');
+  slider.style.accentColor = P.acc_color;
+  document.getElementById('t2-spval').style.color = P.acc_color;
+
+  // Termostato header
+  document.getElementById('thermo-ttl').textContent = P.zona_label;
+  document.getElementById('s2-piano-lbl').textContent = P.label;
+  document.getElementById('thermo-amb-lbl').textContent = 'Temperatura - ' + P.zona_locale;
+
+  // Zone header
+  document.getElementById('zone-lbl').textContent = 'Riepilogo - ' + P.label;
+  document.getElementById('ve-lbl').textContent = 'Storico - ' + P.label;
+  document.getElementById('prog-lbl').textContent = P.zona_label;
+
+
+  // Ftemp color
+  document.querySelectorAll('.ftemp').forEach(el => el.style.color = P.acc_color);
+
+  // Ricostruisce zona cards
+  buildZoneCards();
+
+  // Ricarica dati
+  curSP = 20.5; curMode = 1;
+  updateModeUI();
+  renderVE();
+  pollAll();
+  // Non ricaricare loadSched() qui: sovrascrive modifiche non salvate.
+  // I dati schedule vengono caricati solo all'avvio e dopo un salvataggio esplicito.
+  renderBar(); renderFasce();
+}
+
+function setPiano(p) {
+  if (piano === p) return;
+  piano = p;
+  localStorage.setItem('piano', p);
+  applyPianoUI();
+  showToast('Configurazione ' + PIANI[p].label + ' attiva');
+}
+
+// ============================================================
+//  UTILITY
+// ============================================================
+function $(id) { return document.getElementById(id); }
+function go(f, t) {
+  $('sc'+f).classList.remove('active');
+  $('sc'+t).classList.add('active');
+}
+function ts2ago(ts) {
+  if (!ts) return '--';
+  const s = Math.round(Date.now()/1000 - ts);
+  if (s < 60) return s+'s fa';
+  if (s < 3600) return Math.round(s/60)+'m fa';
+  return Math.round(s/3600)+'h fa';
+}
+function showToast(msg, col) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.style.background = col || '#1a5a2a';
+  t.style.borderColor = col ? '#ff8888' : '#2ecc71';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+async function apiFetch(zone, path, method='GET', body=null) {
+  try {
+    const o = { method, headers: {'Content-Type':'application/json'} };
+    if (body) o.body = JSON.stringify(body);
+    const r = await fetch('/api/'+zone+path, o);
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    return await r.json();
+  } catch(e) {
+    console.warn('fetch', zone, path, e.message);
+    return null;
+  }
+}
+
+// ============================================================
+//  OROLOGIO
+// ============================================================
+function updateClock() {
+  const n = new Date(), hm = n.toTimeString().slice(0,5);
+  const D = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+  const M = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  ['s1time','s2clk'].forEach(id => { const e=$(id); if(e) e.textContent=hm; });
+  $('s1date').textContent = D[n.getDay()]+' '+n.getDate()+' '+M[n.getMonth()];
+}
+updateClock(); setInterval(updateClock, 10000);
+
+// ============================================================
+//  METEO
+// ============================================================
+const WX_CODES = {0:'Soleggiato',1:'Prev. sereno',2:'Parz. nuvoloso',3:'Coperto',
+  45:'Nebbia',48:'Nebbia',51:'Pioggerella',53:'Pioggerella',55:'Pioggerella',
+  61:'Pioggia leggera',63:'Pioggia',65:'Pioggia intensa',71:'Neve leggera',
+  73:'Neve',75:'Neve',80:'Rovesci',81:'Rovesci',82:'Rovesci',
+  95:'Temporale',96:'Temporale',99:'Temporale'};
+const WX_ICONS = {0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',
+  51:'🌦️',53:'🌧️',55:'🌧️',61:'🌦️',63:'🌧️',65:'⛈️',
+  71:'🌨️',73:'❄️',75:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',95:'⛈️',96:'⛈️',99:'⛈️'};
+const WD = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
+const MOON = [{i:'🌑',n:'Luna nuova'},{i:'🌒',n:'Falce crescente'},{i:'🌓',n:'Primo quarto'},
+  {i:'🌔',n:'Gibbosa crescente'},{i:'🌕',n:'Luna piena'},{i:'🌖',n:'Gibbosa calante'},
+  {i:'🌗',n:'Ultimo quarto'},{i:'🌘',n:'Falce calante'}];
+let lastMeteoTs = 0;
+
+function calcMoon(d) {
+  const age = ((d.getTime()-new Date(2000,0,6).getTime()) % (29.53058867*86400000) + 29.53058867*86400000) % (29.53058867*86400000);
+  return { idx: Math.round(age/(29.53058867*86400000/8))%8, daysLeft: Math.round(29.53058867 - age/86400000) };
+}
+function fmtTime(iso) { return iso ? iso.slice(11,16) : '--:--'; }
+
+async function fetchMeteo() {
+  const u = `https://api.open-meteo.com/v1/forecast?latitude=${CFG.METEO_LAT}&longitude=${CFG.METEO_LON}`+
+    `&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,cloud_cover,`+
+    `wind_speed_10m,wind_direction_10m,precipitation,surface_pressure,shortwave_radiation,uv_index`+
+    `&daily=sunrise,sunset&timezone=Europe%2FRome&forecast_days=1`;
+  try {
+    const d = await (await fetch(u)).json();
+    const c = d.current, dd = d.daily, code = c.weather_code||0;
+    $('wx-icon').textContent = WX_ICONS[code]||'🌡️';
+    $('wx-desc').textContent = WX_CODES[code]||'--';
+    $('wx-temp').textContent = Math.round(c.temperature_2m)||'--';
+    $('wx-hum').textContent  = Math.round(c.relative_humidity_2m)||'--';
+    $('wx-feels').textContent = (Math.round(c.apparent_temperature)||'--')+'°C';
+    $('wx-cloud').textContent = (c.cloud_cover||0)+'%';
+    $('wx-uv').textContent    = (c.uv_index||0).toFixed(1);
+    $('wx-press').textContent = Math.round(c.surface_pressure||0)+' hPa';
+    $('wx-wind').textContent  = Math.round(c.wind_speed_10m||0)+' km/h';
+    $('wx-wdir').textContent  = WD[Math.round((c.wind_direction_10m||0)/22.5)%16];
+    $('wx-rain').textContent  = (c.precipitation||0).toFixed(1)+' mm';
+    $('wx-rad').textContent   = Math.round(c.shortwave_radiation||0)+' W/m²';
+    if (dd) {
+      $('wx-sunrise').textContent = fmtTime(dd.sunrise?.[0]);
+      $('wx-sunset').textContent  = fmtTime(dd.sunset?.[0]);
+      const now=new Date(), sr=new Date(dd.sunrise[0]), ss=new Date(dd.sunset[0]);
+      const P = PIANI[piano];
+      const dayBg = P.bg_home;
+      const nightBg = piano==='p1'
+        ? 'linear-gradient(175deg,#020818 0%,#050f2a 55%,#060d20 100%)'
+        : '#1a0e00';
+      $('sc1').style.background = (now>=sr && now<=ss) ? dayBg : nightBg;
+    }
+    const m = calcMoon(new Date());
+    $('moon-icon').textContent  = MOON[m.idx].i;
+    $('moon-phase').textContent = MOON[m.idx].n;
+    $('moon-eta').textContent   = 'prossima: '+MOON[(m.idx+1)%8].n+' in '+m.daysLeft+'gg';
+    lastMeteoTs = Date.now();
+    updateMeteoStatus();
+  } catch(e) { console.warn('meteo',e.message); updateMeteoStatus(); }
+}
+function updateMeteoStatus() {
+  const min = Math.round((Date.now()-lastMeteoTs)/60000);
+  const dot = $('dot-meteo'), lbl = $('lbl-meteo');
+  if (!lastMeteoTs)      { dot.className='sdot dr'; lbl.textContent='Meteo offline'; return; }
+  if (min < 30)  { dot.className='sdot dg'; lbl.textContent='Meteo · '+min+'m fa'; }
+  else if (min<60){ dot.className='sdot do'; lbl.textContent='Meteo · '+min+'m fa'; }
+  else           { dot.className='sdot dr'; lbl.textContent='Meteo fermo da '+min+'m'; }
+}
+
+// ============================================================
+//  DATI SONDE
+// ============================================================
+const veCache = {};
+
+async function pollAll() {
+  const P = PIANI[piano];
+  // Zona locale
+  const dl = await apiFetch(P.ip_locale(), P.path_data);
+  if (dl) {
+    $('local-temp').textContent = (dl.temp?.toFixed(1)||'--')+'°C';
+    $('local-hum').textContent  = '💧 '+(dl.hum?.toFixed(0)||'--')+'%';
+    $('local-ts').textContent   = 'agg. '+ts2ago(dl.ts);
+    $('t2-temp').textContent    = dl.temp?.toFixed(1)||'--';
+    $('t2-hum').textContent     = dl.hum?.toFixed(0)||'--';
+    veCache[P.zona_locale.toLowerCase()] = dl;
+  }
+  // Termostato locale
+  const dt = await apiFetch(P.ip_thermo(), P.path_thermo);
+  if (dt) applyThermo(dt);
+
+  // Zone remote
+  for (const z of P.zone_remote) {
+    const d = await apiFetch(z.ip(), z.path);
+    const el = $('zct-'+z.id);
+    const eh = $('zch-'+z.id);
+    const ets = $('zts-'+z.id);
+    const ec = $('zcard-'+z.id);
+    if (d) {
+      if(el) el.textContent = (d.temp?.toFixed(1)||'--')+'°C';
+      if(eh) eh.textContent = '💧 '+(d.hum?.toFixed(0)||'--')+'%';
+      if(ets) ets.textContent = ts2ago(d.ts);
+      if(ec) ec.classList.remove('offline');
+      veCache[z.id] = d;
+    } else {
+      if(ec) ec.classList.add('offline');
+      if(ets) ets.textContent = 'scollegato';
+    }
+    // Termostato zona remota
+    if (z.has_thermo) {
+      const dth = await apiFetch(z.ip_thermo(), '/thermostat');
+      if (dth) updateZoneThermo(z.id, dth);
+    }
+  }
+  renderVE();
+}
+
+function updateZoneThermo(zid, dt) {
+  const on = dt.relay===1;
+  const led = $('zled-'+zid); if(!led) return;
+  led.style.background = on ? '#ff4d4d' : '#6a88aa';
+  led.style.boxShadow  = on ? '0 0 8px rgba(255,77,77,.6)' : 'none';
+  const mm = {off:'OFF', manual:'Manuale', auto:'Auto'};
+  const bm = $('zbdg-tmode-'+zid);
+  if (bm) {
+    bm.textContent = mm[dt.mode]||dt.mode;
+    bm.style.cssText = dt.mode==='manual'
+      ? 'background:rgba(59,130,246,.2);color:#90c8ff;border:1.5px solid #4d9fff;'
+      : 'background:rgba(34,197,94,.2);color:#5ddf94;border:1.5px solid #2ecc71;';
+  }
+  const br = $('zbdg-trelay-'+zid);
+  if (br) {
+    br.textContent = on ? 'Caloriferi ON' : 'Caloriferi OFF';
+    br.style.cssText = on
+      ? 'background:rgba(239,68,68,.2);color:#ff9999;border:1.5px solid #ff4d4d;'
+      : 'background:var(--bg3);color:var(--txt2);border:1.5px solid var(--brd);';
+  }
+  const bs = $('zbdg-tsp-'+zid);
+  if (bs) bs.textContent = 'SP: '+(dt.setpoint?.toFixed(1)||'--')+'°C';
+}
+
+// ============================================================
+//  ZONE CARDS — costruzione dinamica
+// ============================================================
+function buildZoneCards() {
+  const P = PIANI[piano];
+  const body = $('zone-body');
+  body.innerHTML = '';
+  P.zone_remote.forEach(z => {
+    const div = document.createElement('div');
+    div.className = 'zcard';
+    div.id = 'zcard-'+z.id;
+    let extra = '';
+    if (z.has_thermo) {
+      extra = `<div class="zcex">
+        <div class="zcled" id="zled-${z.id}" style="background:var(--txt3);"></div>
+        <div class="zcbdg" id="zbdg-tmode-${z.id}" style="background:var(--bg3);color:var(--txt2);border:1.5px solid var(--brd);">--</div>
+        <div class="zcbdg" id="zbdg-trelay-${z.id}" style="background:var(--bg3);color:var(--txt2);border:1.5px solid var(--brd);">--</div>
+        <div style="font-size:12px;color:var(--txt2);font-weight:700;" id="zbdg-tsp-${z.id}">SP: --°C</div>
+      </div>`;
+    }
+    div.innerHTML = `
+      <div class="zch">
+        <span style="font-size:20px;">${z.icon}</span>
+        <div class="zcnm">${z.name}</div>
+        <div class="zcts" id="zts-${z.id}">--</div>
+      </div>
+      <div class="zcv">
+        <div class="zct" id="zct-${z.id}">--°C</div>
+        <div class="zch2" id="zch-${z.id}">💧 --%</div>
+      </div>
+      ${extra}`;
+    body.appendChild(div);
+  });
+}
+
+// ============================================================
+//  VALORI ESTREMI
+// ============================================================
+function renderVE() {
+  const P = PIANI[piano];
+  const allZones = [
+    { id: P.zona_locale.toLowerCase(), name: P.zona_locale, icon: piano==='p1'?'🛋️':'🍷' },
+    ...P.zone_remote.map(z => ({ id:z.id, name:z.name, icon:z.icon }))
+  ];
+  const body = $('ve-body'); body.innerHTML = '';
+  allZones.forEach(z => {
+    const d = veCache[z.id] || {};
+    const div = document.createElement('div');
+    div.className = 'zcard'; div.style.marginBottom='10px';
+    div.innerHTML = `
+      <div class="zch">
+        <span style="font-size:18px;">${z.icon}</span>
+        <span class="zcnm">${z.name}</span>
+        <span class="zcts" style="margin-left:auto;font-size:9px;">flash sonda</span>
+      </div>
+      <div class="ve-grid">
+        <div class="ve-cell tmax"><div class="ve-cell-lbl">▲ Temp. Max</div>
+          <div class="ve-cell-val">${d.temp_max!=null?d.temp_max+'°C':'--'}</div>
+          <div class="ve-cell-dt">${d.temp_max_ts||'--/-- --:--'}</div></div>
+        <div class="ve-cell tmin"><div class="ve-cell-lbl">▼ Temp. Min</div>
+          <div class="ve-cell-val">${d.temp_min!=null?d.temp_min+'°C':'--'}</div>
+          <div class="ve-cell-dt">${d.temp_min_ts||'--/-- --:--'}</div></div>
+        <div class="ve-cell hmax"><div class="ve-cell-lbl">▲ Umid. Max</div>
+          <div class="ve-cell-val">${d.hum_max!=null?d.hum_max+'%':'--'}</div>
+          <div class="ve-cell-dt">${d.hum_max_ts||'--/-- --:--'}</div></div>
+        <div class="ve-cell hmin"><div class="ve-cell-lbl">▼ Umid. Min</div>
+          <div class="ve-cell-val">${d.hum_min!=null?d.hum_min+'%':'--'}</div>
+          <div class="ve-cell-dt">${d.hum_min_ts||'--/-- --:--'}</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="ve-reset" id="vr-${z.id}"><div class="rp"></div>🗑 Tieni premuto — reset</button>
+        <span style="font-size:9px;color:var(--txt3);">↑ 2 sec</span>
+      </div>`;
+    body.appendChild(div);
+    // IP e path reset dinamici
+    const P2 = PIANI[piano];
+    let ip, rpath;
+    if (z.id === P2.zona_locale.toLowerCase()) {
+      ip = P2.ip_locale(); rpath = P2.path_reset;
+    } else {
+      const zr = P2.zone_remote.find(r => r.id===z.id);
+      ip = zr ? zr.ip() : CFG.IP_SALA_TERRAZZO;
+      rpath = z.id==='terrazzo' ? '/terrazzo/reset' : '/reset';
+    }
+    setupReset(z.id, ip, rpath);
+  });
+}
+
+function setupReset(zid, ip, rpath) {
+  const btn = $('vr-'+zid); if(!btn) return;
+  let timer = null;
+  const start = () => {
+    btn.classList.add('holding');
+    timer = setTimeout(async () => {
+      const r = await apiFetch(ip, rpath, 'POST');
+      if (r) { showToast('✔ Reset '+zid+' inviato'); await pollAll(); }
+      else     showToast('✗ Reset fallito','#7f0000');
+      btn.classList.remove('holding');
+    }, 2000);
+  };
+  const cancel = () => { btn.classList.remove('holding'); clearTimeout(timer); };
+  btn.addEventListener('mousedown', start);
+  btn.addEventListener('touchstart', e => { e.preventDefault(); start(); }, {passive:false});
+  btn.addEventListener('mouseup', cancel);
+  btn.addEventListener('mouseleave', cancel);
+  btn.addEventListener('touchend', cancel);
+  btn.addEventListener('touchcancel', cancel);
+}
+
+// ============================================================
+//  TERMOSTATO
+// ============================================================
+let curSP = 20.5, curMode = 1, spTimer = null, curActiveSP = null;
+const ML  = ['● OFF','● Manuale attivo','● Automatico attivo'];
+const MC  = ['moff','mman','mauto'];
+const MBS = [['mbtn-sel-off','mbtn-man','mbtn-auto'],
+             ['mbtn-off','mbtn-sel-man','mbtn-auto'],
+             ['mbtn-off','mbtn-man','mbtn-sel-auto']];
+
+function applyThermo(dt) {
+  curSP   = dt.setpoint ?? curSP;
+  curMode = dt.mode==='off'?0 : dt.mode==='auto'?2 : 1;
+  curActiveSP = dt.active_setpoint ?? (curMode===2 ? null : curSP);
+  $('t2-slider').value = curSP;
+  updateModeUI();
+  // Stato effettivo del relè letto dall'ESP32 (override calcolato lato browser)
+  if (dt.relay !== undefined) {
+    const on = dt.relay === 1;
+    $('t2-led').classList.toggle('on', on);
+    $('t2-ledst').textContent = on?'ON':'OFF';
+    $('t2-ledst').className = 'ledst'+(on?' on':'');
+  }
+}
+function onSPChange(v) {
+  v = parseFloat(v); curSP = v;
+  if (curMode === 1) $('t2-spval').textContent = v.toFixed(1)+'°C';
+  updateLed();
+  clearTimeout(spTimer);
+  spTimer = setTimeout(() => sendSP(v), 2000);
+}
+async function sendSP(sp) {
+  const P = PIANI[piano];
+  const targetIp = P.ip_thermo();
+  console.log('[sendSP] -> http://'+targetIp+P.path_thermo+'/setpoint sp='+sp);
+  const r = await apiFetch(targetIp, P.path_thermo+'/setpoint', 'POST', {setpoint:sp});
+  if (r) showToast('✔ Set-point '+sp.toFixed(1)+'°C salvato');
+  else   showToast('✗ Sonda '+targetIp+' non raggiungibile','#7f0000');
+}
+function updateLed() {
+  const ambText = $('t2-temp').textContent;
+  const amb = parseFloat(ambText);
+  // Se temperatura non disponibile (--) il LED resta SEMPRE spento
+  // In modalità OFF il LED è sempre spento
+  // In modalità manuale: confronto setpoint vs temperatura reale
+  // In modalità auto: il LED è gestito autonomamente dall'ESP32, qui mostriamo solo lo stato letto da /thermostat
+  let on = false;
+  if (!isNaN(amb) && curMode === 1) {
+    on = curSP > (amb + 0.3);
+  }
+  // In modalità auto il vero stato del relè arriva da applyThermo() via polling
+  $('t2-led').classList.toggle('on', on);
+  $('t2-ledst').textContent = on?'ON':'OFF';
+  $('t2-ledst').className = 'ledst'+(on?' on':'');
+
+  // Disabilita slider in OFF e AUTO
+  const slider = $('t2-slider');
+  if (curMode === 0 || curMode === 2) {
+    slider.disabled = true;
+    slider.style.opacity = '0.4';
+  } else {
+    slider.disabled = false;
+    slider.style.opacity = '1';
+  }
+}
+async function setMode(m) {
+  curMode = m; updateModeUI();
+  const P = PIANI[piano];
+  const targetIp = P.ip_thermo();
+  const targetPath = P.path_thermo+'/mode';
+  console.log('[setMode] piano='+piano+' -> http://'+targetIp+targetPath+' mode='+(m===0?'off':m===1?'manual':'auto'));
+  const r = await apiFetch(targetIp, targetPath, 'POST',
+    {mode: m===0?'off':m===1?'manual':'auto'});
+  if (!r) { showToast('✗ Sonda '+targetIp+' non raggiungibile','#7f0000'); return; }
+  showToast('✔ Modalità impostata');
+  // Rileggi subito il termostato per aggiornare curActiveSP con il valore reale dalla sonda
+  const dt = await apiFetch(targetIp, P.path_thermo);
+  if (dt) applyThermo(dt);
+}
+function updateModeUI() {
+  const ms = $('t2-modestate');
+  ms.textContent = ML[curMode]; ms.className = 'modestate '+MC[curMode];
+  [0,1,2].forEach(i => $('mb'+i).className = 'mbtn '+MBS[curMode][i]);
+  // Aggiorna display setpoint in base alla modalità attiva
+  const spEl = $('t2-spval');
+  if (curMode === 0) {
+    // OFF: nessun setpoint significativo
+    spEl.textContent = '--';
+  } else if (curMode === 1) {
+    // Manuale: mostra e permetti modifica del SP manuale
+    spEl.textContent = curSP.toFixed(1)+'°C';
+  } else {
+    // Auto: mostra SP attivo del piano orario (non modificabile)
+    spEl.textContent = curActiveSP != null ? curActiveSP.toFixed(1)+'°C' : curSP.toFixed(1)+'°C';
+  }
+  updateLed();
+}
+
+// ============================================================
+//  PROGRAMMAZIONE SETTIMANALE
+// ============================================================
+const DAYS = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
+const FC   = ['#3b82f6','#f97316','#38bdf8','#b45309','#16a34a','#ca8a04'];
+const todayDom = (new Date().getDay()+6)%7;
+let selD = todayDom;
+const DEFAULT_SCHED = [
+  {h:5,m:0,t:19.0}, {h:8,m:0,t:19.0}, {h:11,m:0,t:19.0},
+  {h:13,m:0,t:19.0}, {h:17,m:0,t:19.0}, {h:22,m:0,t:19.0}
+];
+const dc = s => s.map(x=>({...x}));
+function mkDefaultSched() {
+  const o={};
+  for(let d=0;d<7;d++) o[d]=DEFAULT_SCHED.map(x=>({...x}));
+  return o;
+}
+// Dati programmazione separati per piano
+const schedSaved = { p1: mkDefaultSched(), pt: mkDefaultSched() };
+const schedWork  = { p1: mkDefaultSched(), pt: mkDefaultSched() };
+
+async function loadSchedForPiano(p) {
+  const P = PIANI[p];
+  if (!P || !P.path_sched) return;
+  console.log('[loadSched] piano='+p+' url=http://'+P.ip_thermo()+P.path_sched);
+  const d = await apiFetch(P.ip_thermo(), P.path_sched);
+  if (!d||!Array.isArray(d)) {
+    console.warn('[loadSched] risposta non valida per piano='+p, d);
+    return;
+  }
+  console.log('[loadSched] ricevuti '+d.length+' slot per piano='+p);
+  d.forEach(sl => {
+    if (sl.day>=0&&sl.day<7&&sl.slot>=0&&sl.slot<6) {
+      const o = {h:sl.hh, m:sl.mm, t:sl.temp};
+      schedSaved[p][sl.day][sl.slot]={...o};
+      schedWork[p][sl.day][sl.slot]={...o};
+    }
+  });
+  // Log tabellare
+  const days = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+  console.log('[loadSched] === SCHEDULE RICEVUTA ['+p+'] ===');
+  for (let d2=0; d2<7; d2++) {
+    const row = schedWork[p][d2].map((s,i)=>
+      `s${i}:${String(s.h).padStart(2,'0')}:${String(s.m).padStart(2,'0')}=${s.t}`
+    ).join('  ');
+    console.log('[loadSched] '+days[d2]+': '+row);
+  }
+  // Ridisegna solo se il piano caricato è quello attivo
+  if (p === piano) { renderDays(); renderBar(); renderFasce(); }
+}
+
+// Wrapper per compatibilità: ricarica il piano corrente
+async function loadSched() {
+  await loadSchedForPiano(piano);
+}
+function renderDays() {
+  const r=$('drow'); r.innerHTML='';
+  DAYS.forEach((d,i) => {
+    const b=document.createElement('button');
+    b.className=i===selD?'dbtn dbtn-sel':i===todayDom?'dbtn dbtn-today':'dbtn';
+    b.textContent=d;
+    b.onclick=()=>{selD=i;renderDays();renderBar();renderFasce();};
+    r.appendChild(b);
+  });
+}
+function renderBar() {
+  const bar=$('bar24'); bar.innerHTML='';
+  const data=schedWork[piano][selD]; const tot=24*60;
+  const pcts=data.map((f,i)=>{const nxt=i<5?(data[i+1].h*60+data[i+1].m):tot;return Math.max(2,((nxt-(f.h*60+f.m))/tot)*100);});
+  const sum=pcts.reduce((a,b)=>a+b,0);
+  data.forEach((f,i)=>{
+    const seg=document.createElement('div'); seg.className='bseg';
+    seg.style.cssText=`width:${((pcts[i]/sum)*100).toFixed(3)}%;background:${FC[i]};`;
+    const lbl=document.createElement('div'); lbl.className='blbl';
+    lbl.textContent=String(f.h).padStart(2,'0')+':'+String(f.m).padStart(2,'0');
+    seg.appendChild(lbl); bar.appendChild(seg);
+  });
+}
+function renderFasce() {
+  const g=$('flist'); g.innerHTML='';
+  schedWork[piano][selD].forEach((f,i)=>{
+    const div=document.createElement('div'); div.className='frow';
+    div.innerHTML=`<div class="fcirc" style="background:${FC[i]}"></div>
+      <div class="ftim">${String(f.h).padStart(2,'0')}:${String(f.m).padStart(2,'0')}</div>
+      <div class="ftemp" style="color:${PIANI[piano].acc_color}">${f.t.toFixed(1)} °C</div>
+      <div style="flex:1"></div><div class="farr">›</div>`;
+    div.onclick=()=>openRov(i); g.appendChild(div);
+  });
+}
+renderDays(); renderBar(); renderFasce();
+
+function exitProg() { for(let d=0;d<7;d++) schedWork[piano][d]=dc(schedSaved[piano][d]); renderBar(); renderFasce(); go(5,2); }
+async function saveProg() {
+  const P = PIANI[piano];
+  if (!P.path_sched) { showToast('⚠ Piano senza programmazione','#7f0000'); return; }
+  const btn = document.querySelector('.s4act-save');
+  btn.disabled = true; btn.textContent = '⏳ Salvataggio...';
+  let ok = true, sent = 0;
+  for (let d = 0; d < 7; d++) {
+    for (let s = 0; s < 6; s++) {
+      const w = schedWork[piano][d][s];
+      const r = await apiFetch(P.ip_thermo(), P.path_sched, 'POST',
+                               {day:d, slot:s, hh:w.h, mm:w.m, temp:w.t});
+      if (!r) ok = false; else sent++;
+    }
+    schedSaved[piano][d] = dc(schedWork[piano][d]);
+  }
+  btn.disabled = false; btn.textContent = '✔ Salva';
+  showToast(ok ? `✔ Programmazione salvata (${sent}/42)` : '⚠ Salvato parzialmente');
+  // Attendi 500ms per dare tempo alla sonda di completare le scritture NVS
+  await new Promise(r => setTimeout(r, 500));
+  // Rileggi il termostato: active_setpoint ora rifletterà i nuovi valori
+  const dt = await apiFetch(P.ip_thermo(), P.path_thermo);
+  if (dt) applyThermo(dt);
+  // Secondo aggiornamento dopo 3s per sicurezza (NVS a volte lento)
+  setTimeout(async () => {
+    const dt2 = await apiFetch(P.ip_thermo(), P.path_thermo);
+    if (dt2) applyThermo(dt2);
+  }, 3000);
+}
+function copyAll() {
+  const src = dc(schedWork[piano][selD]);
+  for (let d = 0; d < 7; d++) if (d !== selD) schedWork[piano][d] = dc(src);
+  renderBar(); renderFasce();
+  // Feedback visivo sul pulsante
+  const btn = document.querySelector('.s4act-copy');
+  const orig = btn.textContent;
+  btn.textContent = '✔ Copiato!';
+  btn.style.background = '#1a5a2a';
+  btn.style.borderColor = 'var(--green)';
+  btn.style.color = '#a0ffb8';
+  setTimeout(() => {
+    btn.textContent = orig;
+    btn.style.background = '';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+  }, 1800);
+  showToast('⊕ Copiato su tutti i giorni');
+}
+
+// Roller
+const hVals=Array.from({length:24},(_,i)=>String(i).padStart(2,'0'));
+const mVals=Array.from({length:60},(_,i)=>String(i).padStart(2,'0'));
+const tVals=[]; for(let t=10;t<=35;t+=0.5) tVals.push(t.toFixed(1));
+let eSlot=0,eDay=0,rH=0,rM=0,rT=0;
+function buildDrum(dId,iId,vals,cur){
+  const drum=$(dId),items=$(iId); items.innerHTML='';
+  vals.forEach((v,i)=>{const it=document.createElement('div');it.className='ditem'+(i===cur?' act':'');it.textContent=v;items.appendChild(it);});
+  const IH=38; items.style.transform=`translateY(${38-(cur*IH)}px)`;
+  let ci=cur,sY=0;
+  drum.addEventListener('pointerdown',e=>{sY=e.clientY;drum.setPointerCapture(e.pointerId);});
+  drum.addEventListener('pointermove',e=>{
+    if(!(e.buttons&1))return;
+    const raw=38-(ci*IH)+(e.clientY-sY);
+    const min=38-(vals.length-1)*IH;
+    const cl=Math.max(min,Math.min(38,raw));
+    items.style.transform=`translateY(${cl}px)`;
+    const ni=Math.round((38-cl)/IH);
+    items.querySelectorAll('.ditem').forEach((it,j)=>it.className='ditem'+(j===ni?' act':''));
+    if(dId==='dh')rH=ni; else if(dId==='dm')rM=ni; else rT=ni;
+  });
+  drum.addEventListener('pointerup',()=>{ci=dId==='dh'?rH:dId==='dm'?rM:rT;items.style.transform=`translateY(${38-(ci*IH)}px)`;});
+}
+function openRov(slot){
+  eSlot=slot;eDay=selD;
+  const f=schedWork[piano][eDay][slot]; rH=f.h;rM=f.m;
+  rT=Math.max(0,Math.min(tVals.length-1,Math.round((f.t-10)/0.5)));
+  $('rptit').textContent=`Fascia ${slot+1} — ${DAYS[eDay]}`;
+  $('rerr').textContent='';
+  buildDrum('dh','ih',hVals,rH); buildDrum('dm','im',mVals,rM); buildDrum('dt','it',tVals,rT);
+  $('rov').style.display='flex';
+}
+function closeRov(){ $('rov').style.display='none'; }
+function saveRov(){
+  const data=schedWork[piano][eDay],nm=rH*60+rM,err=$('rerr');
+  if(eSlot>0){const p=data[eSlot-1];if(nm<=p.h*60+p.m){err.textContent=`Non valido — dopo le ${String(p.h).padStart(2,'0')}:${String(p.m).padStart(2,'0')}`;return;}}
+  if(eSlot<5){const n=data[eSlot+1];if(nm>=n.h*60+n.m){err.textContent='Conflitto con fascia successiva';return;}}
+  data[eSlot]={h:rH,m:rM,t:parseFloat(tVals[rT])};
+  closeRov(); renderBar(); renderFasce();
+}
+
+// ============================================================
+//  LAVAGNA CONDIVISA
+// ============================================================
+async function pollShared() {
+  const d = await apiFetch(CFG.IP_SALA_TERRAZZO, '/shared');
+  pushShared();
+}
+async function pushShared() {
+  const P = PIANI[piano];
+  const payload = { device_id: DEVICE_ID, piano: piano };
+  payload[P.shared_own] = {
+    thermo_mode: curMode===0?'off':curMode===1?'manual':'auto',
+    thermo_sp: curSP,
+    relay: $('t2-led').classList.contains('on')?1:0,
+  };
+  await apiFetch(CFG.IP_SALA_TERRAZZO, '/shared', 'POST', payload);
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+async function init() {
+  // Applica configurazione piano salvata
+  applyPianoUI();
+
+  // Meteo
+  fetchMeteo(); setInterval(fetchMeteo, CFG.METEO_MS);
+  setInterval(updateMeteoStatus, 60000);
+
+
+  // Polling sonde
+  await pollAll(); setInterval(pollAll, CFG.POLL_SONDE_MS);
+
+  // Lavagna ogni 5s
+  await pollShared(); setInterval(pollShared, CFG.POLL_SHARED_MS);
+
+  // Programmazione: carica entrambi i piani all'avvio
+  await loadSchedForPiano('p1');
+  await loadSchedForPiano('pt');
+}
+
+// ============================================================
+//  IMPOSTAZIONI
+// ============================================================
+let settPiano = piano; // piano selezionato nel form (non ancora salvato)
+
+function openSettings() {
+  // Popola i campi con i valori correnti
+  $('sett-name').value    = localStorage.getItem('device_name') || '';
+  $('sett-devid').textContent = 'ID tecnico: ' + DEVICE_ID;
+  $('sett-lat').value     = CFG.METEO_LAT;
+  $('sett-lon').value     = CFG.METEO_LON;
+  settPiano = piano;
+  updateSettPianoUI();
+  go(1, 7);
+}
+
+function settSetPiano(p) {
+  settPiano = p;
+  updateSettPianoUI();
+}
+function updateSettPianoUI() {
+  $('sett-btn-p1').className = 'sett-piano-btn' + (settPiano==='p1' ? ' sel-p1' : '');
+  $('sett-btn-pt').className = 'sett-piano-btn' + (settPiano==='pt' ? ' sel-pt' : '');
+}
+
+function saveSettings() {
+  // Nome dispositivo → diventa il DEVICE_ID leggibile
+  const name = $('sett-name').value.trim();
+  if (name) {
+    const newId = 'dev_' + name.toLowerCase().replace(/[^a-z0-9]/g,'_').slice(0,16);
+    if (newId !== DEVICE_ID) {
+      // Aggiorna DEVICE_ID
+      window.DEVICE_ID = newId;
+      localStorage.setItem('device_id', newId);
+      localStorage.setItem('device_name', name);
+    }
+  }
+
+
+  // Meteo
+  const lat = parseFloat($('sett-lat').value);
+  const lon = parseFloat($('sett-lon').value);
+  if (!isNaN(lat)) { CFG.METEO_LAT = lat; localStorage.setItem('meteo_lat', lat); }
+  if (!isNaN(lon)) { CFG.METEO_LON = lon; localStorage.setItem('meteo_lon', lon); }
+
+
+  // Piano predefinito
+  localStorage.setItem('piano', settPiano);
+  if (settPiano !== piano) {
+    piano = settPiano;
+    applyPianoUI();
+  }
+
+  showToast('✔ Impostazioni salvate');
+  go(7, 1);
+
+
+  // Rilancia meteo se coordinate cambiate
+  fetchMeteo();
+}
+
+
+
+function resetDeviceId() {
+  if (!confirm('Rigenera un nuovo ID dispositivo?')) return;
+  const newId = 'dev_' + Math.random().toString(16).slice(2,8);
+  window.DEVICE_ID = newId;
+  localStorage.setItem('device_id', newId);
+  localStorage.removeItem('device_name');
+  $('sett-name').value = '';
+  $('sett-devid').textContent = 'ID tecnico: ' + newId;
+  showToast('🔄 Nuovo ID: ' + newId);
+}
+
+// Carica impostazioni salvate all'avvio
+function loadSavedSettings() {
+  const lat  = localStorage.getItem('meteo_lat');
+  const lon  = localStorage.getItem('meteo_lon');
+  if (lat)  CFG.METEO_LAT       = parseFloat(lat);
+  if (lon)  CFG.METEO_LON       = parseFloat(lon);
+}
+
+// Aggiorna pushShared per includere nome leggibile
+const _origPushShared = pushShared;
+async function pushShared() {
+  const P = PIANI[piano];
+  const name = localStorage.getItem('device_name') || DEVICE_ID;
+  const payload = { device_id: DEVICE_ID, piano: piano };
+  payload[P.shared_own] = {
+    device_id:   DEVICE_ID,
+    device_name: name,
+    thermo_mode: curMode===0?'off':curMode===1?'manual':'auto',
+    thermo_sp:   curSP,
+    relay:       $('t2-led').classList.contains('on')?1:0,
+  };
+  await apiFetch(CFG.IP_SALA_TERRAZZO, '/shared', 'POST', payload);
+}
+
+
+// Long-press sui pulsanti Piano 1 / Piano Terra (2 secondi)
+function setupPlanLongPress() {
+  ['p1','pt'].forEach(target => {
+    const btn = document.getElementById('btn-'+target);
+    let timer = null;
+    const start = () => {
+      if (piano === target) return; // già selezionato
+      btn.classList.add('holding');
+      timer = setTimeout(() => {
+        setPiano(target);
+        btn.classList.remove('holding');
+      }, 2000);
+    };
+    const cancel = () => {
+      btn.classList.remove('holding');
+      clearTimeout(timer);
+    };
+    btn.addEventListener('mousedown', start);
+    btn.addEventListener('touchstart', e => { e.preventDefault(); start(); }, {passive:false});
+    btn.addEventListener('mouseup', cancel);
+    btn.addEventListener('mouseleave', cancel);
+    btn.addEventListener('touchend', cancel);
+    btn.addEventListener('touchcancel', cancel);
+  });
+}
+
+// Carica impostazioni salvate prima di init
+loadSavedSettings();
+setupPlanLongPress();
+init();
+</script>
+</body>
+</html>
