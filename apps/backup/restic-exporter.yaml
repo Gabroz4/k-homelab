@@ -117,6 +117,8 @@ spec:
                   key: immich-db-password
             - name: REFRESH_INTERVAL
               value: "1800"
+            - name: RESTIC_CACHE_DIR
+              value: /tmp/restic-cache
           resources:
             requests:
               cpu: 10m
@@ -182,6 +184,8 @@ spec:
                   key: nextcloud-db-password
             - name: REFRESH_INTERVAL
               value: "1800"
+            - name: RESTIC_CACHE_DIR
+              value: /tmp/restic-cache
           resources:
             requests:
               cpu: 10m
@@ -247,6 +251,8 @@ spec:
                   key: nextcloud-minio-password
             - name: REFRESH_INTERVAL
               value: "1800"
+            - name: RESTIC_CACHE_DIR
+              value: /tmp/restic-cache
           resources:
             requests:
               cpu: 10m
@@ -312,6 +318,8 @@ spec:
                   key: authentik-db-password
             - name: REFRESH_INTERVAL
               value: "1800"
+            - name: RESTIC_CACHE_DIR
+              value: /tmp/restic-cache
           resources:
             requests:
               cpu: 10m
