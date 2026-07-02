@@ -41,6 +41,7 @@ spec:
     copyMethod: Direct
     cacheCapacity: 10Gi
     cacheStorageClassName: longhorn-single
+    pruneIntervalDays: 3650
     retain:
       daily: 7
       weekly: 4
