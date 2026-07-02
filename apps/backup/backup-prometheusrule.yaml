@@ -89,14 +89,14 @@ spec:
               recorded successful completion. This may be a newly created job,
               or it may have been failing silently since creation.
         - alert: ResticRepoStale
-          expr: (time() - restic_snapshots_latest_timestamp) > (4 * 86400)
+          expr: (time() - max by (repo) (restic_backup_timestamp)) > (4 * 86400)
           for: 10m
           labels:
             severity: critical
           annotations:
-            summary: "Restic repo {{ $labels.client_hostname }} has no fresh snapshot (>4d)"
+            summary: "Restic repo {{ $labels.repo }} has no fresh snapshot (>4d)"
             description: >
-              The latest snapshot in restic repo `{{ $labels.client_hostname }}`
+              The latest snapshot in restic repo `{{ $labels.repo }}`
               is {{ $value | humanizeDuration }} old. The backup CronJob may be
               succeeding (exit 0) without actually writing data — inspect the
               repo with `restic -r <url> snapshots`.
@@ -106,11 +106,24 @@ spec:
           labels:
             severity: critical
           annotations:
-            summary: "Restic repo integrity check failed ({{ $labels.client_hostname }})"
+            summary: "Restic repo integrity check failed ({{ $labels.repo }})"
             description: >
               `restic check` reported corruption for repo
-              `{{ $labels.client_hostname }}`. Do not run `forget --prune`
+              `{{ $labels.repo }}`. Do not run `forget --prune`
               against this repo until investigated.
+        - alert: VolSyncOutOfSync
+          expr: volsync_volume_out_of_sync == 1
+          for: 30m
+          labels:
+            severity: critical
+          annotations:
+            summary: "VolSync backup out of sync ({{ $labels.obj_namespace }}/{{ $labels.obj_name }})"
+            description: >
+              ReplicationSource {{ $labels.obj_namespace }}/{{ $labels.obj_name }}
+              has missed its sync schedule. Check the mover pods with
+              `kubectl get pods -n {{ $labels.obj_namespace }} -l app.kubernetes.io/created-by=volsync`
+              and their logs — a stale restic lock or repeated mover failure is
+              the usual cause.
         - alert: ResticRestServerDown
           expr: up{namespace="backup", service="restic-rest-server"} == 0
           for: 5m

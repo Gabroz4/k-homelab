@@ -50,13 +50,15 @@ spec:
                   key: immich-files-password
             - name: REFRESH_INTERVAL
               value: "1800"
+            - name: RESTIC_CACHE_DIR
+              value: /tmp/restic-cache
           resources:
             requests:
               cpu: 10m
-              memory: 64Mi
+              memory: 128Mi
             limits:
               cpu: 200m
-              memory: 256Mi
+              memory: 1Gi
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:

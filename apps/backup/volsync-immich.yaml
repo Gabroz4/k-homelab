@@ -41,7 +41,7 @@ spec:
     copyMethod: Direct
     cacheCapacity: 2Gi
     cacheStorageClassName: longhorn-single
-    pruneIntervalDays: 7
+    unlock: "2026-07-02"
     retain:
       daily: 7
       weekly: 4
