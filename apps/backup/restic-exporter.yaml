@@ -26,7 +26,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: exporter
-          image: ngosang/restic-exporter:2.0.2
+          image: ngosang/restic-exporter:2.1.2
           ports:
             - containerPort: 8001
               name: metrics
@@ -93,7 +93,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: exporter
-          image: ngosang/restic-exporter:2.0.2
+          image: ngosang/restic-exporter:2.1.2
           ports:
             - containerPort: 8001
               name: metrics
@@ -158,7 +158,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: exporter
-          image: ngosang/restic-exporter:2.0.2
+          image: ngosang/restic-exporter:2.1.2
           ports:
             - containerPort: 8001
               name: metrics
@@ -223,7 +223,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: exporter
-          image: ngosang/restic-exporter:2.0.2
+          image: ngosang/restic-exporter:2.1.2
           ports:
             - containerPort: 8001
               name: metrics
@@ -288,7 +288,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: exporter
-          image: ngosang/restic-exporter:2.0.2
+          image: ngosang/restic-exporter:2.1.2
           ports:
             - containerPort: 8001
               name: metrics
