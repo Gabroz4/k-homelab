@@ -29,6 +29,11 @@ spec:
             capabilities:
               drop:
                 - ALL
+          env:
+            - name: HF_HOME
+              value: /cache/huggingface
+            - name: MPLCONFIGDIR
+              value: /tmp/matplotlib
           ports:
             - containerPort: 3003
               name: http
