@@ -4,6 +4,11 @@ metadata:
   name: immich-server
   namespace: immich
 spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: immich-server
@@ -50,17 +55,21 @@ spec:
               path: /api/server/ping
               port: 2283
             periodSeconds: 10
+            timeoutSeconds: 5
             failureThreshold: 30
           livenessProbe:
             httpGet:
               path: /api/server/ping
               port: 2283
             periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
           readinessProbe:
             httpGet:
               path: /api/server/ping
               port: 2283
             periodSeconds: 10
+            timeoutSeconds: 5
           resources:
             requests:
               cpu: 200m
