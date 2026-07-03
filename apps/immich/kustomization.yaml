@@ -6,6 +6,7 @@ resources:
   - immich-externalsecret.yaml
   - immich-hpa.yaml
   - immich-ingress.yaml
+  - immich-machine-learning.yaml
   - immich-pvc.yaml
   - immich-server.yaml
   - immich-svc.yaml

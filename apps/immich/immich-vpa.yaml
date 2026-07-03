@@ -18,6 +18,23 @@ spec:
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
 metadata:
+  name: immich-machine-learning-vpa
+  namespace: immich
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: immich-machine-learning
+  updatePolicy:
+    updateMode: "InPlaceOrRecreate"
+  resourcePolicy:
+    containerPolicies:
+      - containerName: '*'
+        controlledResources: ["memory"]
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
   name: immich-postgresql-vpa
   namespace: immich
 spec:

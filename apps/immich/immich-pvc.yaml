@@ -18,6 +18,21 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
+  name: immich-ml-cache
+  namespace: immich
+  annotations:
+    longhorn.io/number-of-replicas: "1"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 8Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
   name: immich-postgres
   namespace: immich
   annotations:

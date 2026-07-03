@@ -72,6 +72,14 @@
     },
     {
       "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "ghcr.io/immich-app/immich-server",
+        "ghcr.io/immich-app/immich-machine-learning"
+      ],
+      "groupName": "immich"
+    },
+    {
+      "matchDatasources": ["docker"],
       "matchPackageNames": ["postgres"],
       "groupName": "postgres clients (backups)",
       "matchUpdateTypes": ["minor", "patch"]
