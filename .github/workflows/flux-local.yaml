@@ -50,7 +50,7 @@ jobs:
 
       - name: Update PR comment
         if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff != '' }}
-        uses: marocchino/sticky-pull-request-comment@v3.0.4
+        uses: marocchino/sticky-pull-request-comment@v3.0.5
         with:
           header: ${{ matrix.path }}-${{ matrix.resource }}
           message: |
