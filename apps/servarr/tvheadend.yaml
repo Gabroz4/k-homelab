@@ -45,15 +45,13 @@ spec:
             - name: dvb
               mountPath: /dev/dvb
           livenessProbe:
-            httpGet:
-              path: /
+            tcpSocket:
               port: 9981
             initialDelaySeconds: 30
             periodSeconds: 30
             failureThreshold: 5
           readinessProbe:
-            httpGet:
-              path: /
+            tcpSocket:
               port: 9981
             initialDelaySeconds: 10
             periodSeconds: 10
