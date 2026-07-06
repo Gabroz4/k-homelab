@@ -9,3 +9,4 @@ resources:
   - seerr.yaml
   - servarr-vpa.yaml
   - sonarr.yaml
+  - tvheadend.yaml
