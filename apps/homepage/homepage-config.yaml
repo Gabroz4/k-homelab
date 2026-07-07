@@ -144,6 +144,13 @@ data:
             namespace: jellyfin
             app: qbittorrent
             podSelector: app=qbittorrent
+        - TVHeadend:
+            href: https://tvheadend.${LOCAL_DOMAIN}
+            description: TV tuner backend
+            icon: tvheadend.png
+            namespace: jellyfin
+            app: tvheadend
+            podSelector: app=tvheadend
         # - Dispatcharr:
         #     href: https://dispatcharr.${LOCAL_DOMAIN}
         #     description: IPTV M3U/EPG manager and DVR
@@ -206,7 +213,7 @@ data:
             app: minio
             podSelector: app=minio
         - Longhorn:
-            href: http://192.168.1.50:32286
+            href: https://longhorn.${LOCAL_DOMAIN}
             description: Distributed block storage
             icon: longhorn.png
             namespace: longhorn-system
