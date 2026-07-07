@@ -67,6 +67,7 @@ spec:
           memory: 1Gi
       persistence:
         enabled: true
+        enableStatefulSetAutoDeletePVC: false
         size: 20Gi
         storageClass: longhorn
 
