@@ -42,7 +42,7 @@ spec:
     cacheCapacity: 2Gi
     cacheStorageClassName: longhorn-single
     pruneIntervalDays: 3650
-    unlock: "2026-07-02"
+    unlock: "2026-07-07"
     retain:
       daily: 7
       weekly: 4
@@ -50,9 +50,9 @@ spec:
     moverResources:
       requests:
         cpu: 200m
-        memory: 1Gi
-      limits:
         memory: 2Gi
+      limits:
+        memory: 4Gi
     moverAffinity:
       podAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
