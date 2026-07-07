@@ -1,0 +1,61 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: longhorn-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: longhorn.rules
+      rules:
+        - alert: LonghornVolumeFaulted
+          expr: longhorn_volume_robustness == 3
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Longhorn volume faulted ({{ $labels.pvc_namespace }}/{{ $labels.pvc }})"
+            description: >
+              Volume {{ $labels.volume }} ({{ $labels.pvc_namespace }}/{{ $labels.pvc }})
+              is faulted: all replicas are marked failed and the volume cannot
+              attach. If replica data on disk is intact, salvage with
+              `kubectl -n longhorn-system patch replica <name> --type=merge
+              -p '{"spec":{"failedAt":""}}'`.
+        - alert: LonghornVolumeDegraded
+          expr: longhorn_volume_robustness == 2
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn volume degraded ({{ $labels.pvc_namespace }}/{{ $labels.pvc }})"
+            description: >
+              Volume {{ $labels.volume }} ({{ $labels.pvc_namespace }}/{{ $labels.pvc }})
+              has been degraded for over an hour. A replica rebuild may be
+              stuck because no disk is schedulable.
+        - alert: LonghornDiskNotReady
+          expr: longhorn_disk_status{condition="ready"} == 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn disk not ready ({{ $labels.node }}/{{ $labels.disk }})"
+            description: >
+              Disk {{ $labels.disk }} on node {{ $labels.node }} is not ready.
+              Check `kubectl -n longhorn-system describe node.longhorn.io
+              {{ $labels.node }}` for the reason (mount missing, diskUUID
+              mismatch, filesystem errors).
+        - alert: LonghornDiskUnschedulable
+          expr: longhorn_disk_status{condition="schedulable"} == 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn disk unschedulable ({{ $labels.node }}/{{ $labels.disk }})"
+            description: >
+              Disk {{ $labels.disk }} on node {{ $labels.node }} is not
+              schedulable (usually below the minimal-available-percentage
+              free-space threshold). Replicas on an unschedulable disk are
+              excluded from auto-salvage, so a node reboot can leave their
+              volumes permanently faulted. Free up space on the disk or lower
+              the storage-minimal-available-percentage setting.
