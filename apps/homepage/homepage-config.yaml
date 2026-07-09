@@ -87,9 +87,16 @@ data:
             href: https://centralino.${PUBLIC_DOMAIN}
             description: Smart home dashboard
             icon: mdi-home-automation
-        - Matrix:
+        - Element:
             href: https://chat.${PUBLIC_DOMAIN}
-            description: Family chat (Element + Synapse)
+            description: Family chat (Matrix client)
+            icon: element.png
+            namespace: matrix
+            app: element-web
+            podSelector: app=element-web
+        - Matrix Synapse:
+            href: https://matrix.${PUBLIC_DOMAIN}
+            description: Matrix homeserver
             icon: matrix.png
             namespace: matrix
             app: synapse
