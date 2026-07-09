@@ -87,6 +87,13 @@ data:
             href: https://centralino.${PUBLIC_DOMAIN}
             description: Smart home dashboard
             icon: mdi-home-automation
+        - Matrix:
+            href: https://matrix.${PUBLIC_DOMAIN}
+            description: Synapse chat homeserver
+            icon: matrix.png
+            namespace: matrix
+            app: synapse
+            podSelector: app=synapse
 
     - Media:
         - Jellyfin:

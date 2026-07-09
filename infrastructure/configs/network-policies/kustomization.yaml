@@ -9,6 +9,7 @@ resources:
   - external-secrets-policies.yaml
   - immich-policies.yaml
   - jellyfin-policies.yaml
+  - matrix-policies.yaml
   - minio-policies.yaml
   - monitoring-policies.yaml
   - music-policies.yaml

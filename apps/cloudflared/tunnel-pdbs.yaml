@@ -85,5 +85,16 @@ spec:
   selector:
     matchLabels:
       app: cloudflared-dispatcharr
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cloudflared-matrix-pdb
+  namespace: cloudflared
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: cloudflared-matrix
 
 

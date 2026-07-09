@@ -17,6 +17,7 @@ resources:
   - lidarr/ks.yaml
   - longhorn/ks.yaml
   - loki/ks.yaml
+  - matrix/ks.yaml
   - minio/ks.yaml
   - navidrome/ks.yaml
   - nextcloud/ks.yaml
