@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: element-web-config
+  namespace: matrix
+data:
+  config.json: |
+    {
+      "default_server_config": {
+        "m.homeserver": {
+          "base_url": "https://matrix.${PUBLIC_DOMAIN}",
+          "server_name": "matrix.${PUBLIC_DOMAIN}"
+        }
+      },
+      "brand": "Element",
+      "disable_custom_urls": true,
+      "disable_guests": true,
+      "disable_3pid_login": true,
+      "default_country_code": "IT",
+      "show_labs_settings": false,
+      "default_theme": "light",
+      "room_directory": {
+        "servers": []
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: element-web
+  namespace: matrix
+  labels:
+    app: element-web
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: element-web
+  template:
+    metadata:
+      labels:
+        app: element-web
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - ${STATELESS_NODE}
+      tolerations:
+        - key: workload
+          operator: Equal
+          value: stateless
+          effect: NoSchedule
+      containers:
+        - name: element-web
+          image: vectorim/element-web:v1.12.23
+          ports:
+            - containerPort: 80
+              name: http
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /app/config.json
+              subPath: config.json
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: element-web-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: element-web
+  namespace: matrix
+spec:
+  selector:
+    app: element-web
+  ports:
+    - port: 80
+      targetPort: 80
+      name: http

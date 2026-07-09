@@ -88,8 +88,8 @@ data:
             description: Smart home dashboard
             icon: mdi-home-automation
         - Matrix:
-            href: https://matrix.${PUBLIC_DOMAIN}
-            description: Synapse chat homeserver
+            href: https://chat.${PUBLIC_DOMAIN}
+            description: Family chat (Element + Synapse)
             icon: matrix.png
             namespace: matrix
             app: synapse
