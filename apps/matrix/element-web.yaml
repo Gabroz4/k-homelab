@@ -43,6 +43,7 @@ spec:
       labels:
         app: element-web
     spec:
+      enableServiceLinks: false
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
