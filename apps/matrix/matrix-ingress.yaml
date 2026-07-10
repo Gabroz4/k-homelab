@@ -17,6 +17,21 @@ spec:
                 port:
                   number: 8008
 ---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: mas-compat
+  namespace: matrix
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`matrix.${PUBLIC_DOMAIN}`) && PathRegexp(`^/_matrix/client/[a-zA-Z0-9._-]+/(login|logout|refresh)`)
+      kind: Rule
+      services:
+        - name: mas
+          port: 8080
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
