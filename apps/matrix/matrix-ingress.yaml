@@ -20,6 +20,25 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
+  name: mas-external
+  namespace: matrix
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: account.${PUBLIC_DOMAIN}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mas
+                port:
+                  number: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
   name: element-web-external
   namespace: matrix
 spec:

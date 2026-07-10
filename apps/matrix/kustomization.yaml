@@ -3,5 +3,7 @@ kind: Kustomization
 resources:
   - synapse.yaml
   - element-web.yaml
+  - mas.yaml
   - matrix-externalsecret.yaml
+  - mas-externalsecret.yaml
   - matrix-ingress.yaml

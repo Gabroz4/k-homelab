@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mas
+  namespace: matrix
+  labels:
+    app: mas
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mas
+  template:
+    metadata:
+      labels:
+        app: mas
+    spec:
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - ${STATELESS_NODE}
+      tolerations:
+        - key: workload
+          operator: Equal
+          value: stateless
+          effect: NoSchedule
+      containers:
+        - name: mas
+          image: ghcr.io/element-hq/matrix-authentication-service:1.20.0
+          command:
+            - mas-cli
+            - server
+            - --config
+            - /config/config.yaml
+          ports:
+            - containerPort: 8080
+              name: http
+            - containerPort: 8081
+              name: internal
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65532
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+      volumes:
+        - name: config
+          secret:
+            secretName: mas-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mas
+  namespace: matrix
+spec:
+  selector:
+    app: mas
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+    - port: 8081
+      targetPort: 8081
+      name: internal

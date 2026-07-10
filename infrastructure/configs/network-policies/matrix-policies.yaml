@@ -155,3 +155,143 @@ spec:
       ports:
         - port: 443
           protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-traefik-to-mas
+  namespace: matrix
+spec:
+  podSelector:
+    matchLabels:
+      app: mas
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - port: 8080
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-mas-to-postgres
+  namespace: matrix
+spec:
+  podSelector:
+    matchLabels:
+      app: matrix-postgres
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: mas
+      ports:
+        - port: 5432
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-mas-egress-to-postgres
+  namespace: matrix
+spec:
+  podSelector:
+    matchLabels:
+      app: mas
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: matrix-postgres
+      ports:
+        - port: 5432
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-synapse-to-mas
+  namespace: matrix
+spec:
+  podSelector:
+    matchLabels:
+      app: mas
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: synapse
+      ports:
+        - port: 8080
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-synapse-egress-to-mas
+  namespace: matrix
+spec:
+  podSelector:
+    matchLabels:
+      app: synapse
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: mas
+      ports:
+        - port: 8080
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-mas-to-synapse
+  namespace: matrix
+spec:
+  podSelector:
+    matchLabels:
+      app: synapse
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: mas
+      ports:
+        - port: 8008
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-mas-egress-to-synapse
+  namespace: matrix
+spec:
+  podSelector:
+    matchLabels:
+      app: mas
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: synapse
+      ports:
+        - port: 8008
+          protocol: TCP
