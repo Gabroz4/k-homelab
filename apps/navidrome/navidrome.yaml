@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: navidrome
-          image: 'deluan/navidrome:0.62.0'
+          image: 'deluan/navidrome:0.63.2'
           ports:
             - containerPort: 4533
           env:
