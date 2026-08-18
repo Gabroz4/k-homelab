@@ -61,7 +61,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: element-web
-          image: vectorim/element-web:v1.12.23
+          image: vectorim/element-web:v1.12.26
           ports:
             - containerPort: 80
               name: http
