@@ -1,0 +1,71 @@
+---
+name: Flate
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - apps/**
+      - infrastructure/**
+      - clusters/**
+  push:
+    branches:
+      - main
+    paths:
+      - apps/**
+      - infrastructure/**
+      - clusters/**
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: home-operations/flate/action@main
+
+      - name: Validate Kustomizations and HelmReleases
+        run: flate test all --path .
+
+  diff:
+    if: github.event_name == 'pull_request'
+    name: Diff
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: home-operations/flate/action@main
+
+      - name: Render diff
+        id: diff
+        run: |
+          flate diff all --path . --base "origin/${{ github.base_ref }}" -o github > diff.txt
+          echo "has_diff=$([ -s diff.txt ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: Update PR comment
+        if: steps.diff.outputs.has_diff == 'true'
+        uses: marocchino/sticky-pull-request-comment@v3.0.5
+        with:
+          header: flate-diff
+          path: diff.txt
+          message: |
+            <details>
+            <summary>Rendered Flux diff (via <a href="https://github.com/home-operations/flate">flate</a>)</summary>
+
+            ```diff
+            {{{content}}}
+            ```
+            </details>
