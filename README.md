@@ -9,7 +9,7 @@ _My home Kubernetes cluster — fully self-hosted, GitOps-managed, and reconcile
 [![Renovate](https://img.shields.io/badge/Renovate-1A1F6C?style=for-the-badge&logo=renovate&logoColor=white)](https://www.mend.io/renovate)
 
 [![Kubeconform](https://img.shields.io/github/actions/workflow/status/Gabroz4/k-homelab/kubeconform.yaml?branch=main&style=for-the-badge&logo=kubernetes&logoColor=white&label=kubeconform)](https://github.com/Gabroz4/k-homelab/actions/workflows/kubeconform.yaml)
-[![Flux Local](https://img.shields.io/github/actions/workflow/status/Gabroz4/k-homelab/flux-local.yaml?branch=main&style=for-the-badge&logo=flux&logoColor=white&label=flux-local)](https://github.com/Gabroz4/k-homelab/actions/workflows/flux-local.yaml)
+[![Flate](https://img.shields.io/github/actions/workflow/status/Gabroz4/k-homelab/flate.yaml?branch=main&style=for-the-badge&logo=flux&logoColor=white&label=flate)](https://github.com/Gabroz4/k-homelab/actions/workflows/flate.yaml)
 [![Last Commit](https://img.shields.io/github/last-commit/Gabroz4/k-homelab?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Gabroz4/k-homelab/commits/main)
 
 </div>
@@ -168,5 +168,5 @@ task reconcile # pull latest from Git and reconcile all root Kustomizations
 task tree name=nextcloud   # list every resource a Kustomization manages
 ```
 
-Every push is validated in CI by [kubeconform](https://github.com/yannh/kubeconform) (schema validation) and [flux-local](https://github.com/allenporter/flux-local) (offline build and diff of the Flux tree).
+Every push is validated in CI by [kubeconform](https://github.com/yannh/kubeconform) (schema validation) and [flate](https://github.com/home-operations/flate) (offline build and diff of the Flux tree).
 
