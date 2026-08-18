@@ -31,6 +31,8 @@ jobs:
       - uses: actions/checkout@v7
 
       - uses: home-operations/flate/action@main
+        with:
+          base: ""
 
       - name: Validate Kustomizations and HelmReleases
         run: flate test all --path .
