@@ -39,7 +39,7 @@ jobs:
     steps:
       - name: Setup Flux CLI
         uses: fluxcd/flux2/action@main
-
+        
       - name: Diff Resources
         uses: allenporter/flux-local/action/diff@8.4.0
         id: diff
@@ -48,16 +48,26 @@ jobs:
           path: ${{ matrix.path }}
           resource: ${{ matrix.resource }}
 
+      - name: Write diff to file
+        if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff != '' }}
+        run: |
+          cat > diff.txt <<'FLUX_LOCAL_DIFF_EOF'
+          ${{ steps.diff.outputs.diff }}
+          FLUX_LOCAL_DIFF_EOF
+          # GitHub comments cap at 65536 chars anyway — truncate defensively
+          head -c 60000 diff.txt > diff.trunc.txt && mv diff.trunc.txt diff.txt
+
       - name: Update PR comment
         if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff != '' }}
         uses: marocchino/sticky-pull-request-comment@v3.0.5
         with:
           header: ${{ matrix.path }}-${{ matrix.resource }}
+          path: diff.txt
           message: |
             <details>
             <summary>Diff: <code>${{ matrix.path }}</code> (<code>${{ matrix.resource }}</code>)</summary>
 
-            ```diff
-            ${{ steps.diff.outputs.diff }}
-            ```
+```diff
+            {{{content}}}
+```
             </details>
