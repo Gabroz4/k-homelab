@@ -41,7 +41,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: mas
-          image: ghcr.io/element-hq/matrix-authentication-service:1.20.0
+          image: ghcr.io/element-hq/matrix-authentication-service:1.22.0
           command:
             - mas-cli
             - server
