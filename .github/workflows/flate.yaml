@@ -53,6 +53,8 @@ jobs:
         id: diff
         run: |
           flate diff all --path . --base "origin/${{ github.base_ref }}" -o github > diff.txt
+          # GitHub comments cap at 65536 chars anyway — truncate defensively
+          head -c 60000 diff.txt > diff.trunc.txt && mv diff.trunc.txt diff.txt
           echo "has_diff=$([ -s diff.txt ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
       - name: Update PR comment
