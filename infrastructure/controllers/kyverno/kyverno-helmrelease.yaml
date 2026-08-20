@@ -26,6 +26,9 @@ spec:
       remediateLastFailure: true
     cleanupOnFail: true
   values:
+    global:
+      image:
+        registry: ghcr.io
     crds:
       install: true
     config:
