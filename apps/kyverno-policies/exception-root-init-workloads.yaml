@@ -6,16 +6,15 @@ metadata:
 spec:
   policyRefs:
     - kind: ValidatingPolicy
-      name: require-restricted-securitycontext
+      name: require-run-as-non-root
+    - kind: ValidatingPolicy
+      name: require-drop-all-capabilities
   reportResult: skip
   matchConditions:
     - name: s6-and-entrypoint-root-init
       expression: >-
         (object.metadata.namespace == 'jellyfin' &&
-        ['sonarr', 'radarr', 'prowlarr', 'qbittorrent', 'dispatcharr', 'tvheadend'].exists(n,
+        ['sonarr', 'radarr', 'prowlarr', 'qbittorrent', 'dispatcharr'].exists(n,
         object.metadata.name == n || object.metadata.name.startsWith(n + '-'))) ||
         (object.metadata.namespace == 'music' && (object.metadata.name == 'lidarr' ||
-        object.metadata.name.startsWith('lidarr-'))) ||
-        (object.metadata.namespace == 'nextcloud' &&
-        !object.metadata.name.startsWith('nextcloud-db-backup') &&
-        (object.metadata.name == 'nextcloud' || object.metadata.name.startsWith('nextcloud-')))
+        object.metadata.name.startsWith('lidarr-')))

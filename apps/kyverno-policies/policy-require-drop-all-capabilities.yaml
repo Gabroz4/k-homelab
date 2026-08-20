@@ -1,0 +1,50 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: require-drop-all-capabilities
+spec:
+  failurePolicy: Ignore
+  validationActions:
+    - Deny
+    - Audit
+  autogen:
+    podControllers:
+      controllers:
+        - deployments
+        - statefulsets
+        - daemonsets
+        - cronjobs
+  evaluation:
+    admission:
+      enabled: true
+    background:
+      enabled: true
+  matchConstraints:
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: NotIn
+          values:
+            - kube-system
+            - kube-public
+            - kube-node-lease
+            - flux-system
+            - kyverno
+            - longhorn-system
+            - metallb-system
+            - system-upgrade
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - expression: >-
+        object.spec.containers.all(c, has(c.securityContext) &&
+        has(c.securityContext.capabilities) && has(c.securityContext.capabilities.drop) &&
+        'ALL' in c.securityContext.capabilities.drop) &&
+        (!has(object.spec.initContainers) || object.spec.initContainers.all(c,
+        has(c.securityContext) && has(c.securityContext.capabilities) &&
+        has(c.securityContext.capabilities.drop) && 'ALL' in c.securityContext.capabilities.drop))
+      message: >-
+        capabilities.drop must include ALL on every container and initContainer.

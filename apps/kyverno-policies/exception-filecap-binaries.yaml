@@ -6,11 +6,10 @@ metadata:
 spec:
   policyRefs:
     - kind: ValidatingPolicy
-      name: require-restricted-securitycontext
+      name: require-run-as-non-root
   reportResult: skip
   matchConditions:
     - name: adguard-binary-carries-file-capabilities
       expression: >-
         object.metadata.namespace == 'adguard' &&
-        (object.metadata.name == 'adguardhome' ||
-        object.metadata.name.startsWith('adguardhome-'))
+        (object.metadata.name == 'adguardhome' || object.metadata.name.startsWith('adguardhome-'))

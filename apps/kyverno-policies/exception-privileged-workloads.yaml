@@ -1,7 +1,7 @@
 apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
-  name: host-log-collector
+  name: privileged-workloads
   namespace: kyverno
 spec:
   policyRefs:
@@ -15,7 +15,9 @@ spec:
       name: require-seccomp-profile
   reportResult: skip
   matchConditions:
-    - name: alloy-reads-root-only-var-log-pods
+    - name: tuner-and-fan-control-hardware-access
       expression: >-
-        object.metadata.namespace == 'monitoring' &&
-        (object.metadata.name == 'alloy' || object.metadata.name.startsWith('alloy-'))
+        (object.metadata.namespace == 'jellyfin' && (object.metadata.name == 'tvheadend' ||
+        object.metadata.name.startsWith('tvheadend-'))) ||
+        (object.metadata.namespace == 'pankha' &&
+        object.metadata.name.startsWith('pankha-agent'))

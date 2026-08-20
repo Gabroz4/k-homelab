@@ -1,0 +1,49 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: require-seccomp-profile
+spec:
+  failurePolicy: Ignore
+  validationActions:
+    - Deny
+    - Audit
+  autogen:
+    podControllers:
+      controllers:
+        - deployments
+        - statefulsets
+        - daemonsets
+        - cronjobs
+  evaluation:
+    admission:
+      enabled: true
+    background:
+      enabled: true
+  matchConstraints:
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: NotIn
+          values:
+            - kube-system
+            - kube-public
+            - kube-node-lease
+            - flux-system
+            - kyverno
+            - longhorn-system
+            - metallb-system
+            - system-upgrade
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - expression: >-
+        (has(object.spec.securityContext) && has(object.spec.securityContext.seccompProfile) &&
+        object.spec.securityContext.seccompProfile.type in ['RuntimeDefault', 'Localhost']) ||
+        object.spec.containers.all(c, has(c.securityContext) &&
+        has(c.securityContext.seccompProfile) &&
+        c.securityContext.seccompProfile.type in ['RuntimeDefault', 'Localhost'])
+      message: >-
+        seccompProfile.type must be RuntimeDefault or Localhost.

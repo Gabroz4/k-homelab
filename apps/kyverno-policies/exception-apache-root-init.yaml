@@ -1,7 +1,7 @@
 apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
-  name: host-log-collector
+  name: apache-root-init
   namespace: kyverno
 spec:
   policyRefs:
@@ -15,7 +15,10 @@ spec:
       name: require-seccomp-profile
   reportResult: skip
   matchConditions:
-    - name: alloy-reads-root-only-var-log-pods
+    - name: nextcloud-apache-prefork
       expression: >-
-        object.metadata.namespace == 'monitoring' &&
-        (object.metadata.name == 'alloy' || object.metadata.name.startsWith('alloy-'))
+        object.metadata.namespace == 'nextcloud' &&
+        !object.metadata.name.startsWith('nextcloud-postgresql') &&
+        !object.metadata.name.startsWith('nextcloud-redis') &&
+        !object.metadata.name.startsWith('nextcloud-db-backup') &&
+        (object.metadata.name == 'nextcloud' || object.metadata.name.startsWith('nextcloud-'))

@@ -1,8 +1,12 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - exception-apache-root-init.yaml
   - exception-filecap-binaries.yaml
   - exception-host-log-collector.yaml
-  - exception-privileged-host-agents.yaml
+  - exception-privileged-workloads.yaml
   - exception-root-init-workloads.yaml
-  - require-restricted-securitycontext.yaml
+  - policy-require-drop-all-capabilities.yaml
+  - policy-require-no-privilege-escalation.yaml
+  - policy-require-run-as-non-root.yaml
+  - policy-require-seccomp-profile.yaml
