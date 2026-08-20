@@ -31,6 +31,10 @@ spec:
         registry: ghcr.io
     crds:
       install: true
+    features:
+      policyExceptions:
+        enabled: true
+        namespace: kyverno
     config:
       resourceFiltersInclude:
         - '[*/*,flux-system,*]'

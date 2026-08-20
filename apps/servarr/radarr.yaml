@@ -15,11 +15,17 @@ spec:
     spec:
       securityContext:
         fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       nodeSelector:
         kubernetes.io/hostname: homelab
       containers:
         - name: radarr
           image: lscr.io/linuxserver/radarr:6.1.1.10360-ls301
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["NET_RAW"]
           ports:
             - containerPort: 7878
           env:

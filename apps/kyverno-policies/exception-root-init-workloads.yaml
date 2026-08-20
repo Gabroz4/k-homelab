@@ -1,0 +1,17 @@
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: root-init-workloads
+  namespace: kyverno
+spec:
+  policyRefs:
+    - kind: ValidatingPolicy
+      name: require-restricted-securitycontext
+  reportResult: skip
+  matchConditions:
+    - name: servarr-and-media-root-init
+      expression: >-
+        has(object.metadata.labels) && 'app' in object.metadata.labels &&
+        ((object.metadata.namespace == 'jellyfin' && object.metadata.labels['app'] in
+        ['sonarr', 'radarr', 'prowlarr', 'qbittorrent', 'dispatcharr', 'tvheadend']) ||
+        (object.metadata.namespace == 'music' && object.metadata.labels['app'] == 'lidarr'))
