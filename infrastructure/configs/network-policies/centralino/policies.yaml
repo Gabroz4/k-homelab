@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-to-esp32
+spec:
+  podSelector:
+    matchLabels:
+      app: centralino
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 192.168.1.27/32
+        - ipBlock:
+            cidr: 192.168.1.19/32
+        - ipBlock:
+            cidr: 192.168.1.109/32
+      ports:
+        - port: 80
+          protocol: TCP

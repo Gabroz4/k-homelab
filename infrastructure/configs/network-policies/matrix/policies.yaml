@@ -1,28 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: default-deny-ingress
-  namespace: matrix
-spec:
-  podSelector: {}
-  policyTypes:
-    - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: default-deny-egress
-  namespace: matrix
-spec:
-  podSelector: {}
-  policyTypes:
-    - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
   name: allow-traefik-to-synapse
-  namespace: matrix
 spec:
   podSelector:
     matchLabels:
@@ -42,7 +21,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-traefik-to-element-web
-  namespace: matrix
 spec:
   podSelector:
     matchLabels:
@@ -62,7 +40,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-synapse-to-postgres
-  namespace: matrix
 spec:
   podSelector:
     matchLabels:
@@ -81,43 +58,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-prometheus-scrape
-  namespace: matrix
-spec:
-  podSelector: {}
-  policyTypes:
-    - Ingress
-  ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: monitoring
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-dns-egress
-  namespace: matrix
-spec:
-  podSelector: {}
-  policyTypes:
-    - Egress
-  egress:
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
-      ports:
-        - port: 53
-          protocol: UDP
-        - port: 53
-          protocol: TCP
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
   name: allow-synapse-egress-to-postgres
-  namespace: matrix
 spec:
   podSelector:
     matchLabels:
@@ -137,7 +78,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-synapse-egress-internet
-  namespace: matrix
 spec:
   podSelector:
     matchLabels:
@@ -160,7 +100,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-traefik-to-mas
-  namespace: matrix
 spec:
   podSelector:
     matchLabels:
@@ -180,7 +119,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-mas-to-postgres
-  namespace: matrix
 spec:
   podSelector:
     matchLabels:
@@ -200,7 +138,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-mas-egress-to-postgres
-  namespace: matrix
 spec:
   podSelector:
     matchLabels:
@@ -220,7 +157,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-synapse-to-mas
-  namespace: matrix
 spec:
   podSelector:
     matchLabels:
@@ -240,7 +176,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-synapse-egress-to-mas
-  namespace: matrix
 spec:
   podSelector:
     matchLabels:
@@ -260,7 +195,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-mas-to-synapse
-  namespace: matrix
 spec:
   podSelector:
     matchLabels:
@@ -280,7 +214,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-mas-egress-to-synapse
-  namespace: matrix
 spec:
   podSelector:
     matchLabels:

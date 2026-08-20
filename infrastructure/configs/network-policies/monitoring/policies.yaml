@@ -2,7 +2,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-alloy-to-loki
-  namespace: monitoring
 spec:
   podSelector:
     matchLabels:
@@ -22,7 +21,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-grafana-to-loki
-  namespace: monitoring
 spec:
   podSelector:
     matchLabels:
@@ -42,7 +40,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-prometheus-to-loki
-  namespace: monitoring
 spec:
   podSelector:
     matchLabels:
@@ -61,51 +58,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: default-deny-egress
-  namespace: monitoring
-spec:
-  podSelector: {}
-  policyTypes:
-    - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-dns
-  namespace: monitoring
-spec:
-  podSelector: {}
-  policyTypes:
-    - Egress
-  egress:
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
-      ports:
-        - port: 53
-          protocol: UDP
-        - port: 53
-          protocol: TCP
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-egress-intra-namespace
-  namespace: monitoring
-spec:
-  podSelector: {}
-  policyTypes:
-    - Egress
-  egress:
-    - to:
-        - podSelector: {}
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
   name: allow-egress-scraping
-  namespace: monitoring
 spec:
   podSelector: {}
   policyTypes:
@@ -118,7 +71,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-grafana-internet
-  namespace: monitoring
 spec:
   podSelector:
     matchLabels:
@@ -143,7 +95,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-alertmanager-internet
-  namespace: monitoring
 spec:
   podSelector:
     matchLabels:
@@ -170,7 +121,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-apiserver
-  namespace: monitoring
 spec:
   podSelector: {}
   policyTypes:
@@ -193,7 +143,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-prometheus-full-egress
-  namespace: monitoring
 spec:
   podSelector:
     matchLabels:
@@ -207,7 +156,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-homepage-internet
-  namespace: monitoring
 spec:
   podSelector:
     matchLabels:
@@ -232,7 +180,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-nut-exporter-to-host
-  namespace: monitoring
 spec:
   podSelector:
     matchLabels:

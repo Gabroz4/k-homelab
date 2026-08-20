@@ -1,17 +1,17 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - adguard-policies.yaml
-  - authentik-policies.yaml
-  - backup-policies.yaml
-  - centralino-policies.yaml
-  - cloudflared-policies.yaml
-  - external-secrets-policies.yaml
-  - immich-policies.yaml
-  - jellyfin-policies.yaml
-  - matrix-policies.yaml
-  - minio-policies.yaml
-  - monitoring-policies.yaml
-  - music-policies.yaml
-  - nextcloud-policies.yaml
-  - pankha-policies.yaml
+  - ./adguard
+  - ./authentik
+  - ./backup
+  - ./centralino
+  - ./cloudflared
+  - ./external-secrets
+  - ./immich
+  - ./jellyfin
+  - ./matrix
+  - ./minio
+  - ./monitoring
+  - ./music
+  - ./nextcloud
+  - ./pankha

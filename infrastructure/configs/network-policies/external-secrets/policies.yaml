@@ -1,18 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: default-deny-ingress
-  namespace: external-secrets
-spec:
-  podSelector: {}
-  policyTypes:
-    - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
   name: allow-eso-to-sdk-server
-  namespace: external-secrets
 spec:
   podSelector:
     matchLabels:
@@ -32,7 +21,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-apiserver-to-webhook
-  namespace: external-secrets
 spec:
   podSelector:
     matchLabels:
@@ -47,38 +35,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: default-deny-egress
-  namespace: external-secrets
-spec:
-  podSelector: {}
-  policyTypes:
-    - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-dns
-  namespace: external-secrets
-spec:
-  podSelector: {}
-  policyTypes:
-    - Egress
-  egress:
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
-      ports:
-        - port: 53
-          protocol: UDP
-        - port: 53
-          protocol: TCP
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
   name: allow-bitwarden-cloud
-  namespace: external-secrets
 spec:
   podSelector:
     matchLabels:
@@ -101,7 +58,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-apiserver
-  namespace: external-secrets
 spec:
   podSelector: {}
   policyTypes:
@@ -124,7 +80,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-eso-to-sdk-server-egress
-  namespace: external-secrets
 spec:
   podSelector:
     matchLabels:
