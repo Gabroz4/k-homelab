@@ -17,6 +17,10 @@ spec:
         spec:
           restartPolicy: OnFailure
           securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
             seccompProfile:
               type: RuntimeDefault
           initContainers:
@@ -25,7 +29,7 @@ spec:
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
-                  drop: ["NET_RAW"]
+                  drop: ["ALL"]
               resources:
                 requests:
                   cpu: 50m
@@ -58,7 +62,7 @@ spec:
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
-                  drop: ["NET_RAW"]
+                  drop: ["ALL"]
               resources:
                 requests:
                   cpu: 50m
@@ -75,6 +79,8 @@ spec:
                   restic -r "$REST_URL" snapshots > /dev/null 2>&1 || restic -r "$REST_URL" init
                   restic -r "$REST_URL" backup --host immich /dump
               env:
+                - name: RESTIC_CACHE_DIR
+                  value: /tmp/restic-cache
                 - name: RESTIC_PASSWORD
                   valueFrom:
                     secretKeyRef:
@@ -117,6 +123,10 @@ spec:
         spec:
           restartPolicy: OnFailure
           securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
             seccompProfile:
               type: RuntimeDefault
           initContainers:
@@ -125,7 +135,7 @@ spec:
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
-                  drop: ["NET_RAW"]
+                  drop: ["ALL"]
               resources:
                 requests:
                   cpu: 50m
@@ -158,7 +168,7 @@ spec:
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
-                  drop: ["NET_RAW"]
+                  drop: ["ALL"]
               resources:
                 requests:
                   cpu: 50m
@@ -175,6 +185,8 @@ spec:
                   restic -r "$REST_URL" snapshots > /dev/null 2>&1 || restic -r "$REST_URL" init
                   restic -r "$REST_URL" backup --host nextcloud /dump
               env:
+                - name: RESTIC_CACHE_DIR
+                  value: /tmp/restic-cache
                 - name: RESTIC_PASSWORD
                   valueFrom:
                     secretKeyRef:
@@ -217,6 +229,10 @@ spec:
         spec:
           restartPolicy: OnFailure
           securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
             seccompProfile:
               type: RuntimeDefault
           initContainers:
@@ -225,7 +241,7 @@ spec:
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
-                  drop: ["NET_RAW"]
+                  drop: ["ALL"]
               resources:
                 requests:
                   cpu: 50m
@@ -258,7 +274,7 @@ spec:
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
-                  drop: ["NET_RAW"]
+                  drop: ["ALL"]
               resources:
                 requests:
                   cpu: 50m
@@ -275,6 +291,8 @@ spec:
                   restic -r "$REST_URL" snapshots > /dev/null 2>&1 || restic -r "$REST_URL" init
                   restic -r "$REST_URL" backup --host authentik /dump
               env:
+                - name: RESTIC_CACHE_DIR
+                  value: /tmp/restic-cache
                 - name: RESTIC_PASSWORD
                   valueFrom:
                     secretKeyRef:

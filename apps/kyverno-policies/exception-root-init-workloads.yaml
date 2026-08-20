@@ -16,5 +16,6 @@ spec:
         object.metadata.name == n || object.metadata.name.startsWith(n + '-'))) ||
         (object.metadata.namespace == 'music' && (object.metadata.name == 'lidarr' ||
         object.metadata.name.startsWith('lidarr-'))) ||
-        (object.metadata.namespace == 'nextcloud' && (object.metadata.name == 'nextcloud' ||
-        object.metadata.name.startsWith('nextcloud-')))
+        (object.metadata.namespace == 'nextcloud' &&
+        !object.metadata.name.startsWith('nextcloud-db-backup') &&
+        (object.metadata.name == 'nextcloud' || object.metadata.name.startsWith('nextcloud-')))
