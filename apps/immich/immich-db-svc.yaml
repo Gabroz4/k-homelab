@@ -17,9 +17,17 @@ spec:
       securityContext:
         fsGroup: 999
         runAsUser: 999
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: postgresql
           image: tensorchord/cloudnative-pgvecto-rs:16.3-v0.2.1
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           env:
             - name: POSTGRES_USER
               value: immich
