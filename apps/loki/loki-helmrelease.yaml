@@ -29,6 +29,10 @@ spec:
     loki:
       auth_enabled: false
 
+      podSecurityContext:
+        seccompProfile:
+          type: RuntimeDefault
+
       commonConfig:
         replication_factor: 1
 
@@ -83,8 +87,9 @@ spec:
         enabled: false
         grafanaAgent:
           installOperator: false
-      lokiCanary:
-        enabled: false
+
+    lokiCanary:
+      enabled: false
 
     chunksCache:
       enabled: false

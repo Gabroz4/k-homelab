@@ -185,8 +185,21 @@ spec:
           value: stateless
           effect: NoSchedule
 
+    prometheus-node-exporter:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containerSecurityContext:
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+
     grafana:
       enabled: true
+      initChownData:
+        enabled: false
       admin:
         existingSecret: grafana-admin-credentials
         userKey: adminUser
