@@ -16,6 +16,7 @@ resources:
   - jellyfin/ks.yaml
   - lidarr/ks.yaml
   - longhorn/ks.yaml
+  - kyverno-policies/ks.yaml
   - loki/ks.yaml
   - matrix/ks.yaml
   - minio/ks.yaml
