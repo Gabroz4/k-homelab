@@ -1,0 +1,15 @@
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: privileged-host-agents
+  namespace: kyverno
+spec:
+  policyRefs:
+    - kind: ValidatingPolicy
+      name: require-restricted-securitycontext
+  reportResult: skip
+  matchConditions:
+    - name: pankha-fan-control-agents
+      expression: >-
+        object.metadata.namespace == 'pankha' &&
+        object.metadata.name.startsWith('pankha-agent')

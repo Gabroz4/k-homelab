@@ -59,6 +59,18 @@ spec:
           size: 1Gi
 
     server:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containerSecurityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
       ingress:
         enabled: false
       tolerations:
@@ -78,6 +90,18 @@ spec:
                       - ${STATELESS_NODE}
 
     worker:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containerSecurityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
       tolerations:
         - key: workload
           operator: Equal

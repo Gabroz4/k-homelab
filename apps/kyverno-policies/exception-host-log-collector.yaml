@@ -1,0 +1,15 @@
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: host-log-collector
+  namespace: kyverno
+spec:
+  policyRefs:
+    - kind: ValidatingPolicy
+      name: require-restricted-securitycontext
+  reportResult: skip
+  matchConditions:
+    - name: alloy-reads-root-only-var-log-pods
+      expression: >-
+        object.metadata.namespace == 'monitoring' &&
+        (object.metadata.name == 'alloy' || object.metadata.name.startsWith('alloy-'))

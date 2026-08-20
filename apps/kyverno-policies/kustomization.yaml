@@ -1,5 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - exception-host-log-collector.yaml
+  - exception-privileged-host-agents.yaml
   - exception-root-init-workloads.yaml
   - require-restricted-securitycontext.yaml

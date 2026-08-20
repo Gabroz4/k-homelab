@@ -9,9 +9,12 @@ spec:
       name: require-restricted-securitycontext
   reportResult: skip
   matchConditions:
-    - name: servarr-and-media-root-init
+    - name: s6-and-entrypoint-root-init
       expression: >-
-        has(object.metadata.labels) && 'app' in object.metadata.labels &&
-        ((object.metadata.namespace == 'jellyfin' && object.metadata.labels['app'] in
-        ['sonarr', 'radarr', 'prowlarr', 'qbittorrent', 'dispatcharr', 'tvheadend']) ||
-        (object.metadata.namespace == 'music' && object.metadata.labels['app'] == 'lidarr'))
+        (object.metadata.namespace == 'jellyfin' &&
+        ['sonarr', 'radarr', 'prowlarr', 'qbittorrent', 'dispatcharr', 'tvheadend'].exists(n,
+        object.metadata.name == n || object.metadata.name.startsWith(n + '-'))) ||
+        (object.metadata.namespace == 'music' && (object.metadata.name == 'lidarr' ||
+        object.metadata.name.startsWith('lidarr-'))) ||
+        (object.metadata.namespace == 'nextcloud' && (object.metadata.name == 'nextcloud' ||
+        object.metadata.name.startsWith('nextcloud-')))

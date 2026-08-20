@@ -25,6 +25,21 @@ spec:
     cleanupOnFail: true
   values:
     mode: standalone
+    securityContext:
+      enabled: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+      fsGroupChangePolicy: "OnRootMismatch"
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    containerSecurityContext:
+      readOnlyRootFilesystem: false
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
     replicas: 1
 
     existingSecret: minio-root-credentials
