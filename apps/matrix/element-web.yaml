@@ -59,9 +59,20 @@ spec:
           operator: Equal
           value: stateless
           effect: NoSchedule
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: element-web
           image: vectorim/element-web:v1.12.26
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           ports:
             - containerPort: 80
               name: http

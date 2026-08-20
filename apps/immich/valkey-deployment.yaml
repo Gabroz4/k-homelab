@@ -28,9 +28,20 @@ spec:
                     operator: In
                     values:
                       - ${STATELESS_NODE}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: valkey
         image: valkey/valkey:9
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
         ports:
         - containerPort: 6379
         resources:

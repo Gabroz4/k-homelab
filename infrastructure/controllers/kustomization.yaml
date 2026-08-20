@@ -5,6 +5,7 @@ resources:
   - coredns
   - descheduler
   - external-secrets
+  - kyverno
   - metallb
   - reflector
   - reloader
