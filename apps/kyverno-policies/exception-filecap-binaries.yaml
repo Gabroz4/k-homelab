@@ -1,0 +1,16 @@
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: filecap-binaries
+  namespace: kyverno
+spec:
+  policyRefs:
+    - kind: ValidatingPolicy
+      name: require-restricted-securitycontext
+  reportResult: skip
+  matchConditions:
+    - name: adguard-binary-carries-file-capabilities
+      expression: >-
+        object.metadata.namespace == 'adguard' &&
+        (object.metadata.name == 'adguardhome' ||
+        object.metadata.name.startsWith('adguardhome-'))

@@ -40,12 +40,20 @@ spec:
       labels:
         app: adguardhome
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: adguardhome
           image: adguard/adguardhome:v0.107.79
           securityContext:
             privileged: false
             allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_BIND_SERVICE
           ports:
             - containerPort: 3000
               protocol: TCP
