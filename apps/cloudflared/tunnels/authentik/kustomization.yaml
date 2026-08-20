@@ -1,0 +1,33 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../tunnel-base
+labels:
+  - pairs:
+      app: cloudflared-authentik
+    includeSelectors: true
+patches:
+  - target:
+      kind: Deployment
+    patch: |
+      - op: replace
+        path: /metadata/name
+        value: cloudflared-authentik
+      - op: replace
+        path: /spec/template/spec/containers/0/env/0/valueFrom/secretKeyRef/name
+        value: authentik-tunnel-token
+  - target:
+      kind: ExternalSecret
+    patch: |
+      - op: replace
+        path: /metadata/name
+        value: authentik-tunnel-token
+      - op: replace
+        path: /spec/target/name
+        value: authentik-tunnel-token
+      - op: replace
+        path: /spec/data/0/remoteRef/key
+        value: cloudflared/authentik-tunnel-token/token
+      - op: replace
+        path: /spec/refreshInterval
+        value: 12h5m

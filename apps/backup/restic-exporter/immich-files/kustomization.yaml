@@ -1,0 +1,40 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../base
+labels:
+  - pairs:
+      repo: immich-files
+    includeSelectors: true
+patches:
+  - target:
+      kind: Deployment
+    patch: |
+      - op: replace
+        path: /metadata/name
+        value: restic-exporter-immich-files
+      - op: replace
+        path: /spec/template/spec/containers/0/env/2/value
+        value: "rest:http://$(REST_USER):$(REST_PASSWORD)@restic-rest-server.backup.svc.cluster.local:8000/immich-files"
+      - op: replace
+        path: /spec/template/spec/containers/0/env/3/valueFrom/secretKeyRef/key
+        value: immich-files-password
+      - op: replace
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 10m
+            memory: 128Mi
+          limits:
+            cpu: "1"
+            memory: 3Gi
+      - op: add
+        path: /spec/template/spec/containers/0/volumeMounts
+        value:
+          - name: cache
+            mountPath: /tmp
+      - op: add
+        path: /spec/template/spec/volumes
+        value:
+          - name: cache
+            emptyDir: {}

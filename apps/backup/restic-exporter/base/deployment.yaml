@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restic-exporter-REPO
+  namespace: backup
+  labels:
+    app: restic-exporter
+    repo: REPO
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: restic-exporter
+      repo: REPO
+  template:
+    metadata:
+      labels:
+        app: restic-exporter
+        repo: REPO
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: exporter
+          image: ngosang/restic-exporter:2.1.2
+          ports:
+            - containerPort: 8001
+              name: metrics
+          env:
+            - name: REST_USER
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: rest-admin-user
+            - name: REST_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: rest-admin-password
+            - name: RESTIC_REPOSITORY
+              value: "rest:http://$(REST_USER):$(REST_PASSWORD)@restic-rest-server.backup.svc.cluster.local:8000/REPO"
+            - name: RESTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restic-admin-creds
+                  key: REPO-password
+            - name: REFRESH_INTERVAL
+              value: "43200"
+            - name: RESTIC_CACHE_DIR
+              value: /tmp/restic-cache
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL

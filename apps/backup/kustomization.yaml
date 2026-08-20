@@ -6,7 +6,7 @@ resources:
   - backup-prometheusrule.yaml
   - restic-rest-server.yaml
   - restic-rest-server-externalsecret.yaml
-  - restic-exporter.yaml
+  - restic-exporter
   - restic-prune-cronjob.yaml
   - system-cleanup.yaml
   - volsync-immich.yaml

@@ -1,0 +1,33 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../tunnel-base
+labels:
+  - pairs:
+      app: cloudflared-centralino
+    includeSelectors: true
+patches:
+  - target:
+      kind: Deployment
+    patch: |
+      - op: replace
+        path: /metadata/name
+        value: cloudflared-centralino
+      - op: replace
+        path: /spec/template/spec/containers/0/env/0/valueFrom/secretKeyRef/name
+        value: centralino-tunnel-token
+  - target:
+      kind: ExternalSecret
+    patch: |
+      - op: replace
+        path: /metadata/name
+        value: centralino-tunnel-token
+      - op: replace
+        path: /spec/target/name
+        value: centralino-tunnel-token
+      - op: replace
+        path: /spec/data/0/remoteRef/key
+        value: cloudflared/centralino-tunnel-token/token
+      - op: replace
+        path: /spec/refreshInterval
+        value: 12h25m

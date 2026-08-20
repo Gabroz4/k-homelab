@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cloudflared-authentik
+  name: cloudflared-tunnel
   namespace: cloudflared
   annotations:
     reloader.stakater.com/auto: "true"
@@ -9,11 +9,11 @@ spec:
   replicas: 2
   selector:
     matchLabels:
-      app: cloudflared-authentik
+      app: cloudflared-tunnel
   template:
     metadata:
       labels:
-        app: cloudflared-authentik
+        app: cloudflared-tunnel
         app.kubernetes.io/component: tunnel
     spec:
       topologySpreadConstraints:
@@ -22,7 +22,7 @@ spec:
           whenUnsatisfiable: ScheduleAnyway
           labelSelector:
             matchLabels:
-              app: cloudflared-authentik
+              app: cloudflared-tunnel
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -61,7 +61,7 @@ spec:
             - name: TUNNEL_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: authentik-tunnel-token
+                  name: tunnel-token
                   key: token
           command:
             - cloudflared
@@ -90,21 +90,3 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
             failureThreshold: 3
----
-apiVersion: external-secrets.io/v1
-kind: ExternalSecret
-metadata:
-  name: authentik-tunnel-token
-  namespace: cloudflared
-spec:
-  refreshInterval: 12h5m
-  secretStoreRef:
-    kind: ClusterSecretStore
-    name: bitwarden-secretsmanager
-  target:
-    name: authentik-tunnel-token
-    creationPolicy: Owner
-  data:
-    - secretKey: token
-      remoteRef:
-        key: cloudflared/authentik-tunnel-token/token
