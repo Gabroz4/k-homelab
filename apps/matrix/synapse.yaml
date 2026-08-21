@@ -169,7 +169,7 @@ spec:
         kubernetes.io/hostname: homelab
       initContainers:
         - name: generate-signing-key
-          image: ghcr.io/element-hq/synapse:v1.158.0
+          image: ghcr.io/element-hq/synapse:v1.159.0
           command:
             - sh
             - -c
@@ -193,7 +193,7 @@ spec:
               mountPath: /data
       containers:
         - name: synapse
-          image: ghcr.io/element-hq/synapse:v1.158.0
+          image: ghcr.io/element-hq/synapse:v1.159.0
           env:
             - name: SYNAPSE_CONFIG_PATH
               value: /config/homeserver.yaml
