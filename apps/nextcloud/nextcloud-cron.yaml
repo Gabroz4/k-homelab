@@ -23,9 +23,21 @@ spec:
           restartPolicy: Never
           securityContext:
             fsGroup: 33
+            seccompProfile:
+              type: RuntimeDefault
           containers:
             - name: nextcloud-cron
               image: nextcloud:34.0.3-apache
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                  add:
+                    - CHOWN
+                    - DAC_OVERRIDE
+                    - SETGID
+                    - SETUID
               command:
                 - /bin/bash
                 - -c

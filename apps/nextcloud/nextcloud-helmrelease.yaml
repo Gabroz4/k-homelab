@@ -25,6 +25,26 @@ spec:
     cleanupOnFail: true
   values:
     nextcloud:
+      podSecurityContext:
+        fsGroup: 33
+        seccompProfile:
+          type: RuntimeDefault
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+          add:
+            - CHOWN
+            - DAC_OVERRIDE
+            - SETGID
+            - SETUID
+      postgreSqlInitContainer:
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
       host: nextcloud.${PUBLIC_DOMAIN}
       username: gabro
       existingSecret:
