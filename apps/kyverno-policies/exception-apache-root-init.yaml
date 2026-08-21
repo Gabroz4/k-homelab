@@ -7,12 +7,6 @@ spec:
   policyRefs:
     - kind: ValidatingPolicy
       name: require-run-as-non-root
-    - kind: ValidatingPolicy
-      name: require-no-privilege-escalation
-    - kind: ValidatingPolicy
-      name: require-drop-all-capabilities
-    - kind: ValidatingPolicy
-      name: require-seccomp-profile
   reportResult: skip
   matchConditions:
     - name: nextcloud-apache-prefork
