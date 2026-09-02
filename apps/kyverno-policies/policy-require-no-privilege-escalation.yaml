@@ -7,13 +7,6 @@ spec:
   validationActions:
     - Deny
     - Audit
-  autogen:
-    podControllers:
-      controllers:
-        - deployments
-        - statefulsets
-        - daemonsets
-        - cronjobs
   evaluation:
     admission:
       enabled: true
