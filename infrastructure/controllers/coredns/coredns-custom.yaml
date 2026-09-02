@@ -8,5 +8,5 @@ data:
     k3s.io:53 {
         errors
         cache 300
-        forward . 192.168.1.60 1.1.1.1
+        forward . 192.168.0.60 1.1.1.1
     }
