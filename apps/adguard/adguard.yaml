@@ -111,7 +111,7 @@ metadata:
     app: adguardhome
 spec:
   type: LoadBalancer
-  loadBalancerIP: 192.168.1.109
+  loadBalancerIP: 192.168.1.9
   externalTrafficPolicy: Local
   selector:
     app: adguardhome
