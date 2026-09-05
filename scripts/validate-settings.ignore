@@ -1,0 +1,14 @@
+# Deliberate literals — file:line, checked by scripts/validate-settings.sh.
+# Each entry is a value that happens to equal a cluster-settings value but is
+# NOT the same fact, so templating it would be wrong or actively harmful.
+
+# Grafana dashboard tag. Cosmetic free text, not the node or cluster identity.
+apps/grafana/dashboards/hardware-dashboard-cm.yaml:354
+
+# pankha agent self-reported names. These belong to the agent-identity naming
+# convention (ConfigMap pankha-agent-homelab-config, Deployment, and the
+# netpol podSelector values pankha-agent / pankha-agent-homelab all agree on
+# it). Templating only the JSON name would split the agent's identity from the
+# resource names that select it, and spec.selector is immutable.
+apps/pankha/pankha-agent.yaml:11
+apps/pankha/pankha-agent.yaml:131

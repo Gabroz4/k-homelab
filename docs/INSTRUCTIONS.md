@@ -99,6 +99,24 @@ infrastructure-configs ──▶ infrastructure-controllers ──▶ apps
 - Only `${VAR}` (braces) is substituted. Bare `$VAR` is left alone — safe for shell scripts in CronJobs.
 - This is also a trap: see §10 on Grafana dashboards.
 
+**Adding a variable — apply the ConfigMap before you push.** kustomize-controller runs without
+`--strict-substitutions`, so a `${VAR}` that the live ConfigMap does not yet define renders as an
+*empty string* rather than failing. All Kustomizations reconcile in parallel on a new revision, so a
+per-app one can render before `flux-system` has applied the updated ConfigMap. An empty
+`loadBalancerIP` hands Traefik or AdGuard back to the MetalLB pool; an empty `nodeSelector` makes its
+workload unschedulable.
+
+```bash
+task validate-settings                                   # undefined vars, stray literals, git-vs-live drift
+kubectl apply -f clusters/homelab/cluster-settings.yaml   # then this
+git push                                                 # then this
+```
+
+`task validate-settings` (`scripts/validate-settings.sh`) is driven entirely off the ConfigMap, so it
+needs no edits when a variable is added. Deliberate literals — values that merely *equal* a setting
+without being the same fact, like the pankha agent identity names — are allowlisted with a reason in
+`scripts/validate-settings.ignore`.
+
 ### 1.6 The lifecycle of one change
 
 End to end, when you push a one-line edit to `apps/nextcloud/nextcloud-helmrelease.yaml`:

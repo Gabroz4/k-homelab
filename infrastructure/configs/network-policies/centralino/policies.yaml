@@ -11,11 +11,11 @@ spec:
   egress:
     - to:
         - ipBlock:
-            cidr: 192.168.1.27/32
+            cidr: ${ESP32_SALA_IP}/32
         - ipBlock:
-            cidr: 192.168.1.19/32
+            cidr: ${ESP32_TAVERNA_IP}/32
         - ipBlock:
-            cidr: 192.168.1.109/32
+            cidr: ${ESP32_GARAGE_IP}/32
       ports:
         - port: 80
           protocol: TCP

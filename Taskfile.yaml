@@ -13,6 +13,11 @@ tasks:
       - kubectl kustomize infrastructure/ > /dev/null
       - echo "kustomize OK"
 
+  validate-settings:
+    desc: 'Check the cluster-settings contract — undefined ${VAR}s, hardcoded literals, git-vs-live drift. Run before pushing a new variable.'
+    cmds:
+      - ./scripts/validate-settings.sh
+
   reconcile:
     desc: Pull latest from git and reconcile every root Kustomization
     cmds:
@@ -110,7 +115,9 @@ tasks:
   webhook-url:
     desc: Print the GitHub webhook URL to paste into the repo's webhook settings
     cmds:
-      - 'echo "https://flux-webhook.gabro.ovh$(kubectl -n flux-system get receiver github-receiver -o jsonpath=''{.status.webhookPath}'')"'
+      - |
+        DOMAIN=$(kubectl -n flux-system get cm cluster-settings -o jsonpath='{.data.PUBLIC_DOMAIN}')
+        echo "https://flux-webhook.$DOMAIN$(kubectl -n flux-system get receiver github-receiver -o jsonpath='{.status.webhookPath}')"
 
   secrets-list:
     desc: All BWS-managed ExternalSecrets with sync status
