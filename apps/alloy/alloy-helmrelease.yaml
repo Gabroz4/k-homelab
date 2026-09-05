@@ -111,7 +111,7 @@ spec:
 
             stage.static_labels {
               values = {
-                cluster = "homelab",
+                cluster = "${CLUSTER_NAME}",
               }
             }
 
@@ -126,7 +126,7 @@ spec:
           loki.process "events" {
             stage.static_labels {
               values = {
-                cluster = "homelab",
+                cluster = "${CLUSTER_NAME}",
                 job     = "kubernetes-events",
               }
             }

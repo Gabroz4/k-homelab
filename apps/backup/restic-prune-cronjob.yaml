@@ -20,7 +20,7 @@ spec:
         spec:
           restartPolicy: OnFailure
           nodeSelector:
-            kubernetes.io/hostname: homelab
+            kubernetes.io/hostname: ${PRIMARY_NODE}
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000

@@ -54,7 +54,7 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       nodeSelector:
-        kubernetes.io/hostname: homelab
+        kubernetes.io/hostname: ${PRIMARY_NODE}
       containers:
         - name: postgres
           image: postgres:18-alpine
@@ -171,7 +171,7 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       nodeSelector:
-        kubernetes.io/hostname: homelab
+        kubernetes.io/hostname: ${PRIMARY_NODE}
       containers:
         - name: pankha-app
           image: anexgohan/pankha:v0.6.5

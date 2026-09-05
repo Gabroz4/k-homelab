@@ -14,7 +14,7 @@ spec:
         app: prowlarr
     spec:
       nodeSelector:
-        kubernetes.io/hostname: homelab
+        kubernetes.io/hostname: ${PRIMARY_NODE}
       securityContext:
         seccompProfile:
           type: RuntimeDefault

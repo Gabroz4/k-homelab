@@ -14,7 +14,7 @@ spec:
         app: seerr
     spec:
       nodeSelector:
-        kubernetes.io/hostname: homelab
+        kubernetes.io/hostname: ${PRIMARY_NODE}
       securityContext:
         fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch

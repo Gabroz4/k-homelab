@@ -547,14 +547,14 @@ data:
         },
         {
           "type": "stat",
-          "title": "nvme500 (/mnt/nvme500)",
+          "title": "nvme500 (${NVME_PATH})",
           "gridPos": {"h": 6, "w": 6, "x": 6, "y": 60},
           "id": 31,
           "datasource": {"type": "prometheus", "uid": "prometheus"},
           "targets": [
             {
               "datasource": {"type": "prometheus", "uid": "prometheus"},
-              "expr": "node_filesystem_avail_bytes{instance=\"${PRIMARY_NODE_IP}:9100\", mountpoint=\"/mnt/nvme500\"}",
+              "expr": "node_filesystem_avail_bytes{instance=\"${PRIMARY_NODE_IP}:9100\", mountpoint=\"${NVME_PATH}\"}",
               "instant": true,
               "refId": "A"
             }
@@ -583,14 +583,14 @@ data:
         },
         {
           "type": "stat",
-          "title": "backups (/mnt/backups)",
+          "title": "backups (${BACKUP_PATH})",
           "gridPos": {"h": 6, "w": 6, "x": 12, "y": 60},
           "id": 32,
           "datasource": {"type": "prometheus", "uid": "prometheus"},
           "targets": [
             {
               "datasource": {"type": "prometheus", "uid": "prometheus"},
-              "expr": "node_filesystem_avail_bytes{instance=\"${PRIMARY_NODE_IP}:9100\", mountpoint=\"/mnt/backups\"}",
+              "expr": "node_filesystem_avail_bytes{instance=\"${PRIMARY_NODE_IP}:9100\", mountpoint=\"${BACKUP_PATH}\"}",
               "instant": true,
               "refId": "A"
             }
@@ -619,14 +619,14 @@ data:
         },
         {
           "type": "stat",
-          "title": "media (/media/gabro/Volume)",
+          "title": "media (${MEDIA_PATH})",
           "gridPos": {"h": 6, "w": 6, "x": 18, "y": 60},
           "id": 33,
           "datasource": {"type": "prometheus", "uid": "prometheus"},
           "targets": [
             {
               "datasource": {"type": "prometheus", "uid": "prometheus"},
-              "expr": "node_filesystem_avail_bytes{instance=\"${PRIMARY_NODE_IP}:9100\", mountpoint=\"/media/gabro/Volume\"}",
+              "expr": "node_filesystem_avail_bytes{instance=\"${PRIMARY_NODE_IP}:9100\", mountpoint=\"${MEDIA_PATH}\"}",
               "instant": true,
               "refId": "A"
             }
@@ -662,7 +662,7 @@ data:
           "targets": [
             {
               "datasource": {"type": "prometheus", "uid": "prometheus"},
-              "expr": "node_filesystem_avail_bytes{instance=\"${PRIMARY_NODE_IP}:9100\", mountpoint=~\"/|/mnt/nvme500|/mnt/backups|/media/gabro/Volume\"}",
+              "expr": "node_filesystem_avail_bytes{instance=\"${PRIMARY_NODE_IP}:9100\", mountpoint=~\"/|${NVME_PATH}|${BACKUP_PATH}|${MEDIA_PATH}\"}",
               "legendFormat": "{{mountpoint}}",
               "refId": "A"
             }

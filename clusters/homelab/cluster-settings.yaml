@@ -13,9 +13,12 @@ data:
   TRAEFIK_IP: 192.168.0.55
   ADGUARD_IP: 192.168.0.60
   BACKUP_PATH: /mnt/backups
+  NVME_PATH: /mnt/nvme500
   MEDIA_PATH: /media/gabro/Volume
   MUSIC_PATH: /home/gabro/Music
+  PRIMARY_NODE: homelab
   STATELESS_NODE: pi-node
+  CLUSTER_NAME: homelab
   TELEGRAM_CHAT_ID: "714757023"
   LOCAL_DOMAIN: local.gabro.ovh
   LETSENCRYPT_EMAIL: gabriele.broccoli@gmail.com

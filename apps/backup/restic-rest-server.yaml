@@ -18,7 +18,7 @@ spec:
         app: restic-rest-server
     spec:
       nodeSelector:
-        kubernetes.io/hostname: homelab
+        kubernetes.io/hostname: ${PRIMARY_NODE}
       securityContext:
         runAsUser: 1000
         runAsGroup: 1000

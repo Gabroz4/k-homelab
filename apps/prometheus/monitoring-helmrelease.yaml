@@ -61,7 +61,7 @@ spec:
             default: true
             relabelings:
               - targetLabel: cluster
-                replacement: homelab
+                replacement: ${CLUSTER_NAME}
                 action: replace
 
     alertmanager:

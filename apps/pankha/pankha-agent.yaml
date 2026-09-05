@@ -174,7 +174,7 @@ spec:
         app: pankha-agent-homelab
     spec:
       nodeSelector:
-        kubernetes.io/hostname: homelab
+        kubernetes.io/hostname: ${PRIMARY_NODE}
       securityContext:
         runAsUser: 0
         runAsGroup: 0
