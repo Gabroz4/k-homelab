@@ -4,6 +4,7 @@ metadata:
   name: host-log-collector
   namespace: kyverno
 spec:
+  evaluationMode: Kyverno
   policyRefs:
     - kind: ValidatingPolicy
       name: require-run-as-non-root
