@@ -7,6 +7,11 @@ data:
   PUBLIC_DOMAIN: gabro.ovh
   TIMEZONE: Europe/Rome
   LB_RANGE: 192.168.0.55-192.168.0.69
+  PRIMARY_NODE_IP: 192.168.0.9
+  LAN_CIDR: 192.168.0.0/24
+  LAN_SUPERNET: 192.168.0.0/16
+  TRAEFIK_IP: 192.168.0.55
+  ADGUARD_IP: 192.168.0.60
   BACKUP_PATH: /mnt/backups
   MEDIA_PATH: /media/gabro/Volume
   MUSIC_PATH: /home/gabro/Music

@@ -30,7 +30,7 @@ spec:
               drop:
                 - ALL
           args:
-            - --nut.server=192.168.0.9
+            - --nut.server=${PRIMARY_NODE_IP}
             - --nut.vars_enable=battery.charge,battery.runtime,battery.voltage,input.voltage,output.voltage,ups.load,ups.status,ups.temperature
           ports:
             - name: metrics

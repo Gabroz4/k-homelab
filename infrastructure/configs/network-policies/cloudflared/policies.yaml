@@ -13,7 +13,7 @@ spec:
             except:
               - 10.0.0.0/8
               - 172.16.0.0/12
-              - 192.168.0.0/16
+              - ${LAN_SUPERNET}
       ports:
         - port: 7844
           protocol: UDP

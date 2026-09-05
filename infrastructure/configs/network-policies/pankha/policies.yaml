@@ -49,7 +49,7 @@ spec:
   ingress:
     - from:
         - ipBlock:
-            cidr: 192.168.0.0/24
+            cidr: ${LAN_CIDR}
         - podSelector:
             matchExpressions:
               - key: app
@@ -97,7 +97,7 @@ spec:
             except:
               - 10.0.0.0/8
               - 172.16.0.0/12
-              - 192.168.0.0/16
+              - ${LAN_SUPERNET}
       ports:
         - port: 443
           protocol: TCP
@@ -148,7 +148,7 @@ spec:
             except:
               - 10.0.0.0/8
               - 172.16.0.0/12
-              - 192.168.0.0/16
+              - ${LAN_SUPERNET}
       ports:
         - port: 443
           protocol: TCP

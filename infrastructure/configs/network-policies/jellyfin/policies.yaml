@@ -15,7 +15,7 @@ spec:
             except:
               - 10.0.0.0/8
               - 172.16.0.0/12
-              - 192.168.0.0/16
+              - ${LAN_SUPERNET}
       ports:
         - port: 443
           protocol: TCP
@@ -39,7 +39,7 @@ spec:
             except:
               - 10.0.0.0/8
               - 172.16.0.0/12
-              - 192.168.0.0/16
+              - ${LAN_SUPERNET}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -64,7 +64,7 @@ spec:
             except:
               - 10.0.0.0/8
               - 172.16.0.0/12
-              - 192.168.0.0/16
+              - ${LAN_SUPERNET}
       ports:
         - port: 443
           protocol: TCP
@@ -88,4 +88,4 @@ spec:
             except:
               - 10.0.0.0/8
               - 172.16.0.0/12
-              - 192.168.0.0/16
+              - ${LAN_SUPERNET}
