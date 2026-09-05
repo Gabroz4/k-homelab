@@ -67,7 +67,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: element-web
-          image: vectorim/element-web:v1.12.26
+          image: vectorim/element-web:v1.12.27
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
