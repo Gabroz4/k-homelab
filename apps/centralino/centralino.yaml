@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: centralino
+  annotations:
+    reloader.stakater.com/auto: "true"
   namespace: centralino
 spec:
   replicas: 1
