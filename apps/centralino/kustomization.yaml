@@ -5,9 +5,6 @@ resources:
   - authentik-forward-auth.yaml
   - centralino.yaml
   - centralino-ingress.yaml
-generatorOptions:
-  annotations:
-    kustomize.toolkit.fluxcd.io/substitute: disabled
 configMapGenerator:
   - name: centralino-nginx
     files:
@@ -15,3 +12,6 @@ configMapGenerator:
   - name: centralino-site
     files:
       - index.html=site/index.html
+    options:
+      annotations:
+        kustomize.toolkit.fluxcd.io/substitute: disabled

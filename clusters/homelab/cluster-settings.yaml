@@ -20,7 +20,7 @@ data:
   MEDIA_PATH: /media/gabro/Volume
   MUSIC_PATH: /home/gabro/Music
   PRIMARY_NODE: homelab
-  STATELESS_NODE: pi-node
+  STATELESS_NODE: homelab
   CLUSTER_NAME: homelab
   TELEGRAM_CHAT_ID: "714757023"
   LOCAL_DOMAIN: local.gabro.ovh

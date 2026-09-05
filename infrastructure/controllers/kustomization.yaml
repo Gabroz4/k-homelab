@@ -3,7 +3,6 @@ kind: Kustomization
 resources:
   - cert-manager
   - coredns
-  - descheduler
   - external-secrets
   - kyverno
   - metallb

@@ -119,15 +119,6 @@ spec:
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: descheduler
-  namespace: flux-system
-spec:
-  interval: 1h
-  url: https://kubernetes-sigs.github.io/descheduler/
----
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
-metadata:
   name: kyverno
   namespace: flux-system
 spec:
