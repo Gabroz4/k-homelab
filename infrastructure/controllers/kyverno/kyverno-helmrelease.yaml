@@ -42,7 +42,7 @@ spec:
         - '[*/*,metallb-system,*]'
         - '[*/*,system-upgrade,*]'
     admissionController:
-      replicas: 1
+      replicas: 2
       container:
         resources:
           requests:
