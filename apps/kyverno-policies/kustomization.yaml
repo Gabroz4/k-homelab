@@ -2,6 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - exception-apache-root-init.yaml
+  - exception-cache-nudge.yaml
   - exception-filecap-binaries.yaml
   - exception-host-log-collector.yaml
   - exception-privileged-workloads.yaml
