@@ -2,6 +2,8 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: matrix-postgres-pvc
+  annotations:
+    longhorn.io/number-of-replicas: "1"
   namespace: matrix
   labels:
     app: matrix-postgres
@@ -17,6 +19,8 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: synapse-data-pvc
+  annotations:
+    longhorn.io/number-of-replicas: "1"
   namespace: matrix
   labels:
     app: synapse

@@ -6,5 +6,6 @@ components:
   - ../components/default-deny-ingress
   - ../components/allow-dns
   - ../components/allow-prometheus-scrape
+  - ../components/allow-egress-to-restic-rest-server
 resources:
   - policies.yaml

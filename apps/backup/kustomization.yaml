@@ -11,3 +11,6 @@ resources:
   - system-cleanup.yaml
   - volsync-immich.yaml
   - volsync-minio.yaml
+  - volsync-matrix.yaml
+  - volsync-jellyfin.yaml
+  - volsync-adguard.yaml

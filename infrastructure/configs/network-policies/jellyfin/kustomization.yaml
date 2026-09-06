@@ -6,6 +6,7 @@ components:
   - ../components/default-deny-ingress
   - ../components/allow-dns
   - ../components/allow-prometheus-scrape
+  - ../components/allow-egress-to-restic-rest-server
   - ../components/allow-egress-intra-namespace
   - ../components/allow-intra-namespace
   - ../components/allow-egress-to-authentik

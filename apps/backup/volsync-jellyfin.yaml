@@ -1,0 +1,68 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: volsync-restic-jellyfin-config
+  namespace: jellyfin
+spec:
+  refreshInterval: 12h50m
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: bitwarden-secretsmanager
+  target:
+    name: volsync-restic-jellyfin-config
+    creationPolicy: Owner
+    template:
+      engineVersion: v2
+      data:
+        RESTIC_REPOSITORY: "rest:http://{{ .writerUser }}:{{ .writerPassword }}@restic-rest-server.backup.svc.cluster.local:8000/jellyfin-config"
+        RESTIC_PASSWORD: "{{ .resticPassword }}"
+  data:
+    - secretKey: writerUser
+      remoteRef:
+        key: backup/restic-rest-server/writer-user
+    - secretKey: writerPassword
+      remoteRef:
+        key: backup/restic-rest-server/writer-password
+    - secretKey: resticPassword
+      remoteRef:
+        key: backup/restic-jellyfin-config/password
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: jellyfin-config
+  namespace: jellyfin
+spec:
+  sourcePVC: jellyfin-config
+  trigger:
+    schedule: "0 7 */3 * *"
+  restic:
+    repository: volsync-restic-jellyfin-config
+    copyMethod: Direct
+    cacheCapacity: 2Gi
+    cacheStorageClassName: longhorn-single
+    pruneIntervalDays: 3650
+    retain:
+      daily: 7
+      weekly: 4
+      monthly: 12
+    moverSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    moverResources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        memory: 1Gi
+    moverAffinity:
+      podAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: jellyfin
+            topologyKey: kubernetes.io/hostname

@@ -1,0 +1,68 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: volsync-restic-matrix-files
+  namespace: matrix
+spec:
+  refreshInterval: 12h50m
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: bitwarden-secretsmanager
+  target:
+    name: volsync-restic-matrix-files
+    creationPolicy: Owner
+    template:
+      engineVersion: v2
+      data:
+        RESTIC_REPOSITORY: "rest:http://{{ .writerUser }}:{{ .writerPassword }}@restic-rest-server.backup.svc.cluster.local:8000/matrix-files"
+        RESTIC_PASSWORD: "{{ .resticPassword }}"
+  data:
+    - secretKey: writerUser
+      remoteRef:
+        key: backup/restic-rest-server/writer-user
+    - secretKey: writerPassword
+      remoteRef:
+        key: backup/restic-rest-server/writer-password
+    - secretKey: resticPassword
+      remoteRef:
+        key: backup/restic-matrix-files/password
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: matrix-files
+  namespace: matrix
+spec:
+  sourcePVC: synapse-data-pvc
+  trigger:
+    schedule: "30 6 */3 * *"
+  restic:
+    repository: volsync-restic-matrix-files
+    copyMethod: Direct
+    cacheCapacity: 2Gi
+    cacheStorageClassName: longhorn-single
+    pruneIntervalDays: 3650
+    retain:
+      daily: 7
+      weekly: 4
+      monthly: 12
+    moverSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    moverResources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        memory: 1Gi
+    moverAffinity:
+      podAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: synapse
+            topologyKey: kubernetes.io/hostname

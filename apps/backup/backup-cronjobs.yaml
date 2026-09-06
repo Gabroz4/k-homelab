@@ -315,3 +315,225 @@ spec:
           volumes:
             - name: dump
               emptyDir: {}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: matrix-db-backup
+  namespace: matrix
+spec:
+  schedule: "20 5 */3 * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 300
+      activeDeadlineSeconds: 3600
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          initContainers:
+            - name: pg-dump
+              image: postgres:18-alpine
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -euo pipefail
+                  until pg_isready -h matrix-postgres -p 5432 -U synapse -t 5; do
+                    echo "waiting for postgres (db/netpol not ready)..."
+                    sleep 3
+                  done
+                  pg_dump -U synapse -h matrix-postgres synapse | gzip > /dump/matrix-db.sql.gz
+              env:
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: matrix-postgres
+                      key: POSTGRES_PASSWORD
+              volumeMounts:
+                - name: dump
+                  mountPath: /dump
+          containers:
+            - name: backup
+              image: restic/restic:0.19.1
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -euo pipefail
+                  REST_URL="rest:http://$REST_USER:$REST_PASSWORD@restic-rest-server.backup.svc.cluster.local:8000/matrix-db"
+                  restic -r "$REST_URL" snapshots > /dev/null 2>&1 || restic -r "$REST_URL" init
+                  restic -r "$REST_URL" backup --host matrix /dump
+              env:
+                - name: RESTIC_CACHE_DIR
+                  value: /tmp/restic-cache
+                - name: RESTIC_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: restic-creds
+                      key: matrix-db-password
+                - name: REST_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: restic-creds
+                      key: rest-writer-user
+                - name: REST_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: restic-creds
+                      key: rest-writer-password
+              volumeMounts:
+                - name: dump
+                  mountPath: /dump
+                  readOnly: true
+          volumes:
+            - name: dump
+              emptyDir: {}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pankha-db-backup
+  namespace: pankha
+spec:
+  schedule: "40 5 */3 * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 300
+      activeDeadlineSeconds: 3600
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          initContainers:
+            - name: pg-dump
+              image: postgres:18-alpine
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -euo pipefail
+                  until pg_isready -h pankha-postgres -p 5432 -U "$PGUSER" -t 5; do
+                    echo "waiting for postgres (db/netpol not ready)..."
+                    sleep 3
+                  done
+                  pg_dump -U "$PGUSER" -h pankha-postgres "$PGDATABASE" | gzip > /dump/pankha-db.sql.gz
+              env:
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: pankha-secrets
+                      key: POSTGRES_USER
+                - name: PGDATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: pankha-secrets
+                      key: POSTGRES_DB
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: pankha-secrets
+                      key: POSTGRES_PASSWORD
+              volumeMounts:
+                - name: dump
+                  mountPath: /dump
+          containers:
+            - name: backup
+              image: restic/restic:0.19.1
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -euo pipefail
+                  REST_URL="rest:http://$REST_USER:$REST_PASSWORD@restic-rest-server.backup.svc.cluster.local:8000/pankha-db"
+                  restic -r "$REST_URL" snapshots > /dev/null 2>&1 || restic -r "$REST_URL" init
+                  restic -r "$REST_URL" backup --host pankha /dump
+              env:
+                - name: RESTIC_CACHE_DIR
+                  value: /tmp/restic-cache
+                - name: RESTIC_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: restic-creds
+                      key: pankha-db-password
+                - name: REST_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: restic-creds
+                      key: rest-writer-user
+                - name: REST_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: restic-creds
+                      key: rest-writer-password
+              volumeMounts:
+                - name: dump
+                  mountPath: /dump
+                  readOnly: true
+          volumes:
+            - name: dump
+              emptyDir: {}

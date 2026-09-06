@@ -6,4 +6,9 @@ resources:
   - nextcloud-db
   - nextcloud-minio
   - authentik-db
+  - matrix-db
+  - matrix-files
+  - pankha-db
+  - jellyfin-config
+  - adguard
   - shared.yaml

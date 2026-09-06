@@ -68,6 +68,11 @@ spec:
                   prune_repo nextcloud-db     "$NEXTCLOUD_DB_PASSWORD"
                   prune_repo nextcloud-minio  "$NEXTCLOUD_MINIO_PASSWORD"
                   prune_repo authentik-db     "$AUTHENTIK_DB_PASSWORD"
+                  prune_repo matrix-db        "$MATRIX_DB_PASSWORD"
+                  prune_repo matrix-files     "$MATRIX_FILES_PASSWORD"
+                  prune_repo pankha-db        "$PANKHA_DB_PASSWORD"
+                  prune_repo jellyfin-config  "$JELLYFIN_CONFIG_PASSWORD"
+                  prune_repo adguard          "$ADGUARD_PASSWORD"
               env:
                 - name: RESTIC_CACHE_DIR
                   value: /tmp/restic-cache
@@ -96,6 +101,31 @@ spec:
                     secretKeyRef:
                       name: restic-admin-creds
                       key: authentik-db-password
+                - name: MATRIX_DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: restic-admin-creds
+                      key: matrix-db-password
+                - name: MATRIX_FILES_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: restic-admin-creds
+                      key: matrix-files-password
+                - name: PANKHA_DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: restic-admin-creds
+                      key: pankha-db-password
+                - name: JELLYFIN_CONFIG_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: restic-admin-creds
+                      key: jellyfin-config-password
+                - name: ADGUARD_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: restic-admin-creds
+                      key: adguard-password
           volumes:
             - name: data
               hostPath:
