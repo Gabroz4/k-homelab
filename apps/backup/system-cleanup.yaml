@@ -126,7 +126,7 @@ spec:
                 - -i
                 - -n
                 - --
-                - /bin/sh
+                - /bin/bash
                 - -c
                 - |
                   set -euo pipefail
