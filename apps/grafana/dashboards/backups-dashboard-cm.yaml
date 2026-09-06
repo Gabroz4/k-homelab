@@ -785,6 +785,107 @@ data:
               "color": {"mode": "fixed", "fixedColor": "red"}
             }
           }
+        },
+        {
+          "type": "row",
+          "title": "Host cleanup",
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 86},
+          "id": 600,
+          "collapsed": false,
+          "panels": []
+        },
+        {
+          "type": "bargauge",
+          "title": "Time since last successful cleanup",
+          "gridPos": {"h": 6, "w": 12, "x": 0, "y": 87},
+          "id": 601,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "time() - max by (namespace, cronjob) (kube_cronjob_status_last_successful_time{job=\"kube-state-metrics\", namespace=\"kube-system\", cronjob=~\".+-cleanup\"})",
+              "legendFormat": "{{cronjob}}",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "displayMode": "gradient",
+            "orientation": "horizontal",
+            "reduceOptions": {"calcs": ["lastNotNull"]},
+            "showUnfilled": true
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 691200},
+                  {"color": "red", "value": 864000}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "bargauge",
+          "title": "Next scheduled cleanup",
+          "gridPos": {"h": 6, "w": 12, "x": 12, "y": 87},
+          "id": 602,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "max by (namespace, cronjob) (kube_cronjob_next_schedule_time{job=\"kube-state-metrics\", namespace=\"kube-system\", cronjob=~\".+-cleanup\"}) - time()",
+              "legendFormat": "{{cronjob}}",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "displayMode": "basic",
+            "orientation": "horizontal",
+            "reduceOptions": {"calcs": ["lastNotNull"]},
+            "showUnfilled": true
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "color": {"mode": "fixed", "fixedColor": "blue"}
+            }
+          }
+        },
+        {
+          "type": "stat",
+          "title": "Cleanup jobs that have never succeeded",
+          "gridPos": {"h": 4, "w": 24, "x": 0, "y": 93},
+          "id": 603,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "kube_cronjob_info{job=\"kube-state-metrics\", namespace=\"kube-system\", cronjob=~\".+-cleanup\"} unless on(namespace, cronjob) kube_cronjob_status_last_successful_time{job=\"kube-state-metrics\"}",
+              "legendFormat": "{{cronjob}}",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"]},
+            "textMode": "name",
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "noValue": "nessuno",
+              "color": {"mode": "fixed", "fixedColor": "red"}
+            }
+          }
         }
       ]
     }
