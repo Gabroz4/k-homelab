@@ -76,9 +76,9 @@ spec:
               `kubectl get jobs -n backup`.
         - alert: BackupCronJobNeverSucceeded
           expr: >
-            kube_cronjob_status_last_successful_time{
-              job="kube-state-metrics"
-            } == 0
+            kube_cronjob_info{job="kube-state-metrics"}
+            unless on(namespace, cronjob)
+            kube_cronjob_status_last_successful_time{job="kube-state-metrics"}
           for: 10m
           labels:
             severity: warning
