@@ -684,6 +684,107 @@ data:
             "legend": {"displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "min"]},
             "tooltip": {"mode": "multi"}
           }
+        },
+        {
+          "type": "row",
+          "title": "Database dumps",
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 74},
+          "id": 500,
+          "collapsed": false,
+          "panels": []
+        },
+        {
+          "type": "bargauge",
+          "title": "Time since last successful dump",
+          "gridPos": {"h": 7, "w": 12, "x": 0, "y": 75},
+          "id": 501,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "time() - max by (namespace, cronjob) (kube_cronjob_status_last_successful_time{job=\"kube-state-metrics\", cronjob=~\".+-db-backup\"})",
+              "legendFormat": "{{namespace}}/{{cronjob}}",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "displayMode": "gradient",
+            "orientation": "horizontal",
+            "reduceOptions": {"calcs": ["lastNotNull"]},
+            "showUnfilled": true
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 777600},
+                  {"color": "red", "value": 864000}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "bargauge",
+          "title": "Next scheduled dump",
+          "gridPos": {"h": 7, "w": 12, "x": 12, "y": 75},
+          "id": 502,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "max by (namespace, cronjob) (kube_cronjob_next_schedule_time{job=\"kube-state-metrics\", cronjob=~\".+-db-backup\"}) - time()",
+              "legendFormat": "{{namespace}}/{{cronjob}}",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "displayMode": "basic",
+            "orientation": "horizontal",
+            "reduceOptions": {"calcs": ["lastNotNull"]},
+            "showUnfilled": true
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "color": {"mode": "fixed", "fixedColor": "blue"}
+            }
+          }
+        },
+        {
+          "type": "stat",
+          "title": "Dumps that have never succeeded",
+          "gridPos": {"h": 4, "w": 24, "x": 0, "y": 82},
+          "id": 503,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "prometheus"},
+              "expr": "kube_cronjob_info{job=\"kube-state-metrics\", cronjob=~\".+-db-backup\"} unless on(namespace, cronjob) kube_cronjob_status_last_successful_time{job=\"kube-state-metrics\"}",
+              "legendFormat": "{{namespace}}/{{cronjob}}",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"]},
+            "textMode": "name",
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "noValue": "nessuno",
+              "color": {"mode": "fixed", "fixedColor": "red"}
+            }
+          }
         }
       ]
     }
