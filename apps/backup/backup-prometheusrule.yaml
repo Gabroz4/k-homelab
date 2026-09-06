@@ -28,12 +28,12 @@ spec:
                 namespace!="kube-system",
                 cronjob!="restic-prune"
               }
-            ) > (4 * 86400)
+            ) > (9 * 86400)
           for: 10m
           labels:
             severity: warning
           annotations:
-            summary: "No successful backup in >4 days ({{ $labels.namespace }}/{{ $labels.cronjob }})"
+            summary: "No successful backup in >9 days ({{ $labels.namespace }}/{{ $labels.cronjob }})"
             description: >
               CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} last
               succeeded {{ $value | humanizeDuration }} ago. Verify the schedule
@@ -89,12 +89,12 @@ spec:
               recorded successful completion. This may be a newly created job,
               or it may have been failing silently since creation.
         - alert: ResticRepoStale
-          expr: (time() - max by (repo) (restic_backup_timestamp)) > (4 * 86400)
+          expr: (time() - max by (repo) (restic_backup_timestamp)) > (9 * 86400)
           for: 10m
           labels:
             severity: critical
           annotations:
-            summary: "Restic repo {{ $labels.repo }} has no fresh snapshot (>4d)"
+            summary: "Restic repo {{ $labels.repo }} has no fresh snapshot (>9d)"
             description: >
               The latest snapshot in restic repo `{{ $labels.repo }}`
               is {{ $value | humanizeDuration }} old. The backup CronJob may be

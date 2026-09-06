@@ -4,14 +4,14 @@ metadata:
   name: restic-prune
   namespace: backup
 spec:
-  schedule: "0 6 * * 0"
+  schedule: "0 10 * * 1"
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 4
   jobTemplate:
     spec:
       ttlSecondsAfterFinished: 86400
-      activeDeadlineSeconds: 21600
+      activeDeadlineSeconds: 39600
       backoffLimit: 1
       template:
         metadata:
