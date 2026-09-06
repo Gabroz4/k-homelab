@@ -75,11 +75,8 @@ spec:
               containerPort: 2000
               protocol: TCP
           livenessProbe:
-            exec:
-              command:
-                - cloudflared
-                - tunnel
-                - --version
+            tcpSocket:
+              port: metrics
             initialDelaySeconds: 10
             periodSeconds: 30
             failureThreshold: 3
