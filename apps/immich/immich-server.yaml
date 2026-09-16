@@ -27,7 +27,7 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: immich-server
-          image: ghcr.io/immich-app/immich-server:v3.1.0
+          image: ghcr.io/immich-app/immich-server:v3.2.2
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
