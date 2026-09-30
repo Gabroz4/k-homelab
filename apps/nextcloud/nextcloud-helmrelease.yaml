@@ -102,6 +102,7 @@ spec:
           $CONFIG = [
             'maintenance_window_start' => 1,
             'default_phone_region' => 'IT',
+            'serverid' => 1,
           ];
       livenessProbe:
         enabled: true
