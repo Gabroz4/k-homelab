@@ -12,13 +12,13 @@ spec:
     spec:
       ttlSecondsAfterFinished: 86400
       activeDeadlineSeconds: 39600
-      backoffLimit: 1
+      backoffLimit: 0
       template:
         metadata:
           labels:
             app: restic-prune
         spec:
-          restartPolicy: OnFailure
+          restartPolicy: Never
           nodeSelector:
             kubernetes.io/hostname: ${PRIMARY_NODE}
           securityContext:
@@ -49,30 +49,41 @@ spec:
                 - /bin/sh
                 - -c
                 - |
-                  set -euo pipefail
+                  set -uo pipefail
+                  failed=""
 
                   prune_repo() {
                     local repo_name="$1"
                     export RESTIC_PASSWORD="$2"
                     local url="/data/$repo_name"
+                    if [ ! -f "$url/config" ]; then
+                      echo "== skip: $repo_name (repository not initialised yet) =="
+                      return 0
+                    fi
                     echo "== unlock: $repo_name =="
-                    restic -r "$url" unlock
+                    restic -r "$url" unlock || return 1
                     echo "== forget+prune: $repo_name =="
-                    restic -r "$url" forget --keep-daily 7 --keep-weekly 4 --keep-monthly 12 --prune
+                    restic -r "$url" forget --keep-daily 7 --keep-weekly 4 --keep-monthly 12 --prune || return 1
                     echo "== check: $repo_name =="
-                    restic -r "$url" check --read-data-subset=2%
+                    restic -r "$url" check --read-data-subset=2% || return 1
                   }
 
-                  prune_repo immich-files     "$IMMICH_FILES_PASSWORD"
-                  prune_repo immich-db        "$IMMICH_DB_PASSWORD"
-                  prune_repo nextcloud-db     "$NEXTCLOUD_DB_PASSWORD"
-                  prune_repo nextcloud-minio  "$NEXTCLOUD_MINIO_PASSWORD"
-                  prune_repo authentik-db     "$AUTHENTIK_DB_PASSWORD"
-                  prune_repo matrix-db        "$MATRIX_DB_PASSWORD"
-                  prune_repo matrix-files     "$MATRIX_FILES_PASSWORD"
-                  prune_repo pankha-db        "$PANKHA_DB_PASSWORD"
-                  prune_repo jellyfin-config  "$JELLYFIN_CONFIG_PASSWORD"
-                  prune_repo adguard          "$ADGUARD_PASSWORD"
+                  prune_repo immich-files     "$IMMICH_FILES_PASSWORD"     || failed="$failed immich-files"
+                  prune_repo immich-db        "$IMMICH_DB_PASSWORD"        || failed="$failed immich-db"
+                  prune_repo nextcloud-db     "$NEXTCLOUD_DB_PASSWORD"     || failed="$failed nextcloud-db"
+                  prune_repo nextcloud-minio  "$NEXTCLOUD_MINIO_PASSWORD"  || failed="$failed nextcloud-minio"
+                  prune_repo authentik-db     "$AUTHENTIK_DB_PASSWORD"     || failed="$failed authentik-db"
+                  prune_repo matrix-db        "$MATRIX_DB_PASSWORD"        || failed="$failed matrix-db"
+                  prune_repo matrix-files     "$MATRIX_FILES_PASSWORD"     || failed="$failed matrix-files"
+                  prune_repo pankha-db        "$PANKHA_DB_PASSWORD"        || failed="$failed pankha-db"
+                  prune_repo jellyfin-config  "$JELLYFIN_CONFIG_PASSWORD"  || failed="$failed jellyfin-config"
+                  prune_repo adguard          "$ADGUARD_PASSWORD"          || failed="$failed adguard"
+
+                  if [ -n "$failed" ]; then
+                    echo "== FAILED repos:$failed =="
+                    exit 1
+                  fi
+                  echo "== all repos pruned and checked =="
               env:
                 - name: RESTIC_CACHE_DIR
                   value: /tmp/restic-cache

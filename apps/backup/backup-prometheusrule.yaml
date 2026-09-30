@@ -89,12 +89,12 @@ spec:
               recorded successful completion. This may be a newly created job,
               or it may have been failing silently since creation.
         - alert: ResticRepoStale
-          expr: (time() - max by (repo) (restic_backup_timestamp)) > (9 * 86400)
+          expr: (time() - max by (repo) (restic_backup_timestamp)) > (15 * 86400)
           for: 10m
           labels:
             severity: critical
           annotations:
-            summary: "Restic repo {{ $labels.repo }} has no fresh snapshot (>9d)"
+            summary: "Restic repo {{ $labels.repo }} has no fresh snapshot (>15d)"
             description: >
               The latest snapshot in restic repo `{{ $labels.repo }}`
               is {{ $value | humanizeDuration }} old. The backup CronJob may be

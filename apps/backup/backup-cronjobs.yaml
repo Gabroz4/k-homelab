@@ -332,6 +332,9 @@ spec:
       activeDeadlineSeconds: 3600
       backoffLimit: 1
       template:
+        metadata:
+          labels:
+            app: matrix-db-backup
         spec:
           restartPolicy: OnFailure
           securityContext:
@@ -438,6 +441,9 @@ spec:
       activeDeadlineSeconds: 3600
       backoffLimit: 1
       template:
+        metadata:
+          labels:
+            app: pankha-db-backup
         spec:
           restartPolicy: OnFailure
           securityContext:

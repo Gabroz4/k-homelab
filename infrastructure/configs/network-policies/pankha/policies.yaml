@@ -152,3 +152,41 @@ spec:
       ports:
         - port: 443
           protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-db-backup-to-postgres
+spec:
+  podSelector:
+    matchLabels:
+      app: pankha-postgres
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: pankha-db-backup
+      ports:
+        - port: 5432
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-db-backup-egress-to-postgres
+spec:
+  podSelector:
+    matchLabels:
+      app: pankha-db-backup
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: pankha-postgres
+      ports:
+        - port: 5432
+          protocol: TCP

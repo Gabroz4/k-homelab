@@ -228,3 +228,41 @@ spec:
       ports:
         - port: 8008
           protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-db-backup-to-postgres
+spec:
+  podSelector:
+    matchLabels:
+      app: matrix-postgres
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: matrix-db-backup
+      ports:
+        - port: 5432
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-db-backup-egress-to-postgres
+spec:
+  podSelector:
+    matchLabels:
+      app: matrix-db-backup
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: matrix-postgres
+      ports:
+        - port: 5432
+          protocol: TCP
