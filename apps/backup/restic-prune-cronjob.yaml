@@ -4,7 +4,7 @@ metadata:
   name: restic-prune
   namespace: backup
 spec:
-  schedule: "0 10 * * 1"
+  schedule: "25 4 * * 1"
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 4
