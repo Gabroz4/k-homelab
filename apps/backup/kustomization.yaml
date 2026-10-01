@@ -7,6 +7,7 @@ resources:
   - restic-rest-server.yaml
   - restic-rest-server-externalsecret.yaml
   - restic-exporter
+  - restic-exporter-restart.yaml
   - restic-prune-cronjob.yaml
   - system-cleanup.yaml
   - volsync-immich.yaml
